@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: cm_app_dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app                      # hot reload — mounts local files
+      - /app/node_modules           # keep node_modules inside container
+      - /app/.next                  # keep .next cache inside container
+    env_file:
+      - .env.local
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: cm_postgres_dev
+    environment:
+      POSTGRES_USER: cm_user
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: cm_submissions
+    ports:
+      - '5432:5432'                 # expose to host for DataGrip / pgAdmin
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cm_user -d cm_submissions']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_dev_data:

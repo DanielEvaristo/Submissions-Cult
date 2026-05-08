@@ -1,0 +1,305 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ─────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  ARTIST
+  INDUSTRY
+}
+
+enum LabelStatus {
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+}
+
+enum RoleType {
+  ARTIST
+  BAND
+  MANAGEMENT
+  PR
+  AGENCY
+}
+
+enum AgeRange {
+  UNDER_18
+  AGE_18_24
+  AGE_25_34
+  AGE_35_44
+  AGE_45_PLUS
+}
+
+enum ReleaseType {
+  SINGLE
+  EP
+  ALBUM
+}
+
+enum StreamingPlatform {
+  SPOTIFY
+  SOUNDCLOUD
+  DEEZER
+  OTHER
+}
+
+enum Opportunity {
+  WEEKLY
+  SPOTIFY
+  WEBRADIO
+  ALBUM_STORY
+}
+
+enum Theme {
+  DARK
+  LIGHT
+}
+
+enum UILanguage {
+  EN
+  ES
+  FR
+}
+
+enum ListenersRange {
+  UNDER_1K
+  FROM_1K_TO_10K
+  FROM_10K_TO_50K
+  FROM_50K_TO_100K
+  FROM_100K_TO_500K
+  OVER_500K
+}
+
+enum DistributionMethod {
+  DISTROKID
+  TUNECORE
+  CD_BABY
+  RECORD_LABEL
+  INDEPENDENT
+  OTHER
+}
+
+enum Status {
+  PENDING            // just submitted, waiting for curator
+  IN_REVIEW          // curator is reviewing
+  CURATOR_APPROVED   // curator approved → auto-moves to MASTER_REVIEW
+  CURATOR_REJECTED   // curator rejected → end of flow
+  MASTER_REVIEW      // master curator reviewing
+  ACCEPTED           // master accepted → placement assigned
+  REJECTED           // master rejected → end of flow
+}
+
+// ─── NextAuth Tables ────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Tables ────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+
+  // Account type
+  accountType AccountType @default(ARTIST)
+
+  // ── ARTIST fields ──────────────────────────────────────────────
+  artistName String?
+  roleType   RoleType @default(ARTIST) // ARTIST|BAND|MANAGEMENT|PR|AGENCY
+
+  country String? // ISO 3166-1 alpha-2 code e.g. 'MX', 'US', 'FR'
+  city    String?
+  bio     String? // max 500 chars
+
+  // Genre & subgenre
+  genre    String?
+  subgenre String?
+
+  // Age range
+  ageRange        AgeRange? // solo artist
+  memberAgeRanges Json? // band: [{slot:1, range:'18_24'}, ...]
+  bandSize        Int?
+
+  // Social links
+  spotifyUrl    String?
+  instagram     String?
+  tiktok        String?
+  youtube       String?
+  soundcloudUrl String?
+  website       String?
+
+  // Language of music creation
+  musicLanguages String[] // e.g. ['en', 'es'] — ISO 639-1 codes
+
+  // Career & industry info
+  careerStartYear    Int? // year they started (for 'years active' calc)
+  monthlyListeners   ListenersRange? // enum range, not exact number
+  distributionMethod DistributionMethod?
+  hasManager         Boolean             @default(false)
+
+  // ── INDUSTRY fields ────────────────────────────────────────────
+  legalName       String?
+  websiteUrl      String?
+  labelInstagram  String?
+  isVerifiedLabel Boolean     @default(false)
+  labelStatus     LabelStatus @default(PENDING_VERIFICATION)
+  rejectionReason String?
+
+  // ── INTERNAL roles ─────────────────────────────────────────────
+  isAdmin         Boolean @default(false)
+  isCurator       Boolean @default(false)
+  isMasterCurator Boolean @default(false)
+
+  // UI preferences
+  theme    Theme      @default(DARK)
+  language UILanguage @default(EN)
+
+  // Phase 2 — credits (schema-ready, no logic in MVP)
+  credits      Int     @default(0)
+  firstSubUsed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // Own relations
+  submissions    Submission[]
+  donations      Donation[]
+  managedArtists ManagedArtist[]
+}
+
+model ManagedArtist {
+  id String @id @default(cuid())
+
+  industryUserId String
+  industryUser   User   @relation(fields: [industryUserId], references: [id])
+
+  artistName String
+  genre      String?
+  subgenre   String?
+  spotifyUrl String?
+  instagram  String?
+  notes      String?
+
+  createdAt DateTime @default(now())
+
+  // Submissions sent on behalf of this artist
+  submissions Submission[]
+}
+
+model Submission {
+  id String @id @default(cuid())
+
+  userId String // who submitted (artist or industry user)
+  user   User   @relation(fields: [userId], references: [id])
+
+  // If submitted by an Industry account on behalf of a managed artist:
+  managedArtistId String?
+  managedArtist   ManagedArtist? @relation(fields: [managedArtistId], references: [id])
+
+  artistName  String
+  trackTitle  String
+  releaseType ReleaseType
+  releaseDate String?
+
+  streamingUrl      String
+  streamingPlatform StreamingPlatform?
+
+  genres    String[]
+  subgenres String[]
+  pitch     String? // max 1000 chars
+  pressKitUrl String?
+
+  opportunity Opportunity
+
+  // Auto-fill metadata from streaming URL (populated server-side after URL parse)
+  autoFilledTitle  String?
+  autoFilledArtist String?
+  autoFilledCover  String? // cover image URL from API
+  autoFillSource   String? // which API was used
+
+  // Curation flow — two levels
+  status Status @default(PENDING)
+
+  // Level 1 — Curator
+  curatorId         String?
+  curatorNotes      String?
+  curatorRating     Int? // 1-5 stars
+  curatorReviewedAt DateTime?
+
+  // Level 2 — Master Curator
+  masterCuratorId  String?
+  masterNotes      String?
+  masterRating     Int? // 1-5 stars
+  placement        String?
+  masterReviewedAt DateTime?
+
+  // Phase 2 ready
+  creditsUsed Int     @default(0)
+  isFree      Boolean @default(true)
+
+  submittedAt DateTime @default(now())
+}
+
+model Donation {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  amount   Int    // in cents (USD)
+  currency String @default("usd")
+
+  stripePaymentIntentId String @unique
+  status                String // succeeded | pending | failed
+
+  donorName  String?
+  donorEmail String?
+
+  createdAt DateTime @default(now())
+}

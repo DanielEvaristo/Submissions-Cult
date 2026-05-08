@@ -1,0 +1,268 @@
+{
+  "nav": {
+    "submit": "Enviar",
+    "mySubmissions": "Mis Envíos",
+    "profile": "Perfil",
+    "support": "Apoyar",
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "admin": "Panel Admin"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "optional": "Opcional",
+    "required": "Requerido"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signUp": "Crear Cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "emailVerificationSent": "Correo de verificación enviado. Revisa tu bandeja de entrada.",
+    "errors": {
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Ingresa un correo electrónico válido",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordNeedsUppercase": "La contraseña debe contener al menos una letra mayúscula",
+      "passwordNeedsNumber": "La contraseña debe contener al menos un número",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden"
+    }
+  },
+  "accountType": {
+    "title": "Únete a Cult Machine",
+    "subtitle": "Elige el tipo de cuenta para comenzar",
+    "artist": "Artista",
+    "artistDesc": "Envía tu música para consideración editorial. Acceso inmediato tras verificación de correo.",
+    "industry": "Industria",
+    "industryDesc": "Gestiona múltiples artistas. Cuentas para sellos, PR, management y agencias. Requiere verificación manual (1–3 días hábiles)."
+  },
+  "register": {
+    "step1": "Datos de Cuenta",
+    "step2": "Identidad Artística",
+    "step3": "Música y Género",
+    "step4": "Edad y Banda",
+    "step5": "Presencia en Redes",
+    "step6": "Info de Carrera",
+    "step7": "Confirmación",
+    "progressHint": "Un perfil más completo tiene mayor visibilidad en los análisis del curador.",
+    "artistName": "Nombre artístico o de banda",
+    "roleType": "Tipo de rol",
+    "country": "País",
+    "city": "Ciudad",
+    "bio": "Bio",
+    "bioHint": "Máximo 500 caracteres",
+    "genre": "Género",
+    "subgenre": "Subgénero",
+    "musicLanguages": "Idioma(s) en que creas música",
+    "ageRange": "Tu rango de edad",
+    "bandMembers": "Número de integrantes",
+    "member": "Integrante",
+    "spotifyUrl": "URL de perfil de Spotify",
+    "instagram": "Usuario de Instagram",
+    "tiktok": "Usuario de TikTok",
+    "youtube": "URL de canal de YouTube",
+    "soundcloudUrl": "URL de SoundCloud",
+    "website": "Sitio web personal / de banda",
+    "distributionMethod": "Método de distribución",
+    "careerStartYear": "Año de inicio de carrera",
+    "monthlyListeners": "Oyentes mensuales en Spotify",
+    "hasManager": "¿Tienes manager?",
+    "yes": "Sí",
+    "no": "No",
+    "reviewProfile": "Revisa tu perfil",
+    "submitAndVerify": "Enviar y verificar correo",
+    "roles": {
+      "ARTIST": "Artista Solo",
+      "BAND": "Banda",
+      "MANAGEMENT": "Management",
+      "PR": "PR",
+      "AGENCY": "Agencia"
+    },
+    "ageRanges": {
+      "UNDER_18": "Menor de 18",
+      "AGE_18_24": "18–24",
+      "AGE_25_34": "25–34",
+      "AGE_35_44": "35–44",
+      "AGE_45_PLUS": "45+"
+    },
+    "listeners": {
+      "UNDER_1K": "Menos de 1K",
+      "FROM_1K_TO_10K": "1K–10K",
+      "FROM_10K_TO_50K": "10K–50K",
+      "FROM_50K_TO_100K": "50K–100K",
+      "FROM_100K_TO_500K": "100K–500K",
+      "OVER_500K": "Más de 500K"
+    },
+    "distribution": {
+      "DISTROKID": "DistroKid",
+      "TUNECORE": "TuneCore",
+      "CD_BABY": "CD Baby",
+      "RECORD_LABEL": "Sello Discográfico",
+      "INDEPENDENT": "Independiente",
+      "OTHER": "Otro"
+    }
+  },
+  "industry": {
+    "pendingTitle": "Cuenta en Revisión",
+    "pendingMessage": "Tu cuenta de industria está siendo revisada. Te notificaremos por correo una vez aprobada. Esto suele tardar 1–3 días hábiles.",
+    "legalName": "Nombre legal de la empresa",
+    "roleType": "Tipo de empresa",
+    "websiteUrl": "URL del sitio oficial",
+    "labelInstagram": "Usuario de Instagram",
+    "description": "Breve descripción del roster o servicios"
+  },
+  "submit": {
+    "title": "Envía tu canción",
+    "step1": "Elige una oportunidad",
+    "step2": "Detalles del track",
+    "step3": "Revisar y confirmar",
+    "streamingUrl": "Enlace de Streaming",
+    "streamingUrlHint": "Pega una URL de Spotify, SoundCloud o Deezer",
+    "noStreamingLink": "Aún no tengo enlace de streaming",
+    "fetchingInfo": "Obteniendo información del track...",
+    "autoFillFailed": "No se pudo completar automáticamente — por favor llena los campos manualmente",
+    "trackTitle": "Título del Track",
+    "artistName": "Nombre del Artista",
+    "releaseType": "Tipo de Lanzamiento",
+    "releaseDate": "Fecha de Lanzamiento",
+    "genre": "Género",
+    "subgenre": "Subgénero",
+    "pitch": "Pitch",
+    "pitchHint": "Máximo 1,000 caracteres. Cuéntale a los curadores por qué este track merece ser destacado.",
+    "pressKitUrl": "URL del Press Kit",
+    "freeSubmission": "Envío gratuito — sin créditos requeridos",
+    "thankYou": "¡Track enviado!",
+    "thankYouMessage": "Recibimos tu envío y lo revisaremos en las próximas 72 horas.",
+    "opportunities": {
+      "WEEKLY": "Selección Semanal",
+      "WEEKLY_desc": "Destacado en nuestras selecciones editoriales semanales",
+      "SPOTIFY": "Playlist de Spotify",
+      "SPOTIFY_desc": "Considerado para nuestras playlists curadas de Spotify",
+      "WEBRADIO": "Radio Web",
+      "WEBRADIO_desc": "Transmitido en la rotación de la radio web de Cult Machine",
+      "ALBUM_STORY": "Album Story",
+      "ALBUM_STORY_desc": "Reportaje en profundidad del álbum (solo cuentas de agencia)",
+      "ALBUM_STORY_locked": "Disponible solo para cuentas de agencia"
+    },
+    "releaseTypes": {
+      "SINGLE": "Sencillo",
+      "EP": "EP",
+      "ALBUM": "Álbum"
+    }
+  },
+  "submissions": {
+    "title": "Mis Envíos",
+    "empty": "Aún no has enviado ningún track.",
+    "submitFirst": "Envía tu primer track",
+    "filters": {
+      "all": "Todos",
+      "underReview": "En Revisión",
+      "selected": "Seleccionado",
+      "notSelected": "No Seleccionado"
+    },
+    "columns": {
+      "track": "Track",
+      "opportunity": "Oportunidad",
+      "status": "Estado",
+      "date": "Fecha"
+    },
+    "submitAnother": "Enviar otro track"
+  },
+  "status": {
+    "underReview": "En Revisión",
+    "selected": "Seleccionado ✓",
+    "notSelected": "No Seleccionado"
+  },
+  "profile": {
+    "title": "Perfil",
+    "editProfile": "Editar Perfil",
+    "support": "Apoya a Cult Machine",
+    "appearance": "Apariencia",
+    "theme": "Tema",
+    "dark": "Oscuro",
+    "light": "Claro",
+    "language": "Idioma"
+  },
+  "donation": {
+    "title": "Apoya a Cult Machine",
+    "subtitle": "Los envíos son siempre gratuitos. Las donaciones nos ayudan a mantener la plataforma.",
+    "stripeTitle": "Donar con Stripe",
+    "stripeSecure": "Procesado de forma segura con Stripe",
+    "kofiTitle": "Apoyar en Ko-fi",
+    "kofiSubtitle": "Alternativa rápida — sin tarjeta requerida",
+    "kofiButton": "Apoyar en Ko-fi",
+    "minAmount": "Mínimo $1 USD",
+    "donateButton": "Donar",
+    "thankYou": "¡Gracias por tu apoyo!",
+    "amount": "Monto (USD)"
+  },
+  "admin": {
+    "title": "Panel Admin",
+    "industryApplications": "Solicitudes de Industria",
+    "artistsDirectory": "Directorio de Artistas",
+    "donations": "Donaciones",
+    "analytics": "Analíticas",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "rejectionReason": "Motivo de rechazo",
+    "rejectionReasonRequired": "El motivo de rechazo es obligatorio",
+    "applicationDate": "Fecha de solicitud",
+    "pending": "Pendiente",
+    "approved": "Aprobado",
+    "rejected": "Rechazado"
+  },
+  "curator": {
+    "inbox": "Bandeja de Curaduría",
+    "noSubmissions": "No hay envíos para revisar",
+    "curatorNotes": "Notas del curador",
+    "curatorRating": "Calificación (1–5)",
+    "approveSubmission": "Aprobar",
+    "rejectSubmission": "Rechazar",
+    "approveConfirm": "¿Aprobar este envío y enviarlo a Revisión Maestra?",
+    "rejectConfirm": "¿Rechazar este envío?"
+  },
+  "masterCurator": {
+    "inbox": "Bandeja de Revisión Maestra",
+    "masterNotes": "Notas maestras",
+    "masterRating": "Calificación (1–5)",
+    "placement": "Placement",
+    "placementHint": "¿Dónde será destacado este track?",
+    "acceptSubmission": "Aceptar",
+    "rejectSubmission": "Rechazar",
+    "curatorContext": "Contexto del Curador Nivel 1"
+  },
+  "genres": {
+    "Rock": "Rock",
+    "Electronic": "Electrónica",
+    "Hip-Hop": "Hip-Hop",
+    "R&B / Soul": "R&B / Soul",
+    "Pop": "Pop",
+    "Folk / Acoustic": "Folk / Acústico",
+    "Latin": "Latin",
+    "Jazz": "Jazz",
+    "Metal": "Metal",
+    "Ambient / Experimental": "Ambient / Experimental",
+    "Other": "Otro"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor intenta de nuevo.",
+    "unauthorized": "No estás autorizado para ver esta página.",
+    "notFound": "Página no encontrada.",
+    "serverError": "Error en el servidor. Por favor intenta de nuevo más tarde."
+  }
+}

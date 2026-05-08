@@ -1,0 +1,268 @@
+{
+  "nav": {
+    "submit": "Submit",
+    "mySubmissions": "My Submissions",
+    "profile": "Profile",
+    "support": "Support",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "admin": "Admin Panel"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "optional": "Optional",
+    "required": "Required"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "emailVerificationSent": "Verification email sent. Please check your inbox.",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordNeedsUppercase": "Password must contain at least one uppercase letter",
+      "passwordNeedsNumber": "Password must contain at least one number",
+      "passwordsDoNotMatch": "Passwords do not match"
+    }
+  },
+  "accountType": {
+    "title": "Join Cult Machine",
+    "subtitle": "Choose your account type to get started",
+    "artist": "Artist",
+    "artistDesc": "Submit your music for editorial consideration. Immediate access after email verification.",
+    "industry": "Industry",
+    "industryDesc": "Manage multiple artists. Label, PR, management, and agency accounts. Requires manual verification (1–3 business days)."
+  },
+  "register": {
+    "step1": "Account Basics",
+    "step2": "Artist Identity",
+    "step3": "Music & Genre",
+    "step4": "Age & Band",
+    "step5": "Social Presence",
+    "step6": "Career Info",
+    "step7": "Confirmation",
+    "progressHint": "A more complete profile gets better visibility in curator analytics.",
+    "artistName": "Artist or Band Name",
+    "roleType": "Role Type",
+    "country": "Country",
+    "city": "City",
+    "bio": "Bio",
+    "bioHint": "Max 500 characters",
+    "genre": "Genre",
+    "subgenre": "Subgenre",
+    "musicLanguages": "Language(s) of music creation",
+    "ageRange": "Your age range",
+    "bandMembers": "Number of members",
+    "member": "Member",
+    "spotifyUrl": "Spotify Profile URL",
+    "instagram": "Instagram handle",
+    "tiktok": "TikTok handle",
+    "youtube": "YouTube channel URL",
+    "soundcloudUrl": "SoundCloud URL",
+    "website": "Personal / band website",
+    "distributionMethod": "Distribution method",
+    "careerStartYear": "Career start year",
+    "monthlyListeners": "Monthly listeners on Spotify",
+    "hasManager": "Do you have a manager?",
+    "yes": "Yes",
+    "no": "No",
+    "reviewProfile": "Review your profile",
+    "submitAndVerify": "Submit and verify email",
+    "roles": {
+      "ARTIST": "Solo Artist",
+      "BAND": "Band",
+      "MANAGEMENT": "Management",
+      "PR": "PR",
+      "AGENCY": "Agency"
+    },
+    "ageRanges": {
+      "UNDER_18": "Under 18",
+      "AGE_18_24": "18–24",
+      "AGE_25_34": "25–34",
+      "AGE_35_44": "35–44",
+      "AGE_45_PLUS": "45+"
+    },
+    "listeners": {
+      "UNDER_1K": "Under 1K",
+      "FROM_1K_TO_10K": "1K–10K",
+      "FROM_10K_TO_50K": "10K–50K",
+      "FROM_50K_TO_100K": "50K–100K",
+      "FROM_100K_TO_500K": "100K–500K",
+      "OVER_500K": "Over 500K"
+    },
+    "distribution": {
+      "DISTROKID": "DistroKid",
+      "TUNECORE": "TuneCore",
+      "CD_BABY": "CD Baby",
+      "RECORD_LABEL": "Record Label",
+      "INDEPENDENT": "Independent",
+      "OTHER": "Other"
+    }
+  },
+  "industry": {
+    "pendingTitle": "Account Under Review",
+    "pendingMessage": "Your industry account is under review. We will notify you by email once it has been approved. This usually takes 1–3 business days.",
+    "legalName": "Legal company name",
+    "roleType": "Company type",
+    "websiteUrl": "Official website URL",
+    "labelInstagram": "Instagram handle",
+    "description": "Brief description of roster or services"
+  },
+  "submit": {
+    "title": "Submit your track",
+    "step1": "Choose an opportunity",
+    "step2": "Track details",
+    "step3": "Review & confirm",
+    "streamingUrl": "Streaming Link",
+    "streamingUrlHint": "Paste a Spotify, SoundCloud, or Deezer URL",
+    "noStreamingLink": "I don't have a streaming link yet",
+    "fetchingInfo": "Fetching track info...",
+    "autoFillFailed": "Could not auto-fill — please complete manually",
+    "trackTitle": "Track Title",
+    "artistName": "Artist Name",
+    "releaseType": "Release Type",
+    "releaseDate": "Release Date",
+    "genre": "Genre",
+    "subgenre": "Subgenre",
+    "pitch": "Pitch",
+    "pitchHint": "Max 1,000 characters. Tell the curators why this track deserves a feature.",
+    "pressKitUrl": "Press Kit URL",
+    "freeSubmission": "Free submission — no credits required",
+    "thankYou": "Track submitted!",
+    "thankYouMessage": "We received your submission and will review it within 72 hours.",
+    "opportunities": {
+      "WEEKLY": "Weekly Feature",
+      "WEEKLY_desc": "Featured in our weekly editorial picks",
+      "SPOTIFY": "Spotify Playlist",
+      "SPOTIFY_desc": "Considered for our curated Spotify playlists",
+      "WEBRADIO": "Web Radio",
+      "WEBRADIO_desc": "Played on Cult Machine's web radio rotation",
+      "ALBUM_STORY": "Album Story",
+      "ALBUM_STORY_desc": "In-depth album feature (agency accounts only)",
+      "ALBUM_STORY_locked": "Available for agency accounts only"
+    },
+    "releaseTypes": {
+      "SINGLE": "Single",
+      "EP": "EP",
+      "ALBUM": "Album"
+    }
+  },
+  "submissions": {
+    "title": "My Submissions",
+    "empty": "You haven't submitted any tracks yet.",
+    "submitFirst": "Submit your first track",
+    "filters": {
+      "all": "All",
+      "underReview": "Under Review",
+      "selected": "Selected",
+      "notSelected": "Not Selected"
+    },
+    "columns": {
+      "track": "Track",
+      "opportunity": "Opportunity",
+      "status": "Status",
+      "date": "Date"
+    },
+    "submitAnother": "Submit another track"
+  },
+  "status": {
+    "underReview": "Under Review",
+    "selected": "Selected ✓",
+    "notSelected": "Not Selected"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "support": "Support Cult Machine",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "language": "Language"
+  },
+  "donation": {
+    "title": "Support Cult Machine",
+    "subtitle": "Submissions are always free. Donations help us keep the platform running.",
+    "stripeTitle": "Donate via Stripe",
+    "stripeSecure": "Processed securely via Stripe",
+    "kofiTitle": "Support on Ko-fi",
+    "kofiSubtitle": "Quick alternative — no card required",
+    "kofiButton": "Support on Ko-fi",
+    "minAmount": "Minimum $1 USD",
+    "donateButton": "Donate",
+    "thankYou": "Thank you for your support!",
+    "amount": "Amount (USD)"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "industryApplications": "Industry Applications",
+    "artistsDirectory": "Artists Directory",
+    "donations": "Donations",
+    "analytics": "Analytics",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectionReason": "Rejection reason",
+    "rejectionReasonRequired": "A rejection reason is required",
+    "applicationDate": "Application date",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "curator": {
+    "inbox": "Curation Inbox",
+    "noSubmissions": "No submissions to review",
+    "curatorNotes": "Curator notes",
+    "curatorRating": "Rating (1–5)",
+    "approveSubmission": "Approve",
+    "rejectSubmission": "Reject",
+    "approveConfirm": "Approve this submission and send to Master Review?",
+    "rejectConfirm": "Reject this submission?"
+  },
+  "masterCurator": {
+    "inbox": "Master Review Inbox",
+    "masterNotes": "Master notes",
+    "masterRating": "Rating (1–5)",
+    "placement": "Placement",
+    "placementHint": "Where will this track be featured?",
+    "acceptSubmission": "Accept",
+    "rejectSubmission": "Reject",
+    "curatorContext": "Curator Level 1 Context"
+  },
+  "genres": {
+    "Rock": "Rock",
+    "Electronic": "Electronic",
+    "Hip-Hop": "Hip-Hop",
+    "R&B / Soul": "R&B / Soul",
+    "Pop": "Pop",
+    "Folk / Acoustic": "Folk / Acoustic",
+    "Latin": "Latin",
+    "Jazz": "Jazz",
+    "Metal": "Metal",
+    "Ambient / Experimental": "Ambient / Experimental",
+    "Other": "Other"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "unauthorized": "You are not authorized to view this page.",
+    "notFound": "Page not found.",
+    "serverError": "Server error. Please try again later."
+  }
+}
