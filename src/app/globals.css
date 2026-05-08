@@ -2,26 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: #0D0D0D;
+    color: #F0EDE6;
+    font-family: var(--font-dm-sans), sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #161616; }
+  ::-webkit-scrollbar-thumb { background: #2E2E2E; border-radius: 2px; }
+
+  *:focus-visible { outline: 1px solid #E8341C; outline-offset: 2px; }
+  ::selection { background: rgba(232,52,28,0.2); color: #F0EDE6; }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5
+           bg-accent-red hover:bg-accent-red-hover text-white
+           font-mono text-[11px] uppercase tracking-widest
+           border border-accent-red transition-colors duration-150 cursor-pointer
+           disabled:opacity-40 disabled:cursor-not-allowed;
   }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5
+           bg-transparent hover:bg-bg-elevated text-cm-text-primary
+           font-mono text-[11px] uppercase tracking-widest
+           border border-border hover:border-cm-text-secondary
+           transition-colors duration-150 cursor-pointer;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+           bg-transparent hover:bg-bg-elevated text-cm-text-secondary hover:text-cm-text-primary
+           font-mono text-[11px] uppercase tracking-widest
+           transition-colors duration-150 cursor-pointer;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-4 py-3 bg-bg-surface border border-border
+           text-cm-text-primary font-sans text-sm placeholder:text-cm-text-muted
+           focus:outline-none focus:border-cm-text-secondary transition-colors duration-150;
+  }
+  .input-error { @apply border-danger focus:border-danger; }
+  .label {
+    @apply block font-mono text-[10px] uppercase tracking-widest text-cm-text-secondary mb-1.5;
+  }
+  .error-msg { @apply font-mono text-[10px] text-danger mt-1; }
+
+  /* Cards */
+  .card { @apply bg-bg-surface border border-border p-6; }
+  .card-elevated { @apply bg-bg-elevated border border-border p-6; }
+
+  /* Badges */
+  .badge-review {
+    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
+           bg-[rgba(186,117,23,0.15)] text-warn border border-warn/30;
+  }
+  .badge-selected {
+    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
+           bg-[rgba(29,158,117,0.2)] text-ok border border-ok/30;
+  }
+  .badge-rejected {
+    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
+           bg-[rgba(226,75,74,0.15)] text-[#F09595] border border-danger/30;
+  }
+
+  .divider { @apply border-t border-border; }
+  .section-label { @apply font-mono text-[10px] uppercase tracking-widest text-cm-text-secondary; }
 }

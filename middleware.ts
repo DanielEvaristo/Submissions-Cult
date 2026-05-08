@@ -1,13 +1,16 @@
 import createMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './src/i18n/request';
 
 export default createMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix: 'as-needed', // EN has no prefix, /es/... and /fr/...
+  locales: ['en', 'es', 'fr'],
+  defaultLocale: 'en',
+  // 'always' gives every route a locale prefix: /en/login, /es/login
+  // This makes routing predictable and avoids 404s on the default locale
+  localePrefix: 'always',
 });
 
 export const config = {
-  // Match only pathnames that start without an underscore or api segment
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+  matcher: [
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+    '/',
+  ],
 };

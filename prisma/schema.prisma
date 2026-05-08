@@ -142,6 +142,7 @@ model User {
   emailVerified DateTime?
   name          String?
   image         String?
+  password      String?   // hashed with bcrypt — null for OAuth users
 
   // Account type
   accountType AccountType @default(ARTIST)
