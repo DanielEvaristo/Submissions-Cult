@@ -41,6 +41,12 @@
       "passwordNeedsUppercase": "Le mot de passe doit contenir au moins une lettre majuscule",
       "passwordNeedsNumber": "Le mot de passe doit contenir au moins un chiffre",
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
+    },
+    "accountCreated": "Compte créé — connectez-vous pour continuer.",
+    "placeholders": {
+      "email": "vous@exemple.com",
+      "password": "Min. 8 car., 1 majuscule, 1 chiffre",
+      "confirmPassword": "Répétez votre mot de passe"
     }
   },
   "accountType": {
@@ -52,7 +58,11 @@
     "industryDesc": "Gérez plusieurs artistes. Comptes pour labels, PR, management et agences. Vérification manuelle requise (1–3 jours ouvrables)."
   },
   "register": {
-    "step1": "Informations de Base",
+    "createAccount": "Créez votre compte",
+    "placeholders": {
+      "artistName": "Votre nom d'artiste ou de groupe"
+    },
+    "step1": "Détails du Compte",
     "step2": "Identité Artistique",
     "step3": "Musique & Genre",
     "step4": "Âge & Formation",
@@ -117,14 +127,115 @@
       "OTHER": "Autre"
     }
   },
+  "onboarding": {
+    "title": "Complétez votre Profil d'Artiste",
+    "subtitle": "Ces informations aident les curateurs à découvrir et évaluer votre musique.",
+    "progress": "Étape {current} sur {total}",
+    "progressHint": "Un profil plus complet augmente votre visibilité dans les analyses des curateurs.",
+    "saveAndContinue": "Enregistrer et Continuer",
+    "finish": "Terminer la Configuration",
+    "steps": {
+      "basics": "Info de Base",
+      "project": "Votre Projet",
+      "genres": "Genres",
+      "languages": "Langues",
+      "socials": "Réseaux Sociaux",
+      "career": "Carrière",
+      "review": "Révision"
+    },
+    "basics": {
+      "title": "D'où créez-vous ?",
+      "country": "Pays",
+      "countryPlaceholder": "Sélectionnez votre pays",
+      "city": "Ville",
+      "cityPlaceholder": "ex. Paris",
+      "bio": "Bio courte",
+      "bioPlaceholder": "Parlez-nous de votre son et votre vision… (max. 500 caractères)",
+      "bioHint": "{count}/500 caractères"
+    },
+    "project": {
+      "title": "Parlez-nous de votre projet",
+      "roleType": "Type de projet",
+      "soloArtist": "Artiste Solo",
+      "band": "Groupe",
+      "ageRange": "Votre tranche d'âge",
+      "bandSize": "Nombre de membres",
+      "bandMember": "Membre {n}",
+      "bandMemberAge": "Tranche d'âge du membre {n}"
+    },
+    "genres": {
+      "title": "Quel est votre son ?",
+      "genre": "Genre principal",
+      "genrePlaceholder": "Sélectionnez un genre",
+      "subgenre": "Sous-genre",
+      "subgenrePlaceholder": "ex. Dream Pop, Lo-fi Hip-Hop"
+    },
+    "languages": {
+      "title": "Dans quelle(s) langue(s) créez-vous ?",
+      "hint": "Sélectionnez tout ce qui s'applique.",
+      "en": "Anglais",
+      "es": "Espagnol",
+      "fr": "Français",
+      "pt": "Portugais",
+      "de": "Allemand",
+      "it": "Italien",
+      "ja": "Japonais",
+      "ko": "Coréen",
+      "zh": "Mandarin",
+      "other": "Autre"
+    },
+    "socials": {
+      "title": "Où peut-on vous trouver en ligne ?",
+      "hint": "Tous les champs sont optionnels mais fortement recommandés.",
+      "spotify": "URL du profil Spotify",
+      "spotifyPlaceholder": "https://open.spotify.com/artist/...",
+      "instagram": "Instagram",
+      "instagramPlaceholder": "@votrecompte",
+      "tiktok": "TikTok",
+      "tiktokPlaceholder": "@votrecompte",
+      "youtube": "URL de la chaîne YouTube",
+      "youtubePlaceholder": "https://youtube.com/@...",
+      "soundcloud": "URL SoundCloud",
+      "soundcloudPlaceholder": "https://soundcloud.com/...",
+      "website": "Site web personnel / du groupe",
+      "websitePlaceholder": "https://votresite.com"
+    },
+    "career": {
+      "title": "Votre carrière en un coup d'œil",
+      "startYear": "Année de début de carrière",
+      "startYearPlaceholder": "ex. 2018",
+      "listeners": "Auditeurs mensuels sur Spotify",
+      "distribution": "Méthode de distribution",
+      "manager": "Avez-vous un manager ?",
+      "yes": "Oui",
+      "no": "Non"
+    },
+    "review": {
+      "title": "Vérifiez votre profil",
+      "subtitle": "Tout semble correct ? Vous pourrez toujours le modifier plus tard.",
+      "location": "Localisation",
+      "projectType": "Type de projet",
+      "genre": "Genre",
+      "languages": "Langues",
+      "socials": "Réseaux sociaux",
+      "career": "Carrière",
+      "notSet": "Non renseigné"
+    }
+  },
   "industry": {
     "pendingTitle": "Compte en cours de vérification",
     "pendingMessage": "Votre compte industrie est en cours d'examen. Nous vous notifierons par email une fois approuvé. Cela prend généralement 1–3 jours ouvrables.",
     "legalName": "Nom légal de l'entreprise",
     "roleType": "Type d'entreprise",
     "websiteUrl": "URL du site officiel",
-    "labelInstagram": "Identifiant Instagram",
-    "description": "Brève description du roster ou des services"
+    "labelInstagram": "Utilisateur Instagram",
+    "description": "Brève description du catalogue ou services",
+    "placeholders": {
+      "legalName": "Nom légal de votre entreprise",
+      "website": "https://votresite.com",
+      "instagram": "@votrelabel",
+      "description": "Brève description de votre catalogue ou services (max. 300 caractères)"
+    }
   },
   "submit": {
     "title": "Soumettre votre titre",

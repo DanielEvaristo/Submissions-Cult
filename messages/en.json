@@ -41,6 +41,12 @@
       "passwordNeedsUppercase": "Password must contain at least one uppercase letter",
       "passwordNeedsNumber": "Password must contain at least one number",
       "passwordsDoNotMatch": "Passwords do not match"
+    },
+    "accountCreated": "Account created — sign in to continue.",
+    "placeholders": {
+      "email": "you@example.com",
+      "password": "Min 8 chars, 1 uppercase, 1 number",
+      "confirmPassword": "Repeat your password"
     }
   },
   "accountType": {
@@ -52,7 +58,11 @@
     "industryDesc": "Manage multiple artists. Label, PR, management, and agency accounts. Requires manual verification (1–3 business days)."
   },
   "register": {
-    "step1": "Account Basics",
+    "createAccount": "Create your account",
+    "placeholders": {
+      "artistName": "Your artist or band name"
+    },
+    "step1": "Account Details",
     "step2": "Artist Identity",
     "step3": "Music & Genre",
     "step4": "Age & Band",
@@ -117,14 +127,115 @@
       "OTHER": "Other"
     }
   },
+  "onboarding": {
+    "title": "Complete Your Artist Profile",
+    "subtitle": "This information helps curators discover and evaluate your music.",
+    "progress": "Step {current} of {total}",
+    "progressHint": "A more complete profile increases your visibility in curator analytics.",
+    "saveAndContinue": "Save & Continue",
+    "finish": "Finish Setup",
+    "steps": {
+      "basics": "Basic Info",
+      "project": "Your Project",
+      "genres": "Genres",
+      "languages": "Languages",
+      "socials": "Social Links",
+      "career": "Career",
+      "review": "Review"
+    },
+    "basics": {
+      "title": "Where are you based?",
+      "country": "Country",
+      "countryPlaceholder": "Select your country",
+      "city": "City",
+      "cityPlaceholder": "e.g. Mexico City",
+      "bio": "Short Bio",
+      "bioPlaceholder": "Tell us about your sound and vision… (max 500 chars)",
+      "bioHint": "{count}/500 characters"
+    },
+    "project": {
+      "title": "Tell us about your project",
+      "roleType": "Project Type",
+      "soloArtist": "Solo Artist",
+      "band": "Band / Group",
+      "ageRange": "Your Age Range",
+      "bandSize": "Number of Members",
+      "bandMember": "Member {n}",
+      "bandMemberAge": "Age range of member {n}"
+    },
+    "genres": {
+      "title": "What's your sound?",
+      "genre": "Primary Genre",
+      "genrePlaceholder": "Select a genre",
+      "subgenre": "Subgenre",
+      "subgenrePlaceholder": "e.g. Dream Pop, Lo-fi Hip-Hop"
+    },
+    "languages": {
+      "title": "What language(s) do you create in?",
+      "hint": "Select all that apply.",
+      "en": "English",
+      "es": "Spanish",
+      "fr": "French",
+      "pt": "Portuguese",
+      "de": "German",
+      "it": "Italian",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "zh": "Mandarin",
+      "other": "Other"
+    },
+    "socials": {
+      "title": "Where can we find you online?",
+      "hint": "All fields are optional but strongly recommended.",
+      "spotify": "Spotify Profile URL",
+      "spotifyPlaceholder": "https://open.spotify.com/artist/...",
+      "instagram": "Instagram",
+      "instagramPlaceholder": "@yourhandle",
+      "tiktok": "TikTok",
+      "tiktokPlaceholder": "@yourhandle",
+      "youtube": "YouTube Channel URL",
+      "youtubePlaceholder": "https://youtube.com/@...",
+      "soundcloud": "SoundCloud URL",
+      "soundcloudPlaceholder": "https://soundcloud.com/...",
+      "website": "Personal / Band Website",
+      "websitePlaceholder": "https://yoursite.com"
+    },
+    "career": {
+      "title": "Your career at a glance",
+      "startYear": "Career Start Year",
+      "startYearPlaceholder": "e.g. 2018",
+      "listeners": "Monthly Spotify Listeners",
+      "distribution": "Distribution Method",
+      "manager": "Do you have a manager?",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "review": {
+      "title": "Review your profile",
+      "subtitle": "Everything look good? You can always edit this later.",
+      "location": "Location",
+      "projectType": "Project Type",
+      "genre": "Genre",
+      "languages": "Languages",
+      "socials": "Social Links",
+      "career": "Career",
+      "notSet": "Not provided"
+    }
+  },
   "industry": {
     "pendingTitle": "Account Under Review",
     "pendingMessage": "Your industry account is under review. We will notify you by email once it has been approved. This usually takes 1–3 business days.",
     "legalName": "Legal company name",
     "roleType": "Company type",
-    "websiteUrl": "Official website URL",
-    "labelInstagram": "Instagram handle",
-    "description": "Brief description of roster or services"
+    "websiteUrl": "Official Website URL",
+    "labelInstagram": "Instagram Handle",
+    "description": "Brief description of roster or services",
+    "placeholders": {
+      "legalName": "Your company's legal name",
+      "website": "https://yourlabel.com",
+      "instagram": "@yourlabel",
+      "description": "Brief description of your roster or services (max 300 chars)"
+    }
   },
   "submit": {
     "title": "Submit your track",

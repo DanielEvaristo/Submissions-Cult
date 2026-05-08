@@ -2,11 +2,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export default async function HomePage() {
+interface Props {
+  params: { locale: string };
+}
+
+export default async function HomePage({ params }: Props) {
+  const { locale } = params;
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/en/login");
+    redirect(`/${locale}/login`);
   }
 
   // Industry pending accounts
@@ -14,9 +19,17 @@ export default async function HomePage() {
     session.user.accountType === "INDUSTRY" &&
     session.user.labelStatus === "PENDING_VERIFICATION"
   ) {
-    redirect("/en/pending");
+    redirect(`/${locale}/pending`);
   }
 
-  // Everyone else goes to portal
-  redirect("/en/portal/submit");
+  // Artists who haven't completed onboarding yet
+  if (
+    session.user.accountType === "ARTIST" &&
+    !session.user.genre
+  ) {
+    redirect(`/${locale}/portal/onboarding`);
+  }
+
+  // Fully set-up users go to the submission portal
+  redirect(`/${locale}/portal/submit`);
 }

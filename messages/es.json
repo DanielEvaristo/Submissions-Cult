@@ -41,6 +41,12 @@
       "passwordNeedsUppercase": "La contraseña debe contener al menos una letra mayúscula",
       "passwordNeedsNumber": "La contraseña debe contener al menos un número",
       "passwordsDoNotMatch": "Las contraseñas no coinciden"
+    },
+    "accountCreated": "Cuenta creada — inicia sesión para continuar.",
+    "placeholders": {
+      "email": "tu@ejemplo.com",
+      "password": "Mín. 8 caracteres, 1 mayúscula, 1 número",
+      "confirmPassword": "Repite tu contraseña"
     }
   },
   "accountType": {
@@ -52,6 +58,10 @@
     "industryDesc": "Gestiona múltiples artistas. Cuentas para sellos, PR, management y agencias. Requiere verificación manual (1–3 días hábiles)."
   },
   "register": {
+    "createAccount": "Crea tu cuenta",
+    "placeholders": {
+      "artistName": "Tu nombre artístico o de banda"
+    },
     "step1": "Datos de Cuenta",
     "step2": "Identidad Artística",
     "step3": "Música y Género",
@@ -117,6 +127,101 @@
       "OTHER": "Otro"
     }
   },
+  "onboarding": {
+    "title": "Completa tu Perfil de Artista",
+    "subtitle": "Esta información ayuda a los curadores a descubrir y evaluar tu música.",
+    "progress": "Paso {current} de {total}",
+    "progressHint": "Un perfil más completo aumenta tu visibilidad en los análisis del curador.",
+    "saveAndContinue": "Guardar y Continuar",
+    "finish": "Finalizar Configuración",
+    "steps": {
+      "basics": "Info Básica",
+      "project": "Tu Proyecto",
+      "genres": "Géneros",
+      "languages": "Idiomas",
+      "socials": "Redes Sociales",
+      "career": "Carrera",
+      "review": "Revisión"
+    },
+    "basics": {
+      "title": "¿Desde dónde creas?",
+      "country": "País",
+      "countryPlaceholder": "Selecciona tu país",
+      "city": "Ciudad",
+      "cityPlaceholder": "ej. Ciudad de México",
+      "bio": "Bio corta",
+      "bioPlaceholder": "Cuéntanos sobre tu sonido y visión… (máx. 500 caracteres)",
+      "bioHint": "{count}/500 caracteres"
+    },
+    "project": {
+      "title": "Cuéntanos sobre tu proyecto",
+      "roleType": "Tipo de proyecto",
+      "soloArtist": "Artista Solo",
+      "band": "Banda / Grupo",
+      "ageRange": "Tu rango de edad",
+      "bandSize": "Número de integrantes",
+      "bandMember": "Integrante {n}",
+      "bandMemberAge": "Rango de edad del integrante {n}"
+    },
+    "genres": {
+      "title": "¿Cuál es tu sonido?",
+      "genre": "Género principal",
+      "genrePlaceholder": "Selecciona un género",
+      "subgenre": "Subgénero",
+      "subgenrePlaceholder": "ej. Dream Pop, Lo-fi Hip-Hop"
+    },
+    "languages": {
+      "title": "¿En qué idioma(s) creas música?",
+      "hint": "Selecciona todos los que apliquen.",
+      "en": "Inglés",
+      "es": "Español",
+      "fr": "Francés",
+      "pt": "Portugués",
+      "de": "Alemán",
+      "it": "Italiano",
+      "ja": "Japonés",
+      "ko": "Coreano",
+      "zh": "Mandarín",
+      "other": "Otro"
+    },
+    "socials": {
+      "title": "¿Dónde podemos encontrarte en línea?",
+      "hint": "Todos los campos son opcionales pero muy recomendables.",
+      "spotify": "URL de perfil de Spotify",
+      "spotifyPlaceholder": "https://open.spotify.com/artist/...",
+      "instagram": "Instagram",
+      "instagramPlaceholder": "@tuusuario",
+      "tiktok": "TikTok",
+      "tiktokPlaceholder": "@tuusuario",
+      "youtube": "URL de canal de YouTube",
+      "youtubePlaceholder": "https://youtube.com/@...",
+      "soundcloud": "URL de SoundCloud",
+      "soundcloudPlaceholder": "https://soundcloud.com/...",
+      "website": "Sitio web personal / de banda",
+      "websitePlaceholder": "https://tusitio.com"
+    },
+    "career": {
+      "title": "Tu carrera en un vistazo",
+      "startYear": "Año de inicio de carrera",
+      "startYearPlaceholder": "ej. 2018",
+      "listeners": "Oyentes mensuales en Spotify",
+      "distribution": "Método de distribución",
+      "manager": "¿Tienes manager?",
+      "yes": "Sí",
+      "no": "No"
+    },
+    "review": {
+      "title": "Revisa tu perfil",
+      "subtitle": "¿Todo se ve bien? Puedes editarlo más tarde.",
+      "location": "Ubicación",
+      "projectType": "Tipo de proyecto",
+      "genre": "Género",
+      "languages": "Idiomas",
+      "socials": "Redes sociales",
+      "career": "Carrera",
+      "notSet": "No proporcionado"
+    }
+  },
   "industry": {
     "pendingTitle": "Cuenta en Revisión",
     "pendingMessage": "Tu cuenta de industria está siendo revisada. Te notificaremos por correo una vez aprobada. Esto suele tardar 1–3 días hábiles.",
@@ -124,7 +229,13 @@
     "roleType": "Tipo de empresa",
     "websiteUrl": "URL del sitio oficial",
     "labelInstagram": "Usuario de Instagram",
-    "description": "Breve descripción del roster o servicios"
+    "description": "Breve descripción del roster o servicios",
+    "placeholders": {
+      "legalName": "Nombre legal de tu empresa",
+      "website": "https://tusello.com",
+      "instagram": "@tusello",
+      "description": "Breve descripción de tu roster o servicios (máx. 300 caracteres)"
+    }
   },
   "submit": {
     "title": "Envía tu canción",

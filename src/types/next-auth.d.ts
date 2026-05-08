@@ -18,6 +18,7 @@ declare module "next-auth" {
       isVerifiedLabel: boolean;
       labelStatus: LabelStatus;
       emailVerified: Date | null;
+      genre?: string | null;
     };
   }
 
@@ -33,6 +34,7 @@ declare module "next-auth" {
     isVerifiedLabel: boolean;
     labelStatus: LabelStatus;
     emailVerified: Date | null;
+    genre?: string | null;
   }
 }
 
@@ -49,5 +51,6 @@ declare module "next-auth/jwt" {
     isVerifiedLabel: boolean;
     labelStatus: LabelStatus;
     emailVerified: Date | null;
+    genre?: string | null;
   }
 }

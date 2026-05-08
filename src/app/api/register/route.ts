@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        { success: true, user, redirect: "/en/login?verified=1" },
+        { success: true, user, redirect: "/login?verified=1" },
         { status: 201 }
       );
     }
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        { success: true, user, redirect: "/en/pending" },
+        { success: true, user, redirect: "/pending" },
         { status: 201 }
       );
     }

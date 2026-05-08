@@ -41,6 +41,7 @@ export const authOptions: AuthOptions = {
           isVerifiedLabel: user.isVerifiedLabel,
           labelStatus: user.labelStatus,
           emailVerified: user.emailVerified,
+          genre: user.genre,
         };
       },
     }),
@@ -62,6 +63,7 @@ export const authOptions: AuthOptions = {
         token.isVerifiedLabel = user.isVerifiedLabel;
         token.labelStatus = user.labelStatus;
         token.emailVerified = user.emailVerified;
+        token.genre = user.genre;
       }
       return token;
     },
@@ -78,6 +80,7 @@ export const authOptions: AuthOptions = {
       session.user.isVerifiedLabel = token.isVerifiedLabel;
       session.user.labelStatus = token.labelStatus;
       session.user.emailVerified = token.emailVerified;
+      session.user.genre = token.genre;
       return session;
     },
   },

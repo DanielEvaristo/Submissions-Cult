@@ -1,0 +1,83 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { AgeRange, DistributionMethod, ListenersRange, RoleType } from "@prisma/client";
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.user.accountType !== "ARTIST") {
+    return NextResponse.json({ error: "Only artist accounts can update this profile." }, { status: 403 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  // Build sanitized update object
+  const update: Record<string, unknown> = {};
+
+  if (typeof body.country === "string") update.country = body.country.trim();
+  if (typeof body.city === "string") update.city = body.city.trim();
+  if (typeof body.bio === "string") update.bio = body.bio.trim().slice(0, 500);
+  if (typeof body.genre === "string") update.genre = body.genre.trim();
+  if (typeof body.subgenre === "string") update.subgenre = body.subgenre.trim();
+  if (typeof body.instagram === "string") update.instagram = body.instagram.trim();
+  if (typeof body.tiktok === "string") update.tiktok = body.tiktok.trim();
+  if (typeof body.youtube === "string") update.youtube = body.youtube.trim();
+  if (typeof body.website === "string") update.website = body.website.trim();
+  if (typeof body.spotifyUrl === "string") update.spotifyUrl = body.spotifyUrl.trim();
+  if (typeof body.soundcloudUrl === "string") update.soundcloudUrl = body.soundcloudUrl.trim();
+  if (typeof body.careerStartYear === "number") update.careerStartYear = body.careerStartYear;
+  if (typeof body.hasManager === "boolean") update.hasManager = body.hasManager;
+  if (typeof body.bandSize === "number") update.bandSize = body.bandSize;
+
+  // Validated enum fields
+  const validRoles = Object.values(RoleType) as string[];
+  if (typeof body.roleType === "string" && validRoles.includes(body.roleType)) {
+    update.roleType = body.roleType as RoleType;
+  }
+
+  const validAgeRanges = Object.values(AgeRange) as string[];
+  if (typeof body.ageRange === "string" && validAgeRanges.includes(body.ageRange)) {
+    update.ageRange = body.ageRange as AgeRange;
+  }
+
+  const validListeners = Object.values(ListenersRange) as string[];
+  if (typeof body.monthlyListeners === "string" && validListeners.includes(body.monthlyListeners)) {
+    update.monthlyListeners = body.monthlyListeners as ListenersRange;
+  }
+
+  const validDist = Object.values(DistributionMethod) as string[];
+  if (typeof body.distributionMethod === "string" && validDist.includes(body.distributionMethod)) {
+    update.distributionMethod = body.distributionMethod as DistributionMethod;
+  }
+
+  // JSON fields
+  if (Array.isArray(body.musicLanguages)) {
+    update.musicLanguages = body.musicLanguages.filter((l) => typeof l === "string");
+  }
+  if (Array.isArray(body.memberAgeRanges)) {
+    update.memberAgeRanges = body.memberAgeRanges;
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: update,
+      select: { id: true, genre: true },
+    });
+    return NextResponse.json({ success: true, user: updatedUser });
+  } catch (err) {
+    console.error("[PATCH /api/artist/profile]", err);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
+}

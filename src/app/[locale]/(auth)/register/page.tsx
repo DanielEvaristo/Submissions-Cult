@@ -1,9 +1,9 @@
-"use client";
+"use client"; // force reload
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Eye, EyeOff, Mic2, Building2, Check } from "lucide-react";
 import { AccountType } from "@prisma/client";
 
@@ -14,6 +14,7 @@ const ROLE_TYPES_INDUSTRY = ["MANAGEMENT", "PR", "AGENCY"] as const;
 
 export default function RegisterPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("type");
@@ -74,7 +75,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push(data.redirect);
+    router.push(`/${locale}${data.redirect}`);
   };
 
   // ── Step 1: Account Type Selection ─────────────────────────
@@ -145,7 +146,7 @@ export default function RegisterPage() {
 
         <p className="mt-8 font-sans text-sm text-cm-text-secondary">
           {t("auth.hasAccount")}{" "}
-          <Link href="/login" className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
+          <Link href={`/${locale}/login`} className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
             {t("auth.signIn")}
           </Link>
         </p>
@@ -163,7 +164,7 @@ export default function RegisterPage() {
             onClick={() => setStep("type")}
             className="btn-ghost mb-4 -ml-2 text-cm-text-secondary"
           >
-            ← Back
+            ← {t("common.back")}
           </button>
           <div className="flex items-center gap-3 mb-1">
             {accountType === AccountType.ARTIST ? (
@@ -179,7 +180,7 @@ export default function RegisterPage() {
             </p>
           </div>
           <h2 className="font-mono text-lg font-bold text-cm-text-primary">
-            Create your account
+            {t("register.createAccount")}
           </h2>
         </div>
 
@@ -195,7 +196,7 @@ export default function RegisterPage() {
                   id="artistName"
                   type="text"
                   className="input"
-                  placeholder="Your artist or band name"
+                  placeholder={t("register.placeholders.artistName")}
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   required
@@ -232,7 +233,7 @@ export default function RegisterPage() {
                   id="legalName"
                   type="text"
                   className="input"
-                  placeholder="Your company's legal name"
+                  placeholder={t("industry.placeholders.legalName")}
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
                   required
@@ -263,7 +264,7 @@ export default function RegisterPage() {
                   id="websiteUrl"
                   type="url"
                   className="input"
-                  placeholder="https://yourlabel.com"
+                  placeholder={t("industry.placeholders.website")}
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   required
@@ -277,7 +278,7 @@ export default function RegisterPage() {
                   id="labelInstagram"
                   type="text"
                   className="input"
-                  placeholder="@yourlabel"
+                  placeholder={t("industry.placeholders.instagram")}
                   value={labelInstagram}
                   onChange={(e) => setLabelInstagram(e.target.value)}
                 />
@@ -289,7 +290,7 @@ export default function RegisterPage() {
                 <textarea
                   id="description"
                   className="input min-h-[80px] resize-none"
-                  placeholder="Brief description of your roster or services (max 300 chars)"
+                  placeholder={t("industry.placeholders.description")}
                   maxLength={300}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -309,7 +310,7 @@ export default function RegisterPage() {
               id="email"
               type="email"
               className="input"
-              placeholder="you@example.com"
+              placeholder={t("auth.placeholders.email")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -327,7 +328,7 @@ export default function RegisterPage() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 className="input pr-10"
-                placeholder="Min 8 chars, 1 uppercase, 1 number"
+                placeholder={t("auth.placeholders.password")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -353,7 +354,7 @@ export default function RegisterPage() {
               id="confirmPassword"
               type={showPassword ? "text" : "password"}
               className={`input ${confirmPassword && password !== confirmPassword ? "input-error" : ""}`}
-              placeholder="Repeat your password"
+              placeholder={t("auth.placeholders.confirmPassword")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -384,7 +385,7 @@ export default function RegisterPage() {
 
         <p className="mt-6 font-sans text-sm text-cm-text-secondary text-center">
           {t("auth.hasAccount")}{" "}
-          <Link href="/login" className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
+          <Link href={`/${locale}/login`} className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
             {t("auth.signIn")}
           </Link>
         </p>

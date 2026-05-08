@@ -14,6 +14,9 @@ services:
       - /app/.next                  # keep .next cache inside container
     env_file:
       - .env.local
+    environment:
+      # Override DATABASE_URL inside the container — use service name 'postgres', not localhost
+      DATABASE_URL: postgresql://cm_user:devpassword@postgres:5432/cm_submissions
     depends_on:
       postgres:
         condition: service_healthy
