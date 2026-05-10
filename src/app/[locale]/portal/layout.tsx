@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import PortalNav from "@/components/portal/PortalNav";
+import PortalHeader from "@/components/portal/PortalHeader";
 
 interface Props {
   children: React.ReactNode;
@@ -16,10 +17,22 @@ export default async function PortalLayout({ children, params }: Props) {
     redirect(`/${locale}/login`);
   }
 
+  // Guard against INDUSTRY accounts accessing the ARTIST portal
+  if (session.user.accountType === "INDUSTRY") {
+    redirect(`/${locale}/industry`);
+  }
+
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
+    <div className="flex min-h-screen bg-bg">
       <PortalNav locale={locale} />
-      <main className="flex-1">{children}</main>
+      
+      <div className="flex-1 flex flex-col min-w-0">
+        <PortalHeader locale={locale} />
+        
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

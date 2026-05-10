@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import {
   MapPin,
@@ -138,6 +138,7 @@ const STEP_ICONS = [MapPin, Mic2, Music2, Globe2, Globe2, BarChart2, CheckCircle
 export default function OnboardingPage() {
   const t = useTranslations("onboarding");
   const tRegister = useTranslations("register");
+  const locale = useLocale();
   const router = useRouter();
   const { update } = useSession();
 
@@ -198,12 +199,7 @@ export default function OnboardingPage() {
       city: form.city,
       bio: form.bio,
       roleType: form.roleType,
-      ageRange: form.roleType === "ARTIST" ? form.ageRange || undefined : undefined,
-      bandSize: form.roleType === "BAND" ? form.bandSize : undefined,
-      memberAgeRanges:
-        form.roleType === "BAND"
-          ? form.memberAgeRanges.map((r, i) => ({ slot: i + 1, range: r }))
-          : undefined,
+      ageRange: form.ageRange || undefined,
       genre: form.genre,
       subgenre: form.subgenre || undefined,
       musicLanguages: form.musicLanguages,
@@ -234,7 +230,7 @@ export default function OnboardingPage() {
 
     // Refresh the session so genre is updated and the redirect check works
     await update({ genre: form.genre });
-    router.push("./submit");
+    router.push(`/${locale}/portal`);
   };
 
   const stepKeys = ["basics", "project", "genres", "languages", "socials", "career", "review"] as const;
@@ -380,82 +376,25 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              {/* Solo: age range */}
-              {form.roleType === "ARTIST" && (
-                <div>
-                  <label className="label" htmlFor="ageRange">
-                    {t("project.ageRange")}
-                  </label>
-                  <select
-                    id="ageRange"
-                    className="input"
-                    value={form.ageRange}
-                    onChange={(e) => set("ageRange", e.target.value)}
-                  >
-                    <option value="">— {tRegister("ageRange")} —</option>
-                    {AGE_RANGES.map((a) => (
-                      <option key={a} value={a}>
-                        {tRegister(`ageRanges.${a}`)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Band: size + member ages */}
-              {form.roleType === "BAND" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="label" htmlFor="bandSize">
-                      {t("project.bandSize")}
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="btn-ghost w-8 h-8 flex items-center justify-center border border-border"
-                        onClick={() => updateBandSize(form.bandSize - 1)}
-                      >
-                        –
-                      </button>
-                      <span className="font-mono text-lg text-cm-text-primary w-8 text-center">
-                        {form.bandSize}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn-ghost w-8 h-8 flex items-center justify-center border border-border"
-                        onClick={() => updateBandSize(form.bandSize + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {Array.from({ length: form.bandSize }, (_, i) => (
-                      <div key={i}>
-                        <label className="label text-[10px]">
-                          {t("project.bandMemberAge", { n: i + 1 })}
-                        </label>
-                        <select
-                          className="input text-sm"
-                          value={form.memberAgeRanges[i] ?? ""}
-                          onChange={(e) => {
-                            const updated = [...form.memberAgeRanges];
-                            updated[i] = e.target.value;
-                            set("memberAgeRanges", updated);
-                          }}
-                        >
-                          <option value="">— select —</option>
-                          {AGE_RANGES.map((a) => (
-                            <option key={a} value={a}>
-                              {tRegister(`ageRanges.${a}`)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Age range (for both ARTIST and BAND) */}
+              <div>
+                <label className="label" htmlFor="ageRange">
+                  {t("project.ageRange")}
+                </label>
+                <select
+                  id="ageRange"
+                  className="input"
+                  value={form.ageRange}
+                  onChange={(e) => set("ageRange", e.target.value)}
+                >
+                  <option value="">— {tRegister("ageRange")} —</option>
+                  {AGE_RANGES.map((a) => (
+                    <option key={a} value={a}>
+                      {tRegister(`ageRanges.${a}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

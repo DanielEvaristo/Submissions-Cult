@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cult Machine - Submissions Portal
 
-## Getting Started
+Welcome to the Cult Machine Submissions Portal. This application is completely independent of the main WordPress site and is designed to handle music submissions from artists and industry agencies.
 
-First, run the development server:
+## Stack
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL (via Prisma ORM)
+- **Auth**: NextAuth.js (Credentials + JWT)
+- **i18n**: next-intl (English, Spanish, French)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎭 Roles & Navigation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The portal has a strict, role-based architecture. Depending on the account type you log in with, the system will automatically route you to your dedicated workspace.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Artist (`ARTIST`)
+- **Login Flow**: If an artist hasn't completed their profile (no genre set), they are redirected to `/[locale]/portal/onboarding`.
+- **Workspace**: `/[locale]/portal`
+- **Features**: 
+  - Submit music with automatic Spotify/Deezer metadata scraping.
+  - View submission status (Pending, In Review, Accepted, Rejected).
+  - Manage their artist profile.
 
-## Learn More
+### 2. Industry / Agency (`INDUSTRY`)
+- **Login Flow**: Requires Admin verification. If they log in before verification, they are locked in `/[locale]/pending`.
+- **Workspace**: `/[locale]/industry`
+- **Features**: 
+  - Register multiple sub-artists under their agency.
+  - Submit music on behalf of those artists.
+  - Track all agency submissions from a centralized dashboard.
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Admin (`ADMIN`)
+- **Workspace**: `/[locale]/admin`
+- **Features**: 
+  - View global stats (total submissions, top genres, user counts).
+  - Verify Industry accounts.
+  - Manage all submissions.
+  - **Staff Management**: Create accounts for Curators (Level 1) and Master Curators (Level 2).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Curator Level 1 (`CURATOR`)
+- **Workspace**: `/[locale]/curator`
+- **Workflow (Auto-Assignment)**: 
+  - When an artist submits a track, the system looks at the track's genre.
+  - It finds all Level 1 Curators assigned to that genre (or Generalists who handle all genres).
+  - It automatically assigns the track to the Curator with the **least amount of pending work** (Least-Loaded Round-Robin strategy).
+  - The Curator logs in, sees their specific queue (`My Queue`), listens to the track, gives it a 1-5 star rating, adds internal notes, and clicks **Approve to Master** or **Reject**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 5. Master Curator Level 2 (`MASTER_CURATOR`)
+- **Workspace**: `/[locale]/curator/master` (plus they can see the L1 Inbox if they want).
+- **Workflow**: 
+  - Master Curators only review tracks that were approved by Level 1 Curators.
+  - They read the internal notes and star rating left by L1.
+  - They make the final decision: **Accept** (with a specific placement like "Spotify Playlist", "Blog Post") or **Final Reject**.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠 Setup & Commands
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Prerequisites
+- Node.js 18+
+- Docker (for PostgreSQL)
+
+### Local Development
+1. Start the database:
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+2. Apply migrations:
+   ```bash
+   npm run db:push
+   ```
+   *(Note: if `npm run db:push` fails, run `$env:DATABASE_URL="postgresql://cm_user:devpassword@localhost:5432/cm_submissions"; npx prisma db push`)*
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Default Accounts
+*(These can be changed in the DB, but usually we register from the UI)*
+- Go to `/en/register` to create a new Artist or Industry account.
+- To create an Admin, register an account, then manually set `isAdmin: true` in your database.
+- Once you are Admin, go to `/en/admin/staff` to create Curator and Master Curator accounts.
+
+---
+
+## 🌐 Localization
+The portal fully supports English (`/en`), Spanish (`/es`), and French (`/fr`). All routing requires the locale prefix. Translations are stored in `src/messages/`.

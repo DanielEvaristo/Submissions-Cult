@@ -14,6 +14,13 @@ export default async function HomePage({ params }: Props) {
     redirect(`/${locale}/login`);
   }
 
+  // Curators go strictly to their workspace
+  if (session.user.isMasterCurator) {
+    redirect(`/${locale}/curator/master`);
+  } else if (session.user.isCurator) {
+    redirect(`/${locale}/curator`);
+  }
+
   // Industry pending accounts
   if (
     session.user.accountType === "INDUSTRY" &&

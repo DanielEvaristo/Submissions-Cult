@@ -190,9 +190,10 @@ model User {
   rejectionReason String?
 
   // ── INTERNAL roles ─────────────────────────────────────────────
-  isAdmin         Boolean @default(false)
-  isCurator       Boolean @default(false)
-  isMasterCurator Boolean @default(false)
+  isAdmin         Boolean  @default(false)
+  isCurator       Boolean  @default(false)
+  isMasterCurator Boolean  @default(false)
+  assignedGenres  String[] @default([])
 
   // UI preferences
   theme    Theme      @default(DARK)
@@ -301,6 +302,27 @@ model Donation {
 
   donorName  String?
   donorEmail String?
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Funnel Analytics ────────────────────────────────────────────────────────
+
+model FunnelEvent {
+  id        String   @id @default(cuid())
+
+  // Anonymous identifier stored in the browser (localStorage)
+  sessionId String
+
+  // Which step they reached: 1 = Track Details, 2 = Opportunity, 3 = Confirm
+  step      Int
+
+  // true = user completed and submitted; false = reached step but didn't continue
+  completed Boolean  @default(false)
+
+  // Optional context
+  opportunity String? // filled when step >= 2
+  locale      String?
 
   createdAt DateTime @default(now())
 }

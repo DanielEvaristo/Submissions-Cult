@@ -39,7 +39,7 @@ const STATUS_COLORS: Record<Status, string> = {
   REJECTED: "badge-rejected",
 };
 
-const FILTER_OPTIONS = ["ALL", "PENDING", "IN_REVIEW", "ACCEPTED", "REJECTED"] as const;
+const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;
 type Filter = (typeof FILTER_OPTIONS)[number];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ export default function SubmissionsPage() {
     if (s === "PENDING" || s === "IN_REVIEW" || s === "CURATOR_APPROVED" || s === "MASTER_REVIEW") {
       return tStatus("underReview");
     }
-    if (s === "ACCEPTED" || s === "CURATOR_REJECTED" === false) return tStatus("selected");
+    if (s === "ACCEPTED") return tStatus("selected");
     return tStatus("notSelected");
   };
 
@@ -121,9 +121,9 @@ export default function SubmissionsPage() {
           >
             {f === "ALL"
               ? t("filters.all")
-              : f === "PENDING" || f === "IN_REVIEW"
+              : f === "UNDER_REVIEW"
               ? t("filters.underReview")
-              : f === "ACCEPTED"
+              : f === "SELECTED"
               ? t("filters.selected")
               : t("filters.notSelected")}
           </button>
@@ -195,7 +195,9 @@ export default function SubmissionsPage() {
 
               {/* Status badge */}
               <div className={`shrink-0 ${STATUS_COLORS[sub.status]}`}>
-                {sub.status.replace(/_/g, " ")}
+                <span className="font-sans text-xs font-bold uppercase tracking-wider">
+                  {statusLabel(sub.status)}
+                </span>
               </div>
 
               {/* Date + link */}

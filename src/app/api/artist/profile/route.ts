@@ -11,9 +11,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (session.user.accountType !== "ARTIST") {
-    return NextResponse.json({ error: "Only artist accounts can update this profile." }, { status: 403 });
-  }
+
 
   let body: Record<string, unknown>;
   try {

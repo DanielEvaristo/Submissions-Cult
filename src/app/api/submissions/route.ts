@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     autoFilledArtist,
     autoFilledCover,
     autoFillSource,
+    managedArtistId,
   } = body;
 
   // Validate required fields
@@ -64,6 +65,38 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // ── Least-Loaded Auto-Assignment Logic ──
+    const curators = await prisma.user.findMany({
+      where: {
+        isCurator: true,
+        isMasterCurator: false,
+      },
+      include: {
+        curatedSubmissions: {
+          where: {
+            status: { in: ["PENDING", "IN_REVIEW"] }
+          },
+          select: { id: true }
+        }
+      }
+    });
+
+    let eligible = curators.filter(c => 
+      !c.assignedGenres || c.assignedGenres.length === 0 || c.assignedGenres.includes(genre)
+    );
+
+    // Fallback: if no specialist/generalist exists, use any L1 curator
+    if (eligible.length === 0 && curators.length > 0) {
+      eligible = curators;
+    }
+
+    let assignedCuratorId = null;
+    if (eligible.length > 0) {
+      // Find the one with the lowest active queue
+      eligible.sort((a, b) => a.curatedSubmissions.length - b.curatedSubmissions.length);
+      assignedCuratorId = eligible[0].id;
+    }
+
     const submission = await prisma.submission.create({
       data: {
         userId: session.user.id,
@@ -82,8 +115,11 @@ export async function POST(req: NextRequest) {
         autoFilledArtist: autoFilledArtist ?? null,
         autoFilledCover: autoFilledCover ?? null,
         autoFillSource: autoFillSource ?? null,
+        managedArtistId: session.user.accountType === "INDUSTRY" ? (managedArtistId || null) : null,
         isFree: true,
         creditsUsed: 0,
+        curatorId: assignedCuratorId,
+        status: assignedCuratorId ? "IN_REVIEW" : "PENDING",
       },
     });
 
@@ -104,8 +140,19 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const statusFilter = searchParams.get("status"); // optional
 
-  const where: Record<string, unknown> = { userId: session.user.id };
-  if (statusFilter) where.status = statusFilter;
+  const where: any = { userId: session.user.id };
+  
+  if (statusFilter) {
+    if (statusFilter === "UNDER_REVIEW") {
+      where.status = { in: ["PENDING", "IN_REVIEW", "MASTER_REVIEW", "CURATOR_APPROVED"] };
+    } else if (statusFilter === "SELECTED") {
+      where.status = "ACCEPTED";
+    } else if (statusFilter === "NOT_SELECTED") {
+      where.status = { in: ["REJECTED", "CURATOR_REJECTED"] };
+    } else {
+      where.status = statusFilter;
+    }
+  }
 
   try {
     const submissions = await prisma.submission.findMany({
@@ -122,6 +169,11 @@ export async function GET(req: NextRequest) {
         autoFilledCover: true,
         streamingUrl: true,
         submittedAt: true,
+        managedArtist: {
+          select: {
+            artistName: true,
+          }
+        }
       },
     });
 

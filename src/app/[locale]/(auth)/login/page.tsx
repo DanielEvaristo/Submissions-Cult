@@ -56,6 +56,14 @@ export default function LoginPage() {
     const session = await getSession();
     if (session?.user?.isAdmin) {
       window.location.href = `/${locale}/admin`;
+    } else if (session?.user?.isMasterCurator) {
+      window.location.href = `/${locale}/curator/master`;
+    } else if (session?.user?.isCurator) {
+      window.location.href = `/${locale}/curator`;
+    } else if (session?.user?.accountType === "INDUSTRY") {
+      window.location.href = `/${locale}/industry`;
+    } else if (session?.user?.genre) {
+      window.location.href = `/${locale}/portal`;
     } else {
       window.location.href = `/${locale}/portal/onboarding`;
     }

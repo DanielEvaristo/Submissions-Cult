@@ -2,16 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
-import { signOut } from "next-auth/react";
-import { Globe, LogOut } from "lucide-react";
-import { useState } from "react";
-
-const LOCALES = [
-  { code: "en", label: "EN", flag: "🇺🇸" },
-  { code: "es", label: "ES", flag: "🇲🇽" },
-  { code: "fr", label: "FR", flag: "🇫🇷" },
-];
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { Send, ListMusic, User, LayoutDashboard, Inbox } from "lucide-react";
 
 interface Props {
   locale: string;
@@ -19,105 +12,60 @@ interface Props {
 
 export default function PortalNav({ locale }: Props) {
   const t = useTranslations("nav");
-  const currentLocale = useLocale();
   const pathname = usePathname();
-  const [langOpen, setLangOpen] = useState(false);
-
-  const switchLocale = (newLocale: string) => {
-    const segments = window.location.pathname.split("/");
-    segments[1] = newLocale;
-    window.location.href = segments.join("/");
-  };
-
-  const currentLang = LOCALES.find((l) => l.code === currentLocale) ?? LOCALES[0];
+  const { data: session } = useSession();
 
   const navLinks = [
-    { href: `/${locale}/portal/submit`, label: t("submit") },
-    { href: `/${locale}/portal/submissions`, label: t("mySubmissions") },
-    { href: `/${locale}/portal/profile`, label: t("profile") },
+    { href: `/${locale}/portal`, label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: `/${locale}/portal/submit`, label: t("submit"), icon: Send },
+    { href: `/${locale}/portal/submissions`, label: t("mySubmissions"), icon: ListMusic },
+    { href: `/${locale}/portal/profile`, label: t("profile"), icon: User },
   ];
 
   return (
-    <header className="border-b border-border bg-bg/95 backdrop-blur-sm sticky top-0 z-40">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        {/* Brand */}
-        <Link href={`/${locale}/portal/submit`} className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary hover:text-cm-text-primary transition-colors shrink-0">
-          Cult Machine
+    <aside className="w-64 border-r border-border bg-bg-surface flex flex-col h-screen sticky top-0 shrink-0">
+      {/* Brand */}
+      <div className="h-16 flex items-center px-6 border-b border-border">
+        <Link href={`/${locale}/portal`} className="font-sans text-xl font-bold tracking-tight text-cm-text-primary hover:text-accent-red transition-colors flex items-center gap-2">
+          Cult<span className="text-accent-red">Machine</span>
         </Link>
-
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
-          {navLinks.map(({ href, label }) => {
-            const active = pathname.startsWith(href.replace(`/${locale}`, ""));
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`font-sans text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 ${
-                  active
-                    ? "bg-bg-elevated text-cm-text-primary"
-                    : "text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-surface"
-                }`}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right side: locale + sign out */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Language switcher */}
-          <div className="relative">
-            <button
-              id="portal-lang-btn"
-              onClick={() => setLangOpen((v) => !v)}
-              className="flex items-center gap-2 px-3 py-2 rounded-md border border-border text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-surface transition-all font-sans text-sm font-medium"
-              aria-label="Change language"
-            >
-              <Globe size={14} />
-              <span className="hidden sm:inline">{currentLang.flag}</span>
-              <span>{currentLang.label}</span>
-            </button>
-
-            {langOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
-                <div className="absolute right-0 top-full mt-1 z-50 border border-border bg-cm-surface shadow-lg overflow-hidden min-w-[90px]">
-                  {LOCALES.map((l) => (
-                    <button
-                      key={l.code}
-                      id={`portal-lang-${l.code}`}
-                      onClick={() => switchLocale(l.code)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 font-mono text-[10px] uppercase tracking-widest transition-colors hover:bg-border/20 ${
-                        currentLocale === l.code
-                          ? "text-accent-red"
-                          : "text-cm-text-secondary hover:text-cm-text-primary"
-                      }`}
-                    >
-                      <span>{l.flag}</span>
-                      <span>{l.label}</span>
-                      {currentLocale === l.code && (
-                        <span className="ml-auto w-1 h-1 rounded-full bg-accent-red" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Sign out */}
-          <button
-            id="portal-signout-btn"
-            onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border border-border text-cm-text-secondary hover:text-danger hover:border-danger/40 hover:bg-danger/10 transition-all font-sans text-sm font-medium"
-            title={t("signOut")}
-          >
-            <LogOut size={14} />
-          </button>
-        </div>
       </div>
-    </header>
+
+      {/* Nav links */}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <p className="px-3 py-2 text-[10px] font-sans font-bold uppercase tracking-widest text-cm-text-muted mb-2">
+          General
+        </p>
+        
+        {navLinks.map(({ href, label, icon: Icon, exact }) => {
+          // If exact is true, match exactly. Otherwise, match startsWith but ensure we don't accidentally match /portal/submissions when on /portal
+          const isActive = exact 
+            ? pathname === href 
+            : pathname.startsWith(href);
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-sans text-sm font-medium ${
+                isActive
+                  ? "bg-accent-red/10 text-accent-red"
+                  : "text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-elevated"
+              }`}
+            >
+              <Icon size={18} className={isActive ? "text-accent-red" : "text-cm-text-muted"} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      
+      {/* Footer info (optional) */}
+      <div className="p-6 border-t border-border">
+        <p className="text-[10px] font-sans text-cm-text-muted uppercase tracking-wider">
+          Cult Machine © {new Date().getFullYear()}
+        </p>
+      </div>
+    </aside>
   );
 }

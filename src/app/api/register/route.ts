@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        { success: true, user, redirect: "/pending" },
+        { success: true, user, redirect: "/industry" },
         { status: 201 }
       );
     }

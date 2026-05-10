@@ -9,6 +9,7 @@ import {
   Users,
   Music,
   LogOut,
+  UserCheck
 } from "lucide-react";
 
 interface Props {
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/admin/industry", label: "Industry Apps", icon: BadgeCheck, exact: false },
   { href: "/admin/artists", label: "Artists", icon: Users, exact: false },
   { href: "/admin/submissions", label: "Submissions", icon: Music, exact: false },
+  { href: "/admin/staff", label: "Staff", icon: UserCheck, exact: false },
 ];
 
 export default function AdminNav({ locale }: Props) {
