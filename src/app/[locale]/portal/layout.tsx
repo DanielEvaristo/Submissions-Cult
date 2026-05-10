@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import PortalNav from "@/components/portal/PortalNav";
 
 interface Props {
   children: React.ReactNode;
@@ -15,5 +16,10 @@ export default async function PortalLayout({ children, params }: Props) {
     redirect(`/${locale}/login`);
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-bg flex flex-col">
+      <PortalNav locale={locale} />
+      <main className="flex-1">{children}</main>
+    </div>
+  );
 }
