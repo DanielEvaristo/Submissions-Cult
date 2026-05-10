@@ -11,26 +11,27 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          DEFAULT: "#0D0D0D",
-          surface: "#161616",
-          elevated: "#1E1E1E",
+          DEFAULT: "#121212", // Base dark background
+          surface: "#1C1C1E", // Slightly elevated for sidebar/main cards
+          elevated: "#2C2C2E", // Higher elevation for interactive/hover
         },
         border: {
-          DEFAULT: "#2E2E2E",
-          subtle: "#222222",
+          DEFAULT: "#3A3A3C", // Clear visible borders
+          subtle: "#2C2C2E",  // Soft borders
+          hover: "#48484A",   // Border hover state
         },
         "cm-text": {
-          primary: "#F0EDE6",
-          secondary: "#9A9690",
-          muted: "#5A5754",
+          primary: "#FAFAFA",   // High contrast white
+          secondary: "#A1A1AA", // zinc-400 for secondary text
+          muted: "#71717A",     // zinc-500 for muted text (much more legible now)
         },
         accent: {
           red: "#E8341C",
-          "red-hover": "#CC2D18",
+          "red-hover": "#F05641", // Softer hover
         },
-        ok: "#1D9E75",
-        warn: "#EF9F27",
-        danger: "#E24B4A",
+        ok: "#10B981",    // emerald-500
+        warn: "#F59E0B",  // amber-500
+        danger: "#EF4444",// red-500
       },
       fontFamily: {
         mono: ["var(--font-space-mono)", "monospace"],

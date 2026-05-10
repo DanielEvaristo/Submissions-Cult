@@ -241,12 +241,11 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      {/* ── Top bar ── */}
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cm-text-secondary">
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between bg-bg-surface">
+        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary">
           Cult Machine
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cm-text-muted">
+        <p className="font-sans text-xs font-semibold text-cm-text-muted">
           {t("progress", { current: step, total: TOTAL_STEPS })}
         </p>
       </header>
@@ -272,21 +271,21 @@ export default function OnboardingPage() {
               return (
                 <div
                   key={key}
-                  className={`flex items-center gap-1.5 px-2 py-1 flex-1 min-w-0 transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full flex-1 min-w-0 transition-all duration-200 shadow-sm ${
                     active
-                      ? "border border-accent-red"
+                      ? "bg-accent-red border border-accent-red text-white"
                       : done
-                      ? "border border-ok/40"
-                      : "border border-border"
+                      ? "bg-ok/10 border border-ok/40 text-ok"
+                      : "bg-bg-surface border border-border text-cm-text-muted"
                   }`}
                 >
                   <Icon
-                    size={11}
-                    className={`shrink-0 ${active ? "text-accent-red" : done ? "text-ok" : "text-cm-text-muted"}`}
+                    size={14}
+                    className={`shrink-0 ${active ? "text-white" : done ? "text-ok" : "text-cm-text-muted"}`}
                   />
                   <span
-                    className={`font-mono text-[9px] uppercase tracking-widest truncate ${
-                      active ? "text-cm-text-primary" : done ? "text-ok" : "text-cm-text-muted"
+                    className={`font-sans text-xs font-bold uppercase tracking-wider truncate ${
+                      active ? "text-white" : done ? "text-ok" : "text-cm-text-muted"
                     }`}
                   >
                     {t(`steps.${key}`)}
@@ -364,16 +363,16 @@ export default function OnboardingPage() {
                       key={r}
                       type="button"
                       onClick={() => set("roleType", r)}
-                      className={`p-4 border text-left transition-all duration-150 ${
+                      className={`p-4 border rounded-xl text-left transition-all duration-200 shadow-sm ${
                         form.roleType === r
-                          ? "border-accent-red bg-accent-red/5"
-                          : "border-border hover:border-cm-text-muted"
+                          ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red/20"
+                          : "border-border bg-bg-surface hover:border-cm-text-muted hover:bg-bg-elevated"
                       }`}
                     >
-                      <p className="font-mono text-xs font-bold text-cm-text-primary mb-0.5">
+                      <p className="font-sans text-sm font-bold text-cm-text-primary mb-1">
                         {r === "ARTIST" ? t("project.soloArtist") : t("project.band")}
                       </p>
-                      <p className="font-sans text-[11px] text-cm-text-muted">
+                      <p className="font-sans text-xs text-cm-text-secondary">
                         {r === "ARTIST" ? "Solo performer" : "2+ members"}
                       </p>
                     </button>
@@ -474,10 +473,10 @@ export default function OnboardingPage() {
                       key={g}
                       type="button"
                       onClick={() => set("genre", g)}
-                      className={`px-3 py-2.5 border text-left transition-all duration-150 font-mono text-[11px] ${
+                      className={`px-4 py-3 border rounded-lg text-left transition-all duration-200 font-sans text-sm font-medium shadow-sm ${
                         form.genre === g
-                          ? "border-accent-red bg-accent-red/5 text-cm-text-primary"
-                          : "border-border text-cm-text-secondary hover:border-cm-text-muted"
+                          ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
+                          : "border-border bg-bg-surface text-cm-text-secondary hover:border-cm-text-muted hover:bg-bg-elevated"
                       }`}
                     >
                       {g}
@@ -513,10 +512,10 @@ export default function OnboardingPage() {
                       key={code}
                       type="button"
                       onClick={() => toggleLanguage(code)}
-                      className={`px-3 py-2.5 border text-left transition-all duration-150 font-sans text-sm ${
+                      className={`px-4 py-3 border rounded-lg text-left transition-all duration-200 font-sans text-sm font-medium shadow-sm ${
                         selected
-                          ? "border-accent-red bg-accent-red/5 text-cm-text-primary"
-                          : "border-border text-cm-text-secondary hover:border-cm-text-muted"
+                          ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
+                          : "border-border bg-bg-surface text-cm-text-secondary hover:border-cm-text-muted hover:bg-bg-elevated"
                       }`}
                     >
                       {t(`languages.${labelKey}`)}
@@ -628,10 +627,10 @@ export default function OnboardingPage() {
                       key={String(val)}
                       type="button"
                       onClick={() => set("hasManager", val)}
-                      className={`px-5 py-2 border font-mono text-xs transition-all duration-150 ${
+                      className={`px-6 py-2 border rounded-md font-sans text-sm font-medium transition-all duration-200 shadow-sm ${
                         form.hasManager === val
-                          ? "border-accent-red bg-accent-red/5 text-cm-text-primary"
-                          : "border-border text-cm-text-secondary hover:border-cm-text-muted"
+                          ? "border-accent-red bg-accent-red text-white"
+                          : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
                       }`}
                     >
                       {val ? t("career.yes") : t("career.no")}
@@ -674,7 +673,7 @@ export default function OnboardingPage() {
               </div>
 
               {error && (
-                <div className="px-4 py-3 border border-danger/30 bg-danger/10 font-mono text-[11px] text-danger">
+                <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm">
                   {error}
                 </div>
               )}
@@ -727,9 +726,9 @@ export default function OnboardingPage() {
 
 function StepHeader({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="mb-2">
-      <h1 className="font-mono text-xl font-bold text-cm-text-primary">{title}</h1>
-      {hint && <p className="font-sans text-sm text-cm-text-secondary mt-1">{hint}</p>}
+    <div className="mb-6">
+      <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">{title}</h1>
+      {hint && <p className="font-sans text-base text-cm-text-secondary mt-2">{hint}</p>}
     </div>
   );
 }
@@ -745,10 +744,10 @@ function ReviewRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 py-3 border-b border-border last:border-0">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-cm-text-muted shrink-0">
+      <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary shrink-0">
         {label}
       </p>
-      <p className="font-sans text-sm text-cm-text-primary text-right">
+      <p className="font-sans text-sm font-medium text-cm-text-primary text-right">
         {value || fallback}
       </p>
     </div>

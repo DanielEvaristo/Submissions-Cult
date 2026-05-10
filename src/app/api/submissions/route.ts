@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         opportunity,
         streamingUrl,
-        streamingPlatform: streamingPlatform ?? null,
+        streamingPlatform: streamingPlatform ? (streamingPlatform.toUpperCase() as any) : null,
         artistName,
         trackTitle,
         releaseType,

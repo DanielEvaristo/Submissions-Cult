@@ -198,10 +198,10 @@ export default function SubmitPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 animate-fade-in">
         <CheckCircle2 size={48} className="text-ok mb-6" />
-        <h1 className="font-mono text-2xl font-bold text-cm-text-primary mb-2">
+        <h1 className="font-sans text-3xl font-bold text-cm-text-primary mb-3 tracking-tight">
           {t("thankYou")}
         </h1>
-        <p className="font-sans text-sm text-cm-text-secondary text-center max-w-sm mb-8">
+        <p className="font-sans text-base text-cm-text-secondary text-center max-w-sm mb-10">
           {t("thankYouMessage")}
         </p>
         <div className="flex gap-3">
@@ -232,10 +232,10 @@ export default function SubmitPage() {
     <div className="max-w-2xl mx-auto px-4 py-10">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cm-text-muted mb-1">
+        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
           {t(`step${step}` as "step1" | "step2" | "step3")}
         </p>
-        <h1 className="font-mono text-2xl font-bold text-cm-text-primary">
+        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
           {t("title")}
         </h1>
 
@@ -264,23 +264,22 @@ export default function SubmitPage() {
                 type="button"
                 disabled={locked}
                 onClick={() => !locked && set("opportunity", key)}
-                className={`w-full flex items-start gap-4 p-4 border text-left transition-all duration-150 ${
+                className={`w-full flex items-start gap-4 p-5 border rounded-xl text-left transition-all duration-200 shadow-sm ${
                   locked
-                    ? "border-border opacity-40 cursor-not-allowed"
+                    ? "border-border bg-bg-surface opacity-50 cursor-not-allowed"
                     : active
-                    ? "border-accent-red bg-accent-red/5"
-                    : "border-border hover:border-cm-text-muted"
+                    ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red/20"
+                    : "border-border bg-bg-surface hover:border-cm-text-muted hover:bg-bg-elevated"
                 }`}
               >
-                <Icon
-                  size={18}
-                  className={`mt-0.5 shrink-0 ${active ? "text-accent-red" : "text-cm-text-muted"}`}
-                />
-                <div className="min-w-0">
-                  <p className={`font-mono text-sm font-bold mb-0.5 ${active ? "text-cm-text-primary" : "text-cm-text-secondary"}`}>
+                <div className={`p-2 rounded-lg shrink-0 ${active ? "bg-accent-red text-white" : "bg-bg-elevated text-cm-text-secondary"}`}>
+                  <Icon size={20} />
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <p className={`font-sans text-base font-bold mb-1 ${active ? "text-cm-text-primary" : "text-cm-text-primary"}`}>
                     {t(`opportunities.${key}`)}
                   </p>
-                  <p className="font-sans text-xs text-cm-text-muted leading-relaxed">
+                  <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
                     {locked
                       ? t(`opportunities.ALBUM_STORY_locked`)
                       : t(`opportunities.${key}_desc`)}
@@ -293,8 +292,8 @@ export default function SubmitPage() {
             );
           })}
 
-          <p className="font-mono text-[10px] text-cm-text-muted uppercase tracking-widest mt-4">
-            {t("freeSubmission")}
+          <p className="font-sans text-xs font-semibold text-ok uppercase tracking-wider mt-6">
+            ✓ {t("freeSubmission")}
           </p>
         </div>
       )}
@@ -350,15 +349,15 @@ export default function SubmitPage() {
 
           {/* Auto-fill cover preview */}
           {form.autoFilledCover && (
-            <div className="flex items-center gap-3 p-3 border border-ok/30 bg-ok/5">
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-ok/30 bg-ok/10 shadow-sm">
               <img
                 src={form.autoFilledCover}
                 alt="cover"
-                className="w-12 h-12 object-cover"
+                className="w-16 h-16 rounded-md object-cover shadow-sm"
               />
               <div>
-                <p className="font-mono text-xs text-cm-text-primary font-bold">{form.autoFilledTitle}</p>
-                <p className="font-sans text-xs text-cm-text-secondary">{form.autoFilledArtist}</p>
+                <p className="font-sans text-base font-bold text-cm-text-primary">{form.autoFilledTitle}</p>
+                <p className="font-sans text-sm text-cm-text-secondary mt-0.5">{form.autoFilledArtist}</p>
               </div>
             </div>
           )}
@@ -386,10 +385,10 @@ export default function SubmitPage() {
                   key={rt}
                   type="button"
                   onClick={() => set("releaseType", rt)}
-                  className={`flex-1 py-2 border font-mono text-xs transition-all ${
+                  className={`flex-1 py-3 border rounded-lg font-sans text-sm font-medium transition-all shadow-sm ${
                     form.releaseType === rt
-                      ? "border-accent-red bg-accent-red/5 text-cm-text-primary"
-                      : "border-border text-cm-text-secondary hover:border-cm-text-muted"
+                      ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
+                      : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
                   }`}
                 >
                   {t(`releaseTypes.${rt}`)}
@@ -414,10 +413,10 @@ export default function SubmitPage() {
                   key={g}
                   type="button"
                   onClick={() => set("genre", g)}
-                  className={`px-2 py-2 border text-left transition-all font-mono text-[10px] ${
+                  className={`px-3 py-2.5 border rounded-md text-left transition-all font-sans text-sm font-medium shadow-sm ${
                     form.genre === g
-                      ? "border-accent-red bg-accent-red/5 text-cm-text-primary"
-                      : "border-border text-cm-text-secondary hover:border-cm-text-muted"
+                      ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
+                      : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
                   }`}
                 >
                   {g}
@@ -479,21 +478,21 @@ export default function SubmitPage() {
 
           {/* Cover art if auto-filled */}
           {form.autoFilledCover && (
-            <div className="flex items-center gap-3">
-              <img src={form.autoFilledCover} alt="cover" className="w-16 h-16 object-cover border border-border" />
+            <div className="flex items-center gap-4">
+              <img src={form.autoFilledCover} alt="cover" className="w-20 h-20 rounded-md object-cover border border-border shadow-sm" />
               <div>
-                <p className="font-mono text-xs text-cm-text-muted uppercase tracking-widest">Auto-filled cover</p>
-                <p className="font-sans text-sm text-cm-text-secondary">{form.autoFilledArtist} — {form.autoFilledTitle}</p>
+                <p className="font-sans text-xs font-bold text-cm-text-muted uppercase tracking-wider mb-1">Auto-filled cover</p>
+                <p className="font-sans text-base font-medium text-cm-text-secondary">{form.autoFilledArtist} — <span className="font-bold text-cm-text-primary">{form.autoFilledTitle}</span></p>
               </div>
             </div>
           )}
 
-          <p className="font-mono text-[10px] text-ok uppercase tracking-widest">
+          <p className="font-sans text-xs font-semibold text-ok uppercase tracking-wider mt-6">
             ✓ {t("freeSubmission")}
           </p>
 
           {error && (
-            <div className="px-4 py-3 border border-danger/30 bg-danger/10 font-mono text-[11px] text-danger">
+            <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm mt-4">
               {error}
             </div>
           )}
@@ -551,11 +550,11 @@ function ReviewRow({
   truncate?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-border last:border-0">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-cm-text-muted shrink-0">
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-border last:border-0">
+      <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary shrink-0">
         {label}
       </p>
-      <p className={`font-sans text-sm text-cm-text-primary text-right ${truncate ? "truncate max-w-[60%]" : ""}`}>
+      <p className={`font-sans text-sm font-medium text-cm-text-primary text-right ${truncate ? "truncate max-w-[60%]" : ""}`}>
         {value || "—"}
       </p>
     </div>

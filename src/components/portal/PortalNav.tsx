@@ -41,7 +41,7 @@ export default function PortalNav({ locale }: Props) {
     <header className="border-b border-border bg-bg/95 backdrop-blur-sm sticky top-0 z-40">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Brand */}
-        <Link href={`/${locale}/portal/submit`} className="font-mono text-[10px] uppercase tracking-[0.3em] text-cm-text-secondary hover:text-cm-text-primary transition-colors shrink-0">
+        <Link href={`/${locale}/portal/submit`} className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary hover:text-cm-text-primary transition-colors shrink-0">
           Cult Machine
         </Link>
 
@@ -53,10 +53,10 @@ export default function PortalNav({ locale }: Props) {
               <Link
                 key={href}
                 href={href}
-                className={`font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 transition-colors ${
+                className={`font-sans text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 ${
                   active
-                    ? "text-cm-text-primary border-b border-accent-red"
-                    : "text-cm-text-muted hover:text-cm-text-secondary"
+                    ? "bg-bg-elevated text-cm-text-primary"
+                    : "text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-surface"
                 }`}
               >
                 {label}
@@ -72,11 +72,11 @@ export default function PortalNav({ locale }: Props) {
             <button
               id="portal-lang-btn"
               onClick={() => setLangOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-border text-cm-text-muted hover:text-cm-text-secondary hover:border-cm-border-hover transition-all font-mono text-[10px] uppercase tracking-widest"
+              className="flex items-center gap-2 px-3 py-2 rounded-md border border-border text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-surface transition-all font-sans text-sm font-medium"
               aria-label="Change language"
             >
-              <Globe size={11} />
-              <span>{currentLang.flag}</span>
+              <Globe size={14} />
+              <span className="hidden sm:inline">{currentLang.flag}</span>
               <span>{currentLang.label}</span>
             </button>
 
@@ -111,10 +111,10 @@ export default function PortalNav({ locale }: Props) {
           <button
             id="portal-signout-btn"
             onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-border text-cm-text-muted hover:text-danger hover:border-danger/40 transition-all font-mono text-[10px] uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-2 rounded-md border border-border text-cm-text-secondary hover:text-danger hover:border-danger/40 hover:bg-danger/10 transition-all font-sans text-sm font-medium"
             title={t("signOut")}
           >
-            <LogOut size={11} />
+            <LogOut size={14} />
           </button>
         </div>
       </div>

@@ -83,13 +83,13 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 py-16">
         <div className="mb-10 text-center animate-fade-in">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cm-text-secondary mb-2">
+          <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
             Cult Machine
           </p>
-          <h1 className="font-mono text-xl font-bold text-cm-text-primary">
+          <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
             {t("accountType.title")}
           </h1>
-          <p className="font-sans text-sm text-cm-text-secondary mt-2">
+          <p className="font-sans text-base text-cm-text-secondary mt-2">
             {t("accountType.subtitle")}
           </p>
         </div>
@@ -98,21 +98,21 @@ export default function RegisterPage() {
           {/* Artist Card */}
           <button
             onClick={() => selectType(AccountType.ARTIST)}
-            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red transition-all duration-200 cursor-pointer"
+            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red rounded-xl shadow-sm transition-all duration-200 cursor-pointer"
           >
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 flex items-center justify-center border border-border group-hover:border-accent-red transition-colors">
-                <Mic2 size={18} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-border group-hover:border-accent-red group-hover:bg-accent-red/5 transition-colors">
+                <Mic2 size={20} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
               </div>
               <div className="flex-1">
-                <p className="font-mono text-sm font-bold text-cm-text-primary mb-1">
+                <p className="font-sans text-lg font-bold text-cm-text-primary mb-1">
                   {t("accountType.artist")}
                 </p>
-                <p className="font-sans text-xs text-cm-text-secondary leading-relaxed">
+                <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
                   {t("accountType.artistDesc")}
                 </p>
-                <div className="mt-4 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-ok">
-                  <Check size={11} />
+                <div className="mt-4 flex items-center gap-1.5 font-sans text-xs font-semibold text-ok uppercase tracking-wider">
+                  <Check size={14} />
                   Immediate access
                 </div>
               </div>
@@ -122,21 +122,21 @@ export default function RegisterPage() {
           {/* Industry Card */}
           <button
             onClick={() => selectType(AccountType.INDUSTRY)}
-            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red transition-all duration-200 cursor-pointer"
+            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red rounded-xl shadow-sm transition-all duration-200 cursor-pointer"
           >
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 flex items-center justify-center border border-border group-hover:border-accent-red transition-colors">
-                <Building2 size={18} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-border group-hover:border-accent-red group-hover:bg-accent-red/5 transition-colors">
+                <Building2 size={20} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
               </div>
               <div className="flex-1">
-                <p className="font-mono text-sm font-bold text-cm-text-primary mb-1">
+                <p className="font-sans text-lg font-bold text-cm-text-primary mb-1">
                   {t("accountType.industry")}
                 </p>
-                <p className="font-sans text-xs text-cm-text-secondary leading-relaxed">
+                <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
                   {t("accountType.industryDesc")}
                 </p>
-                <div className="mt-4 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-warn">
-                  <Check size={11} />
+                <div className="mt-4 flex items-center gap-1.5 font-sans text-xs font-semibold text-warn uppercase tracking-wider">
+                  <Check size={14} />
                   1–3 day review
                 </div>
               </div>
@@ -162,24 +162,27 @@ export default function RegisterPage() {
         <div className="mb-8">
           <button
             onClick={() => setStep("type")}
-            className="btn-ghost mb-4 -ml-2 text-cm-text-secondary"
+            className="btn-ghost mb-4 -ml-4"
           >
             ← {t("common.back")}
           </button>
-          <div className="flex items-center gap-3 mb-1">
+          <div className="flex items-center gap-3 mb-2">
             {accountType === AccountType.ARTIST ? (
-              <Mic2 size={16} className="text-accent-red" />
+              <div className="p-2 bg-accent-red/10 text-accent-red rounded-lg">
+                <Mic2 size={18} />
+              </div>
             ) : (
-              <Building2 size={16} className="text-accent-red" />
+              <div className="p-2 bg-accent-red/10 text-accent-red rounded-lg">
+                <Building2 size={18} />
+              </div>
             )}
-            <p className="section-label">
+            <p className="font-sans text-sm font-semibold uppercase tracking-wider text-cm-text-secondary">
               {accountType === AccountType.ARTIST
                 ? t("accountType.artist")
-                : t("accountType.industry")}{" "}
-              — {t("auth.signUp")}
+                : t("accountType.industry")}
             </p>
           </div>
-          <h2 className="font-mono text-lg font-bold text-cm-text-primary">
+          <h2 className="font-sans text-2xl font-bold text-cm-text-primary tracking-tight">
             {t("register.createAccount")}
           </h2>
         </div>
@@ -367,7 +370,7 @@ export default function RegisterPage() {
 
           {/* Error */}
           {error && (
-            <div className="px-4 py-3 border border-danger/30 bg-danger/10 font-mono text-[11px] text-danger">
+            <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm">
               {error}
             </div>
           )}

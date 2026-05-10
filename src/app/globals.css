@@ -15,65 +15,66 @@
 
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: #161616; }
-  ::-webkit-scrollbar-thumb { background: #2E2E2E; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: #3A3A3C; border-radius: 4px; }
 
-  *:focus-visible { outline: 1px solid #E8341C; outline-offset: 2px; }
-  ::selection { background: rgba(232,52,28,0.2); color: #F0EDE6; }
+  *:focus-visible { outline: 2px solid #E8341C; outline-offset: 2px; }
+  ::selection { background: rgba(232,52,28,0.3); color: #FAFAFA; }
 }
 
 @layer components {
   /* Buttons */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-2.5
-           bg-accent-red hover:bg-accent-red-hover text-white
-           font-mono text-[11px] uppercase tracking-widest
-           border border-accent-red transition-colors duration-150 cursor-pointer
-           disabled:opacity-40 disabled:cursor-not-allowed;
+           bg-accent-red hover:bg-accent-red-hover text-white rounded-md
+           font-sans text-sm font-medium tracking-wide
+           transition-all duration-200 cursor-pointer shadow-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-2.5
-           bg-transparent hover:bg-bg-elevated text-cm-text-primary
-           font-mono text-[11px] uppercase tracking-widest
-           border border-border hover:border-cm-text-secondary
-           transition-colors duration-150 cursor-pointer;
+           bg-bg-surface hover:bg-bg-elevated text-cm-text-primary rounded-md
+           font-sans text-sm font-medium tracking-wide
+           border border-border hover:border-border-hover
+           transition-all duration-200 cursor-pointer shadow-sm;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2
            bg-transparent hover:bg-bg-elevated text-cm-text-secondary hover:text-cm-text-primary
-           font-mono text-[11px] uppercase tracking-widest
-           transition-colors duration-150 cursor-pointer;
+           font-sans text-sm font-medium rounded-md
+           transition-all duration-200 cursor-pointer;
   }
 
   /* Inputs */
   .input {
-    @apply w-full px-4 py-3 bg-bg-surface border border-border
+    @apply w-full px-4 py-2.5 bg-bg-surface border border-border rounded-md
            text-cm-text-primary font-sans text-sm placeholder:text-cm-text-muted
-           focus:outline-none focus:border-cm-text-secondary transition-colors duration-150;
+           focus:outline-none focus:border-accent-red focus:ring-1 focus:ring-accent-red/20
+           transition-all duration-200 shadow-sm;
   }
-  .input-error { @apply border-danger focus:border-danger; }
+  .input-error { @apply border-danger focus:border-danger focus:ring-danger/20; }
   .label {
-    @apply block font-mono text-[10px] uppercase tracking-widest text-cm-text-secondary mb-1.5;
+    @apply block font-sans text-sm font-medium text-cm-text-secondary mb-1.5;
   }
-  .error-msg { @apply font-mono text-[10px] text-danger mt-1; }
+  .error-msg { @apply font-sans text-xs text-danger mt-1.5; }
 
   /* Cards */
-  .card { @apply bg-bg-surface border border-border p-6; }
-  .card-elevated { @apply bg-bg-elevated border border-border p-6; }
+  .card { @apply bg-bg-surface border border-border p-6 rounded-xl shadow-sm; }
+  .card-elevated { @apply bg-bg-elevated border border-border p-6 rounded-xl shadow-md; }
 
   /* Badges */
   .badge-review {
-    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
-           bg-[rgba(186,117,23,0.15)] text-warn border border-warn/30;
+    @apply inline-flex items-center px-2.5 py-1 font-sans text-xs font-semibold rounded-md
+           bg-warn/10 text-warn border border-warn/20;
   }
   .badge-selected {
-    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
-           bg-[rgba(29,158,117,0.2)] text-ok border border-ok/30;
+    @apply inline-flex items-center px-2.5 py-1 font-sans text-xs font-semibold rounded-md
+           bg-ok/10 text-ok border border-ok/20;
   }
   .badge-rejected {
-    @apply inline-flex items-center px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest
-           bg-[rgba(226,75,74,0.15)] text-[#F09595] border border-danger/30;
+    @apply inline-flex items-center px-2.5 py-1 font-sans text-xs font-semibold rounded-md
+           bg-danger/10 text-danger border border-danger/20;
   }
 
-  .divider { @apply border-t border-border; }
-  .section-label { @apply font-mono text-[10px] uppercase tracking-widest text-cm-text-secondary; }
+  .divider { @apply border-t border-border my-6; }
+  .section-label { @apply font-sans text-xs font-bold text-cm-text-secondary uppercase tracking-wider; }
 }

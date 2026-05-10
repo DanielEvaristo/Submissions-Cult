@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
@@ -52,8 +52,13 @@ export default function LoginPage() {
       return;
     }
 
-    // After login, redirect to portal keeping locale
-    window.location.href = `/${locale}/portal/onboarding`;
+    // After login, check if user is admin and redirect accordingly
+    const session = await getSession();
+    if (session?.user?.isAdmin) {
+      window.location.href = `/${locale}/admin`;
+    } else {
+      window.location.href = `/${locale}/portal/onboarding`;
+    }
   };
 
   const currentLang = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
@@ -66,7 +71,7 @@ export default function LoginPage() {
         <button
           id="lang-switcher-btn"
           onClick={() => setLangOpen((v) => !v)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-cm-border bg-cm-surface text-cm-text-secondary hover:text-cm-text-primary hover:border-cm-border-hover transition-all font-mono text-[11px] uppercase tracking-widest shadow-sm"
+          className="flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-bg-surface text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-elevated transition-all font-sans text-sm font-medium shadow-sm"
           aria-label="Change language"
         >
           <Globe size={12} />
@@ -87,7 +92,7 @@ export default function LoginPage() {
                   key={l.code}
                   id={`lang-${l.code}`}
                   onClick={() => switchLocale(l.code)}
-                  className={`w-full flex items-center gap-2 px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest transition-colors hover:bg-cm-border/20 ${
+                  className={`w-full flex items-center gap-2 px-4 py-2.5 font-sans text-sm font-medium transition-colors hover:bg-bg-elevated ${
                     locale === l.code
                       ? "text-accent-red"
                       : "text-cm-text-secondary hover:text-cm-text-primary"
@@ -107,10 +112,10 @@ export default function LoginPage() {
 
       {/* Logo */}
       <div className="mb-10 text-center animate-fade-in">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cm-text-secondary mb-2">
+        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
           Cult Machine
         </p>
-        <h1 className="font-mono text-xl font-bold text-cm-text-primary tracking-tight">
+        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
           Submissions Portal
         </h1>
       </div>
@@ -118,13 +123,13 @@ export default function LoginPage() {
       <div className="w-full max-w-sm animate-slide-up">
         {/* Success banner */}
         {verified && (
-          <div className="mb-6 px-4 py-3 border border-ok/30 bg-ok/10 font-mono text-[11px] text-ok">
+          <div className="mb-6 px-4 py-3 rounded-md border border-ok/30 bg-ok/10 font-sans text-sm font-medium text-ok text-center shadow-sm">
             {t("auth.accountCreated")}
           </div>
         )}
 
         <div className="card">
-          <p className="section-label mb-6">{t("auth.signIn")}</p>
+          <p className="section-label mb-6 text-center">{t("auth.signIn")}</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}

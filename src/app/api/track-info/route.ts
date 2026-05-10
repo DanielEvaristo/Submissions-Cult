@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as cheerio from "cheerio";
 
 // Deezer public API — no auth required
 // Docs: https://developers.deezer.com/api/search
@@ -48,18 +49,83 @@ async function fetchFromDeezerUrl(url: string) {
   };
 }
 
+async function fetchOpenGraphTags(url: string, platform: string) {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+    if (!res.ok) return null;
+    
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const ogTitle = $('meta[property="og:title"]').attr("content") || "";
+    const ogImage = $('meta[property="og:image"]').attr("content") || null;
+    const ogDescription = $('meta[property="og:description"]').attr("content") || "";
+
+    if (!ogTitle) return null;
+
+    let title = ogTitle;
+    let artist = "";
+
+    // Parse the Title based on platform
+    if (platform === "spotify") {
+      // Spotify format variations: 
+      // "Track Name - song and lyrics by Artist | Spotify"
+      // "Track Name - song by Artist | Spotify"
+      let cleanTitle = ogTitle.split(" | Spotify")[0] || ogTitle;
+      
+      if (cleanTitle.includes(" - song and lyrics by ")) {
+        const parts = cleanTitle.split(" - song and lyrics by ");
+        title = parts[0];
+        artist = parts[1];
+      } else if (cleanTitle.includes(" - song by ")) {
+        const parts = cleanTitle.split(" - song by ");
+        title = parts[0];
+        artist = parts[1];
+      } else {
+        title = cleanTitle;
+        // If not in title, Spotify puts it in description: "Artist, Featured · Album · Canción · Year"
+        artist = ogDescription.split(" · ")[0] || ogDescription.split(".")[0] || "";
+      }
+    } else if (platform === "soundcloud") {
+      // SoundCloud format: "Track Name by Artist"
+      if (ogTitle.includes(" by ")) {
+        const parts = ogTitle.split(" by ");
+        artist = parts.pop() || "";
+        title = parts.join(" by ");
+      } else {
+        title = ogTitle;
+      }
+    } else {
+      title = ogTitle;
+      artist = ogDescription.split(".")[0] || ""; // Fallback to grab something from description
+    }
+
+    return {
+      title: title.trim(),
+      artist: artist.trim() || "Unknown Artist",
+      cover: ogImage,
+      platform: platform as any,
+      source: "opengraph",
+    };
+  } catch (err) {
+    console.error("OG fetch error:", err);
+    return null;
+  }
+}
+
 async function fetchFromSpotifyUrl(url: string) {
-  // Extract track ID from Spotify URL: https://open.spotify.com/track/abc123
-  const match = url.match(/spotify\.com\/(?:intl-[a-z]+\/)?track\/([a-zA-Z0-9]+)/i);
-  if (!match) return null;
-  // We have no Spotify credentials, so search Deezer by the URL path as a proxy
-  // Extract track name from URL path if possible; fall back gracefully
-  return null; // Will trigger manual fill fallback on client
+  // Validate Spotify URL format
+  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?track\/([a-zA-Z0-9]+)/i)) return null;
+  return fetchOpenGraphTags(url, "spotify");
 }
 
 async function fetchFromSoundcloudUrl(url: string) {
-  // SoundCloud requires OAuth — fall back to manual fill
-  return null;
+  return fetchOpenGraphTags(url, "soundcloud");
 }
 
 export async function GET(req: NextRequest) {
