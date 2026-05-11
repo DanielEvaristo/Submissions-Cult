@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Passwords do not match"
     },
     "accountCreated": "Account created — sign in to continue.",
+    "industryAccountCreated": "Industry account created! Please sign in to access your dashboard.",
     "placeholders": {
       "email": "you@example.com",
       "password": "Min 8 chars, 1 uppercase, 1 number",
@@ -132,6 +133,7 @@
     "subtitle": "This information helps curators discover and evaluate your music.",
     "progress": "Step {current} of {total}",
     "progressHint": "A more complete profile increases your visibility in curator analytics.",
+    "uxMessage": "Please complete this form to help us personalize and improve your experience.",
     "saveAndContinue": "Save & Continue",
     "finish": "Finish Setup",
     "steps": {
@@ -371,6 +373,17 @@
     "Metal": "Metal",
     "Ambient / Experimental": "Ambient / Experimental",
     "Other": "Other"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "subtitle": "Update your account password. Use a strong password to keep your account secure.",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "button": "Update Password",
+    "success": "Password updated successfully.",
+    "passwordsDoNotMatch": "New passwords do not match.",
+    "passwordTooShort": "New password must be at least 8 characters long."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

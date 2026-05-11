@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ProfileForm from "@/components/portal/ProfileForm";
+import ChangePasswordForm from "@/components/portal/ChangePasswordForm";
 
 export default async function ProfilePage({ params: { locale } }: { params: { locale: string } }) {
   const session = await getServerSession(authOptions);
@@ -55,6 +56,10 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
       </div>
 
       <ProfileForm initialData={user} />
+
+      <div className="max-w-3xl">
+        <ChangePasswordForm />
+      </div>
     </div>
   );
 }

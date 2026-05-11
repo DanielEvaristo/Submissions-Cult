@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Loader2,
+  Info,
 } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -294,6 +295,12 @@ export default function OnboardingPage() {
           {/* ── STEP 1: Basics ── */}
           {step === 1 && (
             <div className="animate-fade-in space-y-6">
+              <div className="p-4 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-start gap-3">
+                <Info size={18} className="text-accent-red shrink-0 mt-0.5" />
+                <p className="font-sans text-sm text-cm-text-primary leading-relaxed">
+                  {t("uxMessage")}
+                </p>
+              </div>
               <StepHeader title={t("basics.title")} />
               <div>
                 <label className="label" htmlFor="country">

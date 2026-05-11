@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Las contraseñas no coinciden"
     },
     "accountCreated": "Cuenta creada — inicia sesión para continuar.",
+    "industryAccountCreated": "¡Cuenta de industria creada! Inicia sesión para acceder a tu panel.",
     "placeholders": {
       "email": "tu@ejemplo.com",
       "password": "Mín. 8 caracteres, 1 mayúscula, 1 número",
@@ -132,6 +133,7 @@
     "subtitle": "Esta información ayuda a los curadores a descubrir y evaluar tu música.",
     "progress": "Paso {current} de {total}",
     "progressHint": "Un perfil más completo aumenta tu visibilidad en los análisis del curador.",
+    "uxMessage": "Por favor, completa este formulario para ayudarnos a personalizar y mejorar tu experiencia.",
     "saveAndContinue": "Guardar y Continuar",
     "finish": "Finalizar Configuración",
     "steps": {
@@ -371,6 +373,17 @@
     "Metal": "Metal",
     "Ambient / Experimental": "Ambient / Experimental",
     "Other": "Otro"
+  },
+  "changePassword": {
+    "title": "Cambiar Contraseña",
+    "subtitle": "Actualiza la contraseña de tu cuenta. Usa una contraseña fuerte para mantener tu cuenta segura.",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmNewPassword": "Confirmar Nueva Contraseña",
+    "button": "Actualizar Contraseña",
+    "success": "Contraseña actualizada con éxito.",
+    "passwordsDoNotMatch": "Las nuevas contraseñas no coinciden.",
+    "passwordTooShort": "La nueva contraseña debe tener al menos 8 caracteres."
   },
   "errors": {
     "generic": "Algo salió mal. Por favor intenta de nuevo.",

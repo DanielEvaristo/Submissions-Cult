@@ -10,6 +10,7 @@ interface StaffMember {
   isCurator: boolean;
   isMasterCurator: boolean;
   createdAt: string;
+  assignedGenres?: string[];
 }
 
 export default function AdminStaffPage() {
@@ -17,7 +18,7 @@ export default function AdminStaffPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -25,13 +26,13 @@ export default function AdminStaffPage() {
     role: "CURATOR",
     assignedGenres: [] as string[]
   });
-  
+
   const GENRES = [
-    "Rock", "Electronic", "Hip-Hop", "R&B / Soul", "Pop", 
+    "Rock", "Electronic", "Hip-Hop", "R&B / Soul", "Pop",
     "Folk / Acoustic", "Latin", "Jazz", "Metal", "Ambient / Experimental", "Other"
   ];
-  
-  const [message, setMessage] = useState<{type: "success"|"error", text: string} | null>(null);
+
+  const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
 
   const fetchStaff = useCallback(async () => {
     setLoading(true);
@@ -110,7 +111,7 @@ export default function AdminStaffPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-10 space-y-10">
-      
+
       {/* Header */}
       <div>
         <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
@@ -122,7 +123,7 @@ export default function AdminStaffPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Creation Form */}
         <div className="lg:col-span-1">
           <div className="bg-bg-surface border border-border rounded-xl p-6 shadow-sm">
@@ -132,47 +133,47 @@ export default function AdminStaffPage() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="label">Name</label>
-                <input 
-                  type="text" 
-                  required 
-                  className="input" 
+                <input
+                  type="text"
+                  required
+                  className="input"
                   placeholder="John Doe"
                   value={form.name}
-                  onChange={e => setForm({...form, name: e.target.value})}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
                 />
               </div>
-              
+
               <div>
                 <label className="label">Email</label>
-                <input 
-                  type="email" 
-                  required 
-                  className="input" 
+                <input
+                  type="email"
+                  required
+                  className="input"
                   placeholder="john@example.com"
                   value={form.email}
-                  onChange={e => setForm({...form, email: e.target.value})}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
                 />
               </div>
 
               <div>
                 <label className="label">Temporary Password</label>
-                <input 
-                  type="text" 
-                  required 
-                  className="input" 
+                <input
+                  type="text"
+                  required
+                  className="input"
                   placeholder="secret123"
                   value={form.password}
-                  onChange={e => setForm({...form, password: e.target.value})}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
                 />
                 <p className="text-[11px] text-cm-text-muted mt-1">They can change this after logging in.</p>
               </div>
 
               <div>
                 <label className="label">Role</label>
-                <select 
+                <select
                   className="input"
                   value={form.role}
-                  onChange={e => setForm({...form, role: e.target.value})}
+                  onChange={e => setForm({ ...form, role: e.target.value })}
                 >
                   <option value="CURATOR">Curator (Level 1)</option>
                   <option value="MASTER_CURATOR">Master Curator (Level 2)</option>
@@ -183,9 +184,9 @@ export default function AdminStaffPage() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="label mb-0">Assigned Genres</label>
-                    <button 
-                      type="button" 
-                      onClick={() => setForm({...form, assignedGenres: [...GENRES]})}
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, assignedGenres: [...GENRES] })}
                       className="text-[10px] uppercase font-bold text-accent-red hover:bg-accent-red/10 px-2 py-1 rounded transition-colors"
                     >
                       Assign All
@@ -194,14 +195,14 @@ export default function AdminStaffPage() {
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 bg-bg-elevated border border-border rounded-md">
                     {GENRES.map(g => (
                       <label key={g} className="flex items-center gap-2 cursor-pointer group">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={form.assignedGenres.includes(g)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setForm({...form, assignedGenres: [...form.assignedGenres, g]});
+                              setForm({ ...form, assignedGenres: [...form.assignedGenres, g] });
                             } else {
-                              setForm({...form, assignedGenres: form.assignedGenres.filter(x => x !== g)});
+                              setForm({ ...form, assignedGenres: form.assignedGenres.filter(x => x !== g) });
                             }
                           }}
                           className="rounded border-border text-accent-red focus:ring-accent-red/20 bg-bg cursor-pointer"
@@ -217,17 +218,16 @@ export default function AdminStaffPage() {
               )}
 
               {message && (
-                <div className={`p-3 rounded-md text-sm font-medium border ${
-                  message.type === "success" 
-                    ? "bg-ok/10 text-ok border-ok/20" 
+                <div className={`p-3 rounded-md text-sm font-medium border ${message.type === "success"
+                    ? "bg-ok/10 text-ok border-ok/20"
                     : "bg-danger/10 text-danger border-danger/20"
-                }`}>
+                  }`}>
                   {message.text}
                 </div>
               )}
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={creating}
                 className="btn-primary w-full flex items-center justify-center gap-2"
               >
@@ -244,7 +244,7 @@ export default function AdminStaffPage() {
               <Users size={18} className="text-cm-text-secondary" />
               <h2 className="font-sans text-lg font-bold text-cm-text-primary">Current Staff</h2>
             </div>
-            
+
             {loading ? (
               <div className="p-10 flex justify-center">
                 <Loader2 className="animate-spin text-cm-text-muted" size={24} />
@@ -266,11 +266,10 @@ export default function AdminStaffPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        member.isMasterCurator 
-                          ? "bg-accent-red/10 text-accent-red border border-accent-red/20" 
+                      <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${member.isMasterCurator
+                          ? "bg-accent-red/10 text-accent-red border border-accent-red/20"
                           : "bg-bg-elevated text-cm-text-secondary border border-border"
-                      }`}>
+                        }`}>
                         {member.isMasterCurator ? "Master Curator" : "Curator"}
                       </span>
                       <p className="font-sans text-[10px] text-cm-text-muted mt-1">
@@ -279,9 +278,9 @@ export default function AdminStaffPage() {
                       {/* Show genres if L1 Curator */}
                       {!member.isMasterCurator && member.isCurator && (
                         <p className="font-sans text-[10px] text-cm-text-secondary mt-1">
-                          {member.assignedGenres && member.assignedGenres.length > 0 
-                            ? member.assignedGenres.length === GENRES.length 
-                              ? "All Genres" 
+                          {member.assignedGenres && member.assignedGenres.length > 0
+                            ? member.assignedGenres.length === GENRES.length
+                              ? "All Genres"
                               : member.assignedGenres.join(", ")
                             : "Generalist (All)"}
                         </p>

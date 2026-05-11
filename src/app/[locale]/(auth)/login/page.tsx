@@ -19,6 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
+  const industryCreated = searchParams.get("industryCreated");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -130,9 +131,9 @@ export default function LoginPage() {
 
       <div className="w-full max-w-sm animate-slide-up">
         {/* Success banner */}
-        {verified && (
+        {(verified || industryCreated) && (
           <div className="mb-6 px-4 py-3 rounded-md border border-ok/30 bg-ok/10 font-sans text-sm font-medium text-ok text-center shadow-sm">
-            {t("auth.accountCreated")}
+            {industryCreated ? t("auth.industryAccountCreated") : t("auth.accountCreated")}
           </div>
         )}
 

@@ -70,16 +70,21 @@ export async function POST(req: NextRequest) {
       where: {
         isCurator: true,
         isMasterCurator: false,
-      },
-      include: {
-        curatedSubmissions: {
-          where: {
-            status: { in: ["PENDING", "IN_REVIEW"] }
-          },
-          select: { id: true }
-        }
       }
     });
+
+    const activeSubs = await prisma.submission.groupBy({
+      by: ['curatorId'],
+      where: {
+        status: { in: ["PENDING", "IN_REVIEW"] },
+        curatorId: { in: curators.map(c => c.id) }
+      },
+      _count: {
+        id: true
+      }
+    });
+    
+    const counts = new Map(activeSubs.map(s => [s.curatorId, s._count.id]));
 
     let eligible = curators.filter(c => 
       !c.assignedGenres || c.assignedGenres.length === 0 || c.assignedGenres.includes(genre)
@@ -93,7 +98,7 @@ export async function POST(req: NextRequest) {
     let assignedCuratorId = null;
     if (eligible.length > 0) {
       // Find the one with the lowest active queue
-      eligible.sort((a, b) => a.curatedSubmissions.length - b.curatedSubmissions.length);
+      eligible.sort((a, b) => (counts.get(a.id) || 0) - (counts.get(b.id) || 0));
       assignedCuratorId = eligible[0].id;
     }
 

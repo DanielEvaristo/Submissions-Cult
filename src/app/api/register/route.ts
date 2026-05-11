@@ -68,6 +68,23 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const existingArtist = await prisma.user.findFirst({
+        where: {
+          artistName: {
+            equals: artistName.trim(),
+            mode: "insensitive",
+          },
+          accountType: AccountType.ARTIST,
+        },
+      });
+
+      if (existingArtist) {
+        return NextResponse.json(
+          { error: "An artist with this name is already registered" },
+          { status: 409 }
+        );
+      }
+
       const user = await prisma.user.create({
         data: {
           email: email.toLowerCase().trim(),
@@ -127,7 +144,7 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        { success: true, user, redirect: "/industry" },
+        { success: true, user, redirect: "/login?industryCreated=1" },
         { status: 201 }
       );
     }

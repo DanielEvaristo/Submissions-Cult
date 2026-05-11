@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import IndustryProfileForm from "@/components/industry/IndustryProfileForm";
+import ChangePasswordForm from "@/components/portal/ChangePasswordForm";
 
 export default async function IndustryProfilePage({
   params: { locale },
@@ -26,6 +27,10 @@ export default async function IndustryProfilePage({
       </div>
 
       <IndustryProfileForm />
+
+      <div className="max-w-2xl">
+        <ChangePasswordForm />
+      </div>
     </div>
   );
 }

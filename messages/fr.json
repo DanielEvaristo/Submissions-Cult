@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
     },
     "accountCreated": "Compte créé — connectez-vous pour continuer.",
+    "industryAccountCreated": "Compte de l'industrie créé ! Veuillez vous connecter pour accéder à votre tableau de bord.",
     "placeholders": {
       "email": "vous@exemple.com",
       "password": "Min. 8 car., 1 majuscule, 1 chiffre",
@@ -132,6 +133,7 @@
     "subtitle": "Ces informations aident les curateurs à découvrir et évaluer votre musique.",
     "progress": "Étape {current} sur {total}",
     "progressHint": "Un profil plus complet augmente votre visibilité dans les analyses des curateurs.",
+    "uxMessage": "Veuillez remplir ce formulaire pour nous aider à personnaliser et améliorer votre expérience.",
     "saveAndContinue": "Enregistrer et Continuer",
     "finish": "Terminer la Configuration",
     "steps": {
@@ -371,6 +373,17 @@
     "Metal": "Metal",
     "Ambient / Experimental": "Ambient / Expérimental",
     "Other": "Autre"
+  },
+  "changePassword": {
+    "title": "Changer le Mot de Passe",
+    "subtitle": "Mettez à jour le mot de passe de votre compte. Utilisez un mot de passe fort pour sécuriser votre compte.",
+    "currentPassword": "Mot de Passe Actuel",
+    "newPassword": "Nouveau Mot de Passe",
+    "confirmNewPassword": "Confirmer le Nouveau Mot de Passe",
+    "button": "Mettre à jour le Mot de Passe",
+    "success": "Mot de passe mis à jour avec succès.",
+    "passwordsDoNotMatch": "Les nouveaux mots de passe ne correspondent pas.",
+    "passwordTooShort": "Le nouveau mot de passe doit contenir au moins 8 caractères."
   },
   "errors": {
     "generic": "Une erreur s'est produite. Veuillez réessayer.",

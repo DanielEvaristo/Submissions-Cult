@@ -37,6 +37,24 @@ export async function DELETE(
       return NextResponse.json({ error: "User is not a staff member" }, { status: 400 });
     }
 
+    // 1. Unassign any submissions they were reviewing (return them to the pool)
+    await prisma.submission.updateMany({
+      where: { curatorId: id },
+      data: { curatorId: null, status: "PENDING" }
+    });
+
+    // 2. Unassign any master reviews
+    await prisma.submission.updateMany({
+      where: { masterCuratorId: id },
+      data: { masterCuratorId: null, status: "CURATOR_APPROVED" }
+    });
+
+    // 3. Delete any test submissions they might have made themselves
+    await prisma.submission.deleteMany({
+      where: { userId: id }
+    });
+
+    // 4. Finally, delete the user
     await prisma.user.delete({
       where: { id }
     });

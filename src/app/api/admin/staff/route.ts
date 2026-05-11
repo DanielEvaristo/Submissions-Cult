@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // GET /api/admin/staff - list all staff members
 export async function GET() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id || !session.user.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -44,7 +44,7 @@ export async function GET() {
 // POST /api/admin/staff - create a new staff member
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id || !session.user.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -76,16 +76,16 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         // Since we bypass registration, we'll assign ARTIST generically, but they won't use it
-        accountType: "ARTIST", 
+        accountType: "ARTIST",
         isCurator,
         isMasterCurator,
         assignedGenres: assignedGenres || [],
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      id: newUser.id 
+    return NextResponse.json({
+      success: true,
+      id: newUser.id
     }, { status: 201 });
 
   } catch (err) {
