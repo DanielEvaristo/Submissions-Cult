@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import PortalNav from "@/components/portal/PortalNav";
 import PortalHeader from "@/components/portal/PortalHeader";
+import PortalGating from "@/components/portal/PortalGating";
 
 interface Props {
   children: React.ReactNode;
@@ -22,15 +23,19 @@ export default async function PortalLayout({ children, params }: Props) {
     redirect(`/${locale}/industry`);
   }
 
+  // Check if onboarding is complete (using genre as proxy)
+  const isComplete = !!session.user.genre;
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-black">
       <PortalNav locale={locale} />
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pt-16 lg:pt-0">
         <PortalHeader locale={locale} />
         
-        <main className="flex-1 p-6 overflow-y-auto">
-          {children}
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto relative">
+          <PortalGating isComplete={isComplete} locale={locale}>
+            {children}
+          </PortalGating>
         </main>
       </div>
     </div>

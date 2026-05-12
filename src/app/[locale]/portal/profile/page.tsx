@@ -46,12 +46,12 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
 
   return (
     <div className="max-w-4xl mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-cm-text-primary">
-          Mi Perfil
+      <div className="mb-12 border-b-4 border-white/10 pb-8">
+        <h1 className="font-sans text-6xl font-black tracking-tighter text-white uppercase leading-none">
+          MY PROFILE.
         </h1>
-        <p className="font-sans text-cm-text-secondary mt-2">
-          Gestiona tu información pública, enlaces a redes sociales y preferencias de tu proyecto musical.
+        <p className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mt-4">
+          MANAGE YOUR IDENTITY, SOCIAL VECTORS, AND MUSICAL PREFERENCES.
         </p>
       </div>
 

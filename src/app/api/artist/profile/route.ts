@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AgeRange, DistributionMethod, ListenersRange, RoleType } from "@prisma/client";
+import { AgeRange, DistributionMethod, FollowersRange, ListenersRange, RoleType } from "@prisma/client";
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -11,8 +11,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -20,7 +18,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Build sanitized update object
   const update: Record<string, unknown> = {};
 
   if (typeof body.country === "string") update.country = body.country.trim();
@@ -38,7 +35,6 @@ export async function PATCH(req: NextRequest) {
   if (typeof body.hasManager === "boolean") update.hasManager = body.hasManager;
   if (typeof body.bandSize === "number") update.bandSize = body.bandSize;
 
-  // Validated enum fields
   const validRoles = Object.values(RoleType) as string[];
   if (typeof body.roleType === "string" && validRoles.includes(body.roleType)) {
     update.roleType = body.roleType as RoleType;
@@ -54,14 +50,18 @@ export async function PATCH(req: NextRequest) {
     update.monthlyListeners = body.monthlyListeners as ListenersRange;
   }
 
+  const validFollowers = Object.values(FollowersRange) as string[];
+  if (typeof body.instagramFollowers === "string" && validFollowers.includes(body.instagramFollowers)) {
+    update.instagramFollowers = body.instagramFollowers as FollowersRange;
+  }
+
   const validDist = Object.values(DistributionMethod) as string[];
   if (typeof body.distributionMethod === "string" && validDist.includes(body.distributionMethod)) {
     update.distributionMethod = body.distributionMethod as DistributionMethod;
   }
 
-  // JSON fields
   if (Array.isArray(body.musicLanguages)) {
-    update.musicLanguages = body.musicLanguages.filter((l) => typeof l === "string");
+    update.musicLanguages = body.musicLanguages.filter((language): language is string => typeof language === "string");
   }
   if (Array.isArray(body.memberAgeRanges)) {
     update.memberAgeRanges = body.memberAgeRanges;

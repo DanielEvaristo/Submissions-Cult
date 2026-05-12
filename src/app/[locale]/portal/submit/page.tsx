@@ -1,5 +1,5 @@
-import SubmitFlow from "@/components/submit/SubmitFlow";
+import SubmitFlowV2 from "@/components/submit/SubmitFlowV2";
 
 export default function SubmitPage() {
-  return <SubmitFlow basePath="/portal" />;
+  return <SubmitFlowV2 basePath="/portal" />;
 }

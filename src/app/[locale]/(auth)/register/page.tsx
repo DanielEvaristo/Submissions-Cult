@@ -1,4 +1,4 @@
-"use client"; // force reload
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -81,317 +81,178 @@ export default function RegisterPage() {
   // ── Step 1: Account Type Selection ─────────────────────────
   if (step === "type") {
     return (
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 py-16">
-        <div className="mb-10 text-center animate-fade-in">
-          <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
-            Cult Machine
-          </p>
-          <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
-            {t("accountType.title")}
-          </h1>
-          <p className="font-sans text-base text-cm-text-secondary mt-2">
-            {t("accountType.subtitle")}
-          </p>
+      <div className="min-h-screen bg-white flex flex-col md:flex-row">
+        
+        {/* Left: Brand */}
+        <div className="w-full md:w-1/3 bg-black p-8 md:p-12 flex flex-col justify-between relative overflow-hidden min-h-[30vh] md:min-h-screen">
+          <Link href={`/${locale}/landing`} className="flex items-center gap-2 text-white hover:text-cult-yellow transition-colors relative z-10">
+            <span className="text-2xl md:text-3xl">★</span>
+            <span className="font-black text-xl md:text-2xl tracking-tighter uppercase">CULT MACHINE</span>
+          </Link>
+          <div className="mt-12 md:mt-20 relative z-10">
+            <h1 className="text-white text-[clamp(40px,10vw,100px)] font-black uppercase leading-[0.85] tracking-tighter">
+              CHOOSE<br />YOUR<br /><span className="text-cult-yellow underline underline-offset-[10px] decoration-4">PATH.</span>
+            </h1>
+          </div>
+          <div className="mt-auto relative z-10">
+            <p className="text-[#444444] text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] italic">
+              SEC_REG_STEP_01 / AUTH_INIT
+            </p>
+          </div>
+          <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[400px] leading-none select-none pointer-events-none">
+            ★
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl animate-slide-up">
-          {/* Artist Card */}
-          <button
-            onClick={() => selectType(AccountType.ARTIST)}
-            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red rounded-xl shadow-sm transition-all duration-200 cursor-pointer"
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-border group-hover:border-accent-red group-hover:bg-accent-red/5 transition-colors">
-                <Mic2 size={20} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
-              </div>
-              <div className="flex-1">
-                <p className="font-sans text-lg font-bold text-cm-text-primary mb-1">
-                  {t("accountType.artist")}
-                </p>
-                <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
+        {/* Right: Selection */}
+        <div className="w-full md:w-2/3 bg-white p-6 md:p-24 flex flex-col justify-center animate-reveal">
+          <div className="max-w-3xl w-full mx-auto">
+            <div className="border-b-4 border-black pb-8 mb-12 md:mb-16">
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">{t("accountType.title")}</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+              {/* Artist Card */}
+              <button
+                onClick={() => selectType(AccountType.ARTIST)}
+                className="group border-4 border-black p-8 md:p-12 text-left transition-all bg-white hover:bg-black hover:text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2"
+              >
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-black flex items-center justify-center text-[#F5E000] mb-8 md:mb-10 group-hover:bg-[#F5E000] group-hover:text-black transition-colors">
+                  <Mic2 size={24} className="md:hidden" strokeWidth={3} />
+                  <Mic2 size={32} className="hidden md:block" strokeWidth={3} />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-4">{t("accountType.artist")}</h3>
+                <p className="text-sm md:text-base font-bold leading-tight mb-8 opacity-40 uppercase tracking-tight">
                   {t("accountType.artistDesc")}
                 </p>
-                <div className="mt-4 flex items-center gap-1.5 font-sans text-xs font-semibold text-ok uppercase tracking-wider">
-                  <Check size={14} />
-                  Immediate access
+                <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#F5E000]">
+                  <Check size={16} strokeWidth={3} /> IMMEDIATE_ACCESS
                 </div>
-              </div>
-            </div>
-          </button>
+              </button>
 
-          {/* Industry Card */}
-          <button
-            onClick={() => selectType(AccountType.INDUSTRY)}
-            className="group text-left p-6 bg-bg-surface border border-border hover:border-accent-red rounded-xl shadow-sm transition-all duration-200 cursor-pointer"
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-border group-hover:border-accent-red group-hover:bg-accent-red/5 transition-colors">
-                <Building2 size={20} className="text-cm-text-secondary group-hover:text-accent-red transition-colors" />
-              </div>
-              <div className="flex-1">
-                <p className="font-sans text-lg font-bold text-cm-text-primary mb-1">
-                  {t("accountType.industry")}
-                </p>
-                <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
+              {/* Industry Card */}
+              <button
+                onClick={() => selectType(AccountType.INDUSTRY)}
+                className="group border-4 border-black p-8 md:p-12 text-left transition-all bg-white hover:bg-black hover:text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2"
+              >
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-black flex items-center justify-center text-[#F5E000] mb-8 md:mb-10 group-hover:bg-[#F5E000] group-hover:text-black transition-colors">
+                  <Building2 size={24} className="md:hidden" strokeWidth={3} />
+                  <Building2 size={32} className="hidden md:block" strokeWidth={3} />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-4">{t("accountType.industry")}</h3>
+                <p className="text-sm md:text-base font-bold leading-tight mb-8 opacity-40 uppercase tracking-tight">
                   {t("accountType.industryDesc")}
                 </p>
-                <div className="mt-4 flex items-center gap-1.5 font-sans text-xs font-semibold text-warn uppercase tracking-wider">
-                  <Check size={14} />
-                  1–3 day review
+                <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white/40">
+                  <Check size={16} strokeWidth={3} /> REVIEW_QUEUE_ACTIVE
                 </div>
-              </div>
+              </button>
             </div>
-          </button>
-        </div>
 
-        <p className="mt-8 font-sans text-sm text-cm-text-secondary">
-          {t("auth.hasAccount")}{" "}
-          <Link href={`/${locale}/login`} className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
-            {t("auth.signIn")}
-          </Link>
-        </p>
+            <div className="mt-20 pt-12 border-t-2 border-black/5">
+              <p className="text-center font-sans text-xs font-black uppercase tracking-widest text-black/40">
+                {t("auth.hasAccount")}{" "}
+                <Link href={`/${locale}/login`} className="text-black underline underline-offset-[6px] decoration-2 hover:text-[#F5E000]">
+                  {t("auth.signIn")}
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   // ── Step 2: Registration Form ───────────────────────────────
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md animate-slide-up">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => setStep("type")}
-            className="btn-ghost mb-4 -ml-4"
-          >
-            ← {t("common.back")}
+    <div className="min-h-screen bg-white flex flex-col md:flex-row">
+      <div className="w-full md:w-1/3 bg-black p-8 md:p-12 flex flex-col relative overflow-hidden min-h-[30vh] md:min-h-screen">
+        <Link href={`/${locale}/landing`} className="flex items-center gap-2 text-white relative z-10">
+          <span className="text-2xl md:text-3xl">★</span>
+          <span className="font-black text-xl md:text-2xl tracking-tighter uppercase">CULT MACHINE</span>
+        </Link>
+        <div className="mt-12 md:mt-24 relative z-10">
+          <button onClick={() => setStep("type")} className="text-[#F5E000] font-black uppercase text-[10px] tracking-[0.4em] hover:text-white mb-8 md:mb-12 flex items-center gap-2">
+            ← RETURN_TO_STEP_01
           </button>
-          <div className="flex items-center gap-3 mb-2">
-            {accountType === AccountType.ARTIST ? (
-              <div className="p-2 bg-accent-red/10 text-accent-red rounded-lg">
-                <Mic2 size={18} />
-              </div>
-            ) : (
-              <div className="p-2 bg-accent-red/10 text-accent-red rounded-lg">
-                <Building2 size={18} />
-              </div>
-            )}
-            <p className="font-sans text-sm font-semibold uppercase tracking-wider text-cm-text-secondary">
-              {accountType === AccountType.ARTIST
-                ? t("accountType.artist")
-                : t("accountType.industry")}
-            </p>
-          </div>
-          <h2 className="font-sans text-2xl font-bold text-cm-text-primary tracking-tight">
-            {t("register.createAccount")}
-          </h2>
+          <h1 className="text-white text-[clamp(40px,10vw,100px)] font-black uppercase leading-[0.85] tracking-tighter">
+            JOIN<br />THE<br /><span className="text-[#F5E000]">CULT.</span>
+          </h1>
         </div>
+        <div className="mt-auto relative z-10">
+          <p className="text-white/20 font-black uppercase text-[9px] md:text-[10px] tracking-[0.4em]">
+            {accountType === AccountType.ARTIST ? "ARTIST_REGISTRATION_SYSTEM" : "INDUSTRY_APPLICATION_PORTAL"}
+          </p>
+        </div>
+        <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[400px] leading-none select-none pointer-events-none">
+          ★
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* ── Artist fields ── */}
-          {accountType === AccountType.ARTIST && (
-            <>
-              <div>
-                <label className="label" htmlFor="artistName">
-                  {t("register.artistName")} *
-                </label>
-                <input
-                  id="artistName"
-                  type="text"
-                  className="input"
-                  placeholder={t("register.placeholders.artistName")}
-                  value={artistName}
-                  onChange={(e) => setArtistName(e.target.value)}
-                  required
-                />
+      <div className="w-full md:w-2/3 bg-white p-6 md:p-24 overflow-y-auto animate-reveal">
+        <div className="max-w-2xl w-full mx-auto">
+          <form onSubmit={handleSubmit} className="space-y-16">
+            
+            {/* Account Info Section */}
+            <section className="space-y-12">
+              <div className="border-b-4 border-black pb-4">
+                <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black">CORE_CREDENTIALS</h3>
               </div>
-              <div>
-                <label className="label" htmlFor="roleType">
-                  {t("register.roleType")}
-                </label>
-                <select
-                  id="roleType"
-                  className="input"
-                  value={roleType}
-                  onChange={(e) => setRoleType(e.target.value)}
-                >
-                  {ROLE_TYPES_ARTIST.map((r) => (
-                    <option key={r} value={r}>
-                      {t(`register.roles.${r}`)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </>
-          )}
+              
+              <div className="grid grid-cols-1 gap-10">
+                {accountType === AccountType.ARTIST ? (
+                  <div>
+                    <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="artistName">{t("register.artistName")} ★</label>
+                    <input id="artistName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="E.G. THE_MIDNIGHT_ECHO"
+                      value={artistName} onChange={(e) => setArtistName(e.target.value)} required />
+                  </div>
+                ) : (
+                  <div className="space-y-10">
+                    <div>
+                      <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="legalName">{t("industry.legalName")} ★</label>
+                      <input id="legalName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="E.G. UNDERGROUND_PR"
+                        value={legalName} onChange={(e) => setLegalName(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="websiteUrl">{t("industry.websiteUrl")} ★</label>
+                      <input id="websiteUrl" type="url" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="HTTPS://..."
+                        value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} required />
+                    </div>
+                  </div>
+                )}
 
-          {/* ── Industry fields ── */}
-          {accountType === AccountType.INDUSTRY && (
-            <>
-              <div>
-                <label className="label" htmlFor="legalName">
-                  {t("industry.legalName")} *
-                </label>
-                <input
-                  id="legalName"
-                  type="text"
-                  className="input"
-                  placeholder={t("industry.placeholders.legalName")}
-                  value={legalName}
-                  onChange={(e) => setLegalName(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="industryRole">
-                  {t("industry.roleType")}
-                </label>
-                <select
-                  id="industryRole"
-                  className="input"
-                  value={industryRole}
-                  onChange={(e) => setIndustryRole(e.target.value)}
-                >
-                  {ROLE_TYPES_INDUSTRY.map((r) => (
-                    <option key={r} value={r}>
-                      {t(`register.roles.${r}`)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="label" htmlFor="websiteUrl">
-                  {t("industry.websiteUrl")} *
-                </label>
-                <input
-                  id="websiteUrl"
-                  type="url"
-                  className="input"
-                  placeholder={t("industry.placeholders.website")}
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="labelInstagram">
-                  {t("industry.labelInstagram")}
-                </label>
-                <input
-                  id="labelInstagram"
-                  type="text"
-                  className="input"
-                  placeholder={t("industry.placeholders.instagram")}
-                  value={labelInstagram}
-                  onChange={(e) => setLabelInstagram(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="description">
-                  {t("industry.description")}
-                </label>
-                <textarea
-                  id="description"
-                  className="input min-h-[80px] resize-none"
-                  placeholder={t("industry.placeholders.description")}
-                  maxLength={300}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-            </>
-          )}
+                <div>
+                  <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="email">{t("auth.email")} ★</label>
+                  <input id="email" type="email" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="USER@CULT.MACHINE"
+                    value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
 
-          <div className="divider" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div>
+                    <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="password">{t("auth.password")} ★</label>
+                    <input id="password" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
+                      value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="confirmPassword">{t("auth.confirmPassword")} ★</label>
+                    <input id="confirmPassword" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
+                      value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          {/* Email */}
-          <div>
-            <label className="label" htmlFor="email">
-              {t("auth.email")} *
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder={t("auth.placeholders.email")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="label" htmlFor="password">
-              {t("auth.password")} *
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                className="input pr-10"
-                placeholder={t("auth.placeholders.password")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text-muted hover:text-cm-text-secondary transition-colors"
-                onClick={() => setShowPassword((v) => !v)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label className="label" htmlFor="confirmPassword">
-              {t("auth.confirmPassword")} *
-            </label>
-            <input
-              id="confirmPassword"
-              type={showPassword ? "text" : "password"}
-              className={`input ${confirmPassword && password !== confirmPassword ? "input-error" : ""}`}
-              placeholder={t("auth.placeholders.confirmPassword")}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
-            {confirmPassword && password !== confirmPassword && (
-              <p className="error-msg">{t("auth.errors.passwordsDoNotMatch")}</p>
+            {error && (
+              <div className="p-6 border-4 border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000] font-black uppercase text-[10px] tracking-[0.2em]">
+                ERROR: {error}
+              </div>
             )}
-          </div>
 
-          {/* Error */}
-          {error && (
-            <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            className="btn-primary w-full"
-            disabled={loading}
-          >
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            {loading ? t("common.loading") : t("register.submitAndVerify")}
-          </button>
-        </form>
-
-        <p className="mt-6 font-sans text-sm text-cm-text-secondary text-center">
-          {t("auth.hasAccount")}{" "}
-          <Link href={`/${locale}/login`} className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors">
-            {t("auth.signIn")}
-          </Link>
-        </p>
+            <button type="submit" className="w-full py-8 bg-black text-[#F5E000] border-4 border-black font-sans font-black text-xs uppercase tracking-[0.4em] hover:bg-[#F5E000] hover:text-black transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none" disabled={loading}>
+              {loading ? <Loader2 size={24} className="animate-spin mx-auto" strokeWidth={3} /> : t("register.submitAndVerify")}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
           roleType: (roleType as RoleType) ?? RoleType.ARTIST,
           country: country ?? null,
           city: city ?? null,
-          // Auto-verify in MVP — email sending comes in Phase 10
-          emailVerified: new Date(),
+          // Removed auto-verify — user must confirm via email
+          emailVerified: null,
           labelStatus: LabelStatus.APPROVED,
         },
         select: { id: true, email: true, artistName: true, accountType: true },

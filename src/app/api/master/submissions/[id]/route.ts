@@ -20,7 +20,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { action, notes, rating, placement } = body;
+    const { action, notes, rating, placements, status } = body;
 
     if (!["accept", "reject"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -39,18 +39,18 @@ export async function PATCH(
     }
 
     if (action === "accept") {
-      if (!placement) {
-         return NextResponse.json({ error: "Placement is required to accept a submission" }, { status: 400 });
+      if (!placements || placements.length === 0) {
+         return NextResponse.json({ error: "Placements are required to accept a submission" }, { status: 400 });
       }
 
       const updated = await prisma.submission.update({
         where: { id },
         data: {
-          status: "ACCEPTED",
+          status: status || "PENDING_PUBLICATION",
           masterCuratorId: session.user.id,
           masterNotes: notes,
           masterRating: rating,
-          placement: placement,
+          placements: placements,
           masterReviewedAt: new Date()
         }
       });

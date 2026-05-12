@@ -11,7 +11,7 @@ export default async function HomePage({ params }: Props) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect(`/${locale}/login`);
+    redirect(`/${locale}/landing`);
   }
 
   // Curators go strictly to their workspace

@@ -18,7 +18,10 @@ export async function GET() {
         status: "IN_REVIEW",
         curatorId: session.user.id
       },
-      orderBy: { submittedAt: "asc" }, // Oldest first
+      orderBy: [
+        { fastTrack: "desc" },
+        { submittedAt: "asc" }
+      ],
       include: {
         user: {
           select: {

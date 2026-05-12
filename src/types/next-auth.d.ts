@@ -1,5 +1,5 @@
 import "next-auth";
-import { AccountType, RoleType, LabelStatus } from "@prisma/client";
+import { AccountType, FollowersRange, LabelStatus, ListenersRange, RoleType } from "@prisma/client";
 
 declare module "next-auth" {
   interface Session {
@@ -19,6 +19,12 @@ declare module "next-auth" {
       labelStatus: LabelStatus;
       emailVerified: Date | null;
       genre?: string | null;
+      instagram?: string | null;
+      spotifyUrl?: string | null;
+      subgenre?: string | null;
+      monthlyListeners?: ListenersRange | null;
+      instagramFollowers?: FollowersRange | null;
+      credits: number;
     };
   }
 
@@ -35,6 +41,12 @@ declare module "next-auth" {
     labelStatus: LabelStatus;
     emailVerified: Date | null;
     genre?: string | null;
+    monthlyListeners?: ListenersRange | null;
+    instagramFollowers?: FollowersRange | null;
+    instagram?: string | null;
+    spotifyUrl?: string | null;
+    subgenre?: string | null;
+    credits: number;
   }
 }
 
@@ -52,5 +64,11 @@ declare module "next-auth/jwt" {
     labelStatus: LabelStatus;
     emailVerified: Date | null;
     genre?: string | null;
+    subgenre?: string | null;
+    instagram?: string | null;
+    spotifyUrl?: string | null;
+    monthlyListeners?: ListenersRange | null;
+    instagramFollowers?: FollowersRange | null;
+    credits: number;
   }
 }

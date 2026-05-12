@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import SubmitFlow from "@/components/submit/SubmitFlow";
+import SubmitFlowV2 from "@/components/submit/SubmitFlowV2";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import UnverifiedLock from "@/components/industry/UnverifiedLock";
@@ -43,5 +43,5 @@ export default async function IndustrySubmitPage({ params: { locale } }: { param
     );
   }
 
-  return <SubmitFlow basePath="/industry" managedArtists={managedArtists} />;
+  return <SubmitFlowV2 basePath="/industry" managedArtists={managedArtists} />;
 }

@@ -263,6 +263,22 @@
     "thankYouMessage": "We received your submission and will review it within 72 hours.",
     "submitAnother": "Submit another track",
     "viewSubmissions": "View my submissions",
+    "upgrades": {
+      "fastResponse": "Fast Response",
+      "fastResponseDesc": "Get heard within 48 hours",
+      "writtenReview": "Written Review",
+      "writtenReviewDesc": "Get detailed editorial feedback",
+      "multiChannel": "Multi-Channel",
+      "multiChannelDesc": "Send to all relevant curators"
+    },
+    "exclusive": {
+      "title": "Exclusive Opportunities",
+      "interview": "Editorial Interview",
+      "interviewDesc": "Dedicated 1-on-1 feature",
+      "article": "Press Article",
+      "articleDesc": "Full blog post & review",
+      "instagramCollab": "I am willing to collaborate on Instagram to boost this content."
+    },
     "opportunities": {
       "WEEKLY": "Weekly Feature",
       "WEEKLY_desc": "Featured in our weekly editorial picks",

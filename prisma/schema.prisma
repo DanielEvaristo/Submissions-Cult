@@ -78,6 +78,15 @@ enum ListenersRange {
   OVER_500K
 }
 
+enum FollowersRange {
+  UNDER_1K
+  FROM_1K_TO_10K
+  FROM_10K_TO_50K
+  FROM_50K_TO_100K
+  FROM_100K_TO_500K
+  OVER_500K
+}
+
 enum DistributionMethod {
   DISTROKID
   TUNECORE
@@ -178,6 +187,7 @@ model User {
   // Career & industry info
   careerStartYear    Int? // year they started (for 'years active' calc)
   monthlyListeners   ListenersRange? // enum range, not exact number
+  instagramFollowers FollowersRange?
   distributionMethod DistributionMethod?
   hasManager         Boolean             @default(false)
 
@@ -211,9 +221,14 @@ model User {
   sessions Session[]
 
   // Own relations
-  submissions    Submission[]
-  donations      Donation[]
-  managedArtists ManagedArtist[]
+  submissions        Submission[]
+  donations          Donation[]
+  creditTransactions CreditTransaction[]
+  managedArtists     ManagedArtist[]
+  
+  // Relations for curation
+  curatedSubmissions Submission[] @relation("CuratorSubmissions")
+  masterCuratedSubmissions Submission[] @relation("MasterCuratorSubmissions")
 }
 
 model ManagedArtist {
@@ -253,12 +268,22 @@ model Submission {
   streamingUrl      String
   streamingPlatform StreamingPlatform?
 
+  spotifyUrl String? // artist spotify profile
+  instagram  String? // artist instagram handle
+
   genres    String[]
   subgenres String[]
   pitch     String? // max 1000 chars
   pressKitUrl String?
 
-  opportunity Opportunity
+  opportunity Opportunity?
+
+  // ── NEW FLOW FIELDS ──
+  channels        String[] // e.g. ["RADAR", "INTERNET_WAVE", "SPOTIFY_PLAYLIST", "STORIES"]
+  fastTrack       Boolean  @default(false)
+  reviewRequested Boolean  @default(false)
+  premiumServices String[] // e.g. ["INTERVIEW", "ARTICLE"]
+  totalCostUsd    Int      @default(0) // cost in cents if paid via Stripe
 
   // Auto-fill metadata from streaming URL (populated server-side after URL parse)
   autoFilledTitle  String?
@@ -271,12 +296,14 @@ model Submission {
 
   // Level 1 — Curator
   curatorId         String?
+  curator           User?   @relation("CuratorSubmissions", fields: [curatorId], references: [id])
   curatorNotes      String?
   curatorRating     Int? // 1-5 stars
   curatorReviewedAt DateTime?
 
   // Level 2 — Master Curator
   masterCuratorId  String?
+  masterCurator    User?   @relation("MasterCuratorSubmissions", fields: [masterCuratorId], references: [id])
   masterNotes      String?
   masterRating     Int? // 1-5 stars
   placement        String?
@@ -287,6 +314,21 @@ model Submission {
   isFree      Boolean @default(true)
 
   submittedAt DateTime @default(now())
+}
+
+model CreditTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  amount    Int      // positive for purchase, negative for usage
+  type      String   // PURCHASE | USAGE
+  credits   Int      // number of credits involved
+  currency  String   @default("usd")
+  
+  stripeSessionId String? @unique
+  
+  createdAt DateTime @default(now())
 }
 
 model Donation {

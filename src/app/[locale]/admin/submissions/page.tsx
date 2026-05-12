@@ -235,7 +235,7 @@ export default function AdminSubmissionsPage() {
 
                 {/* Opportunity */}
                 <div className={`shrink-0 ${OPP_COLORS[sub.opportunity]}`}>
-                  {sub.opportunity.replace(/_/g, " ")}
+                  {sub.opportunity ? sub.opportunity.replace(/_/g, " ") : "GENERAL SUBMISSION"}
                 </div>
 
                 {/* Status */}

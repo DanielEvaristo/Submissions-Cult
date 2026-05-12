@@ -55,15 +55,18 @@ interface Submission {
   autoFilledCover: string | null;
   streamingUrl: string;
   pitch: string | null;
+  fastTrack: boolean;
+  reviewRequested: boolean;
+  isMultiChannel: boolean;
   submittedAt: string;
   user: ArtistData;
 }
 
 const OPP_COLORS: Record<Opportunity, string> = {
-  WEEKLY: "bg-bg-elevated text-cm-text-primary border border-border px-2.5 py-1 rounded-md font-sans text-xs font-semibold",
-  SPOTIFY: "bg-ok/10 text-ok border border-ok/20 px-2.5 py-1 rounded-md font-sans text-xs font-semibold",
-  WEBRADIO: "bg-warn/10 text-warn border border-warn/20 px-2.5 py-1 rounded-md font-sans text-xs font-semibold",
-  ALBUM_STORY: "bg-accent-red/10 text-accent-red border border-accent-red/20 px-2.5 py-1 rounded-md font-sans text-xs font-semibold",
+  WEEKLY: "bg-black text-white px-2.5 py-1 font-sans text-[10px] font-black uppercase tracking-widest",
+  SPOTIFY: "bg-[#F5E000] text-black px-2.5 py-1 font-sans text-[10px] font-black uppercase tracking-widest",
+  WEBRADIO: "border-2 border-black text-black px-2.5 py-1 font-sans text-[10px] font-black uppercase tracking-widest",
+  ALBUM_STORY: "bg-black text-[#F5E000] px-2.5 py-1 font-sans text-[10px] font-black uppercase tracking-widest",
 };
 
 export default function CuratorDashboard() {
@@ -155,11 +158,11 @@ export default function CuratorDashboard() {
     <div className="h-[calc(100vh-64px)] flex overflow-hidden">
       
       {/* ── Left Column: Inbox ── */}
-      <div className="w-1/3 min-w-[350px] border-r border-border bg-bg-surface flex flex-col h-full">
-        <div className="px-6 py-5 border-b border-border bg-bg-elevated/50">
-          <h1 className="font-sans text-xl font-bold text-cm-text-primary">Curator Inbox</h1>
-          <p className="font-sans text-sm text-cm-text-secondary mt-1">
-            {myQueueSubs.length} tracks assigned to you
+      <div className="w-1/3 min-w-[350px] border-r-4 border-white/10 bg-black flex flex-col h-full">
+        <div className="px-8 py-8 border-b-4 border-white/10 bg-black text-white">
+          <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">INBOX</h1>
+          <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] text-[#F5E000] mt-2">
+            {myQueueSubs.length} PENDING ASSIGNMENTS
           </p>
         </div>
 
@@ -212,37 +215,37 @@ export default function CuratorDashboard() {
           <div className="max-w-4xl mx-auto w-full p-8 animate-fade-in space-y-8">
             
             {/* Header / Track Info */}
-            <div className="flex gap-6 items-start">
-              <div className="w-40 h-40 shrink-0 bg-bg-elevated border border-border rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
+            <div className="flex flex-col md:flex-row gap-8 items-start border-b-4 border-white/10 pb-10">
+              <div className="w-48 h-48 shrink-0 bg-black border-4 border-white/20 overflow-hidden flex items-center justify-center shadow-[8px_8px_0px_0px_rgba(245,224,0,0.1)]">
                 {selectedSub.autoFilledCover ? (
                   <img src={selectedSub.autoFilledCover} alt="Cover" className="w-full h-full object-cover" />
                 ) : (
-                  <Music size={40} className="text-cm-text-muted" />
+                  <Music size={48} className="text-[#F5E000]" strokeWidth={3} />
                 )}
               </div>
               <div className="flex-1 pt-2">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-4 mb-4">
                   <span className={OPP_COLORS[selectedSub.opportunity]}>
-                    {selectedSub.opportunity.replace(/_/g, " ")}
+                    {selectedSub.opportunity ? selectedSub.opportunity.replace(/_/g, " ") : "GENERAL SUBMISSION"}
                   </span>
-                  <span className="font-sans text-sm text-cm-text-secondary">
-                    Submitted {formatDate(selectedSub.submittedAt)}
+                  <span className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                    SUBMITTED {formatDate(selectedSub.submittedAt)}
                   </span>
                 </div>
-                <h2 className="font-sans text-4xl font-bold text-cm-text-primary tracking-tight mb-2">
+                <h2 className="font-sans text-6xl font-black text-white tracking-tighter leading-[0.9] uppercase mb-4">
                   {selectedSub.trackTitle}
                 </h2>
-                <p className="font-sans text-xl text-cm-text-secondary font-medium">
+                <p className="font-sans text-2xl text-white font-black uppercase tracking-tight opacity-40">
                   {selectedSub.artistName}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-6 flex flex-wrap gap-2">
                   {selectedSub.genres.map(g => (
-                    <span key={g} className="px-2 py-1 bg-bg-surface border border-border rounded text-xs text-cm-text-secondary uppercase">
+                    <span key={g} className="px-3 py-1 border-2 border-white/10 text-[10px] font-black uppercase tracking-widest text-white/60">
                       {g}
                     </span>
                   ))}
                   {selectedSub.subgenres.map(g => (
-                    <span key={g} className="px-2 py-1 bg-bg-surface border border-border rounded text-xs text-cm-text-secondary uppercase">
+                    <span key={g} className="px-3 py-1 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest border border-white/10">
                       {g}
                     </span>
                   ))}
@@ -251,14 +254,14 @@ export default function CuratorDashboard() {
             </div>
 
             {/* Listen Action */}
-            <div className="p-5 border border-border bg-bg-surface rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-accent-red/10 flex items-center justify-center text-accent-red">
-                  <Play size={18} className="ml-1" />
+            <div className="p-8 border-4 border-white/10 bg-black flex items-center justify-between shadow-[8px_8px_0px_0px_rgba(245,224,0,0.1)]">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-[#F5E000] flex items-center justify-center text-black">
+                  <Play size={32} className="ml-1" strokeWidth={3} />
                 </div>
                 <div>
-                  <p className="font-sans font-bold text-cm-text-primary">Listen to Track</p>
-                  <p className="font-sans text-sm text-cm-text-secondary truncate max-w-md">
+                  <p className="font-sans text-2xl font-black uppercase tracking-tighter text-white">LISTEN TO TRACK</p>
+                  <p className="font-sans text-xs font-bold text-white/20 uppercase tracking-widest truncate max-w-md">
                     {selectedSub.streamingUrl}
                   </p>
                 </div>
@@ -267,9 +270,9 @@ export default function CuratorDashboard() {
                 href={selectedSub.streamingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-secondary flex items-center gap-2"
+                className="px-8 py-4 bg-[#F5E000] text-black font-black uppercase text-xs tracking-[0.2em] hover:bg-white transition-all flex items-center gap-3 border-2 border-[#F5E000]"
               >
-                Open <ExternalLink size={14} />
+                OPEN <ExternalLink size={16} strokeWidth={3} />
               </a>
             </div>
 
@@ -291,32 +294,33 @@ export default function CuratorDashboard() {
 
                 {/* Review Form */}
                 <section>
-                  <h3 className="font-sans text-sm font-bold uppercase tracking-wider text-cm-text-muted mb-3">
-                    Curator Evaluation
+                  <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black/40 mb-6">
+                    CURATOR EVALUATION
                   </h3>
                   
                   {selectedSub.status === "PENDING" ? (
-                    <div className="p-8 border border-border bg-bg-surface rounded-xl text-center">
-                      <p className="font-sans text-cm-text-primary mb-4">
+                    <div className="p-12 border-4 border-white/10 bg-black text-center">
+                      <p className="font-sans text-xs font-black uppercase tracking-widest text-white/20">
                         This submission has not been assigned to you.
                       </p>
                     </div>
                   ) : (
-                    <div className="p-6 border border-border bg-bg-surface rounded-xl space-y-6">
+                    <div className="p-10 border-4 border-white/10 bg-black space-y-10 shadow-[12px_12px_0px_0px_rgba(245,224,0,0.05)]">
                       
                       {/* Rating */}
                       <div>
-                        <label className="label mb-2">Rating *</label>
-                        <div className="flex gap-2">
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4">Quality Score *</label>
+                        <div className="flex gap-4">
                           {[1,2,3,4,5].map(star => (
                             <button
                               key={star}
                               onClick={() => setRating(star)}
-                              className="p-2 transition-transform hover:scale-110 focus:outline-none"
+                              className="p-1 transition-transform hover:scale-110 focus:outline-none"
                             >
                               <Star 
-                                size={28} 
-                                className={`${rating >= star ? "fill-accent-red text-accent-red" : "text-border"}`} 
+                                size={40} 
+                                className={`${rating >= star ? "fill-[#F5E000] text-[#F5E000]" : "text-white/10"}`} 
+                                strokeWidth={2.5}
                               />
                             </button>
                           ))}
@@ -325,37 +329,37 @@ export default function CuratorDashboard() {
 
                       {/* Notes */}
                       <div>
-                        <label className="label" htmlFor="curatorNotes">Internal Notes</label>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4" htmlFor="curatorNotes">Internal Editorial Notes</label>
                         <textarea
                           id="curatorNotes"
-                          className="input min-h-[120px]"
-                          placeholder="What did you think of the track? (These notes go to the Master Curator, the artist will not see them)"
+                          className="w-full p-6 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight min-h-[160px] transition-all"
+                          placeholder="WRITE YOUR FEEDBACK HERE..."
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                         />
                       </div>
 
                       {error && (
-                        <div className="p-3 bg-danger/10 text-danger border border-danger/20 rounded-md font-sans text-sm font-medium">
+                        <div className="p-4 bg-[#FF0000] text-white font-sans text-[10px] font-black uppercase tracking-[0.2em]">
                           {error}
                         </div>
                       )}
 
                       {/* Actions */}
-                      <div className="flex gap-4 pt-2 border-t border-border">
+                      <div className="flex gap-6 pt-6 border-t-2 border-black/5">
                         <button
                           onClick={() => handleAction("reject")}
                           disabled={actionLoading !== null}
-                          className="flex-1 py-3 px-4 bg-bg-elevated hover:bg-danger/20 hover:text-danger border border-border hover:border-danger/30 rounded-lg transition-colors font-sans font-bold text-sm text-cm-text-secondary flex items-center justify-center gap-2"
+                          className="flex-1 py-6 bg-white text-black border-2 border-black font-sans font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3"
                         >
-                          {actionLoading === "reject" ? <Loader2 className="animate-spin" size={16}/> : <><XCircle size={16} /> Reject</>}
+                          {actionLoading === "reject" ? <Loader2 className="animate-spin" size={16}/> : <><XCircle size={18} strokeWidth={3} /> Reject</>}
                         </button>
                         <button
                           onClick={() => handleAction("approve")}
                           disabled={actionLoading !== null}
-                          className="flex-1 py-3 px-4 bg-accent-red hover:bg-accent-red/90 text-white rounded-lg transition-colors font-sans font-bold text-sm flex items-center justify-center gap-2"
+                          className="flex-1 py-6 bg-[#F5E000] text-black border-2 border-black font-sans font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3"
                         >
-                          {actionLoading === "approve" ? <Loader2 className="animate-spin" size={16}/> : <><CheckCircle2 size={16} /> Approve to Master</>}
+                          {actionLoading === "approve" ? <Loader2 className="animate-spin" size={16}/> : <><CheckCircle2 size={18} strokeWidth={3} /> Approve to Master</>}
                         </button>
                       </div>
 
@@ -365,39 +369,40 @@ export default function CuratorDashboard() {
               </div>
 
               {/* Sidebar: Artist Info */}
-              <div className="space-y-6">
+              <div className="space-y-10">
                 <section>
-                  <h3 className="font-sans text-sm font-bold uppercase tracking-wider text-cm-text-muted mb-3">
-                    Artist Profile
+                  <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black/40 mb-6">
+                    ARTIST PROFILE
                   </h3>
-                  <div className="p-5 border border-border bg-bg-surface rounded-xl space-y-4">
+                  <div className="p-8 border-4 border-white/10 bg-black space-y-6">
                     <InfoRow label="Location" value={[selectedSub.user.country, selectedSub.user.city].filter(Boolean).join(", ")} />
-                    <InfoRow label="Type" value={selectedSub.user.roleType} />
-                    <InfoRow label="Started" value={selectedSub.user.careerStartYear?.toString()} />
+                    <InfoRow label="Artist Type" value={selectedSub.user.roleType} />
+                    <InfoRow label="Est." value={selectedSub.user.careerStartYear?.toString()} />
                     <InfoRow label="Listeners" value={selectedSub.user.monthlyListeners?.replace(/_/g, " ")} />
-                    <InfoRow label="Manager" value={selectedSub.user.hasManager ? "Yes" : "No"} />
+                    <InfoRow label="IG Followers" value={selectedSub.user.instagramFollowers?.toLocaleString()} />
+                    <InfoRow label="Manager" value={selectedSub.user.hasManager ? "YES" : "NO"} />
                     
                     {selectedSub.user.bio && (
-                      <div className="pt-4 mt-4 border-t border-border">
-                        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">Bio</p>
-                        <p className="font-sans text-xs text-cm-text-primary line-clamp-4">{selectedSub.user.bio}</p>
+                      <div className="pt-6 mt-6 border-t-2 border-black/5">
+                        <p className="font-sans text-[9px] font-black uppercase tracking-[0.3em] text-black/40 mb-3">BIO</p>
+                        <p className="font-sans text-xs font-bold uppercase tracking-tight text-black leading-relaxed">{selectedSub.user.bio}</p>
                       </div>
                     )}
                   </div>
                 </section>
                 
                 <section>
-                  <h3 className="font-sans text-sm font-bold uppercase tracking-wider text-cm-text-muted mb-3">
-                    Links
+                  <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black/40 mb-6">
+                    CONNECTED LINKS
                   </h3>
-                  <div className="p-5 border border-border bg-bg-surface rounded-xl space-y-3">
+                  <div className="p-8 border-4 border-black bg-black text-white space-y-4 shadow-[8px_8px_0px_0px_rgba(245,224,0,1)]">
                     {selectedSub.user.spotifyUrl && <LinkRow label="Spotify" url={selectedSub.user.spotifyUrl} />}
                     {selectedSub.user.instagram && <LinkRow label="Instagram" url={selectedSub.user.instagram} />}
                     {selectedSub.user.tiktok && <LinkRow label="TikTok" url={selectedSub.user.tiktok} />}
                     {selectedSub.user.youtube && <LinkRow label="YouTube" url={selectedSub.user.youtube} />}
                     {selectedSub.user.website && <LinkRow label="Website" url={selectedSub.user.website} />}
                     {!(selectedSub.user.spotifyUrl || selectedSub.user.instagram || selectedSub.user.tiktok || selectedSub.user.youtube || selectedSub.user.website) && (
-                      <p className="font-sans text-xs text-cm-text-muted">No links provided.</p>
+                      <p className="font-sans text-[10px] font-black uppercase tracking-widest text-white/40">No links provided.</p>
                     )}
                   </div>
                 </section>
@@ -428,32 +433,42 @@ function SubmissionItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-xl border transition-all ${
+      className={`w-full text-left p-6 transition-all border-l-[12px] relative overflow-hidden ${
         selected 
-          ? "bg-accent-red/5 border-accent-red/30 ring-1 ring-accent-red/20 shadow-sm" 
-          : "bg-bg-surface border-border hover:bg-bg-elevated hover:border-cm-text-muted/30"
+          ? "bg-[#F5E000] text-black border-l-black" 
+          : "bg-black text-white border-l-transparent hover:bg-white/5 hover:text-[#F5E000]"
       }`}
     >
-      <div className="flex gap-3">
-        <div className="w-10 h-10 rounded-md bg-bg-elevated shrink-0 overflow-hidden border border-border flex items-center justify-center">
+      {sub.fastTrack && (
+        <div className="absolute top-0 right-0 bg-[#FF0000] text-white text-[8px] font-black uppercase px-2 py-1 tracking-tighter">
+          FAST RESPONSE
+        </div>
+      )}
+      <div className="flex gap-4">
+        <div className={`w-14 h-14 bg-black shrink-0 overflow-hidden border-2 border-black flex items-center justify-center ${selected ? 'border-black' : ''}`}>
           {sub.autoFilledCover ? (
             <img src={sub.autoFilledCover} alt="" className="w-full h-full object-cover" />
           ) : (
-            <Music size={14} className="text-cm-text-muted" />
+            <Music size={20} className={selected ? 'text-[#F5E000]' : 'text-white'} strokeWidth={3} />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-sans text-sm font-bold text-cm-text-primary truncate">
+          <p className="font-sans text-base font-black uppercase tracking-tighter truncate leading-none mb-1">
             {sub.trackTitle}
           </p>
-          <p className="font-sans text-xs text-cm-text-secondary truncate">
+          <p className="font-sans text-xs font-bold uppercase tracking-widest opacity-60 truncate">
             {sub.artistName}
           </p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-accent-red/10 text-accent-red">
-              In Review
+          <div className="flex items-center gap-2 mt-3">
+            {sub.reviewRequested && (
+              <span className="text-[8px] font-black uppercase border border-black px-1 py-0.5 bg-white text-black">
+                REVIEW REQUIRED
+              </span>
+            )}
+            <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 border ${selected ? 'bg-black text-[#F5E000] border-black' : 'bg-[#F5E000] text-black border-black'}`}>
+              IN REVIEW
             </span>
-            <span className="font-sans text-[10px] text-cm-text-muted">
+            <span className="font-sans text-[9px] font-bold uppercase tracking-widest opacity-40">
               {formatDate(sub.submittedAt)}
             </span>
           </div>

@@ -19,7 +19,6 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
-  const industryCreated = searchParams.get("industryCreated");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +28,6 @@ export default function LoginPage() {
   const [langOpen, setLangOpen] = useState(false);
 
   const switchLocale = (newLocale: string) => {
-    // Full reload so next-intl middleware reads locale directly from URL
     const segments = window.location.pathname.split("/");
     segments[1] = newLocale;
     window.location.href = segments.join("/");
@@ -53,7 +51,6 @@ export default function LoginPage() {
       return;
     }
 
-    // After login, check if user is admin and redirect accordingly
     const session = await getSession();
     if (session?.user?.isAdmin) {
       window.location.href = `/${locale}/admin`;
@@ -73,146 +70,139 @@ export default function LoginPage() {
   const currentLang = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-black flex flex-col md:flex-row">
+      
+      {/* Left Column: Brand Identity */}
+      <div className="w-full md:w-1/2 bg-black flex flex-col justify-between p-8 md:p-12 relative overflow-hidden min-h-[40vh] md:min-h-screen">
+        <div className="relative z-10">
+          <Link href={`/${locale}/landing`} className="flex items-center gap-2 text-white hover:text-cult-yellow transition-colors">
+            <span className="text-2xl md:text-3xl">★</span>
+            <span className="font-black text-xl md:text-2xl tracking-tighter">CULT MACHINE</span>
+          </Link>
+        </div>
 
-      {/* ── Language switcher ── */}
-      <div className="fixed top-4 right-4 z-50">
-        <button
-          id="lang-switcher-btn"
-          onClick={() => setLangOpen((v) => !v)}
-          className="flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-bg-surface text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-elevated transition-all font-sans text-sm font-medium shadow-sm"
-          aria-label="Change language"
-        >
-          <Globe size={12} />
-          <span>{currentLang.flag}</span>
-          <span>{currentLang.label}</span>
-        </button>
+        <div className="relative z-10 mt-12 md:mt-auto">
+          <h1 className="text-white text-[clamp(40px,10vw,100px)] font-black uppercase leading-[0.85] tracking-tighter mb-6">
+            SUBMIT<br />
+            YOUR<br />
+            <span className="text-cult-yellow">SOUL.</span>
+          </h1>
+          <p className="text-[#999999] font-black uppercase text-[10px] md:text-xs tracking-[0.4em]">
+            Artist & Industry Portal
+          </p>
+        </div>
 
-        {langOpen && (
-          <>
-            {/* backdrop */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setLangOpen(false)}
-            />
-            <div className="absolute right-0 top-full mt-1 z-50 border border-cm-border bg-cm-surface shadow-lg rounded overflow-hidden min-w-[100px]">
+        {/* Decorative elements */}
+        <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[300px] leading-none select-none pointer-events-none">
+          ★
+        </div>
+      </div>
+
+      {/* Right Column: Form */}
+      <div className="w-full md:w-1/2 bg-black flex flex-col justify-center px-6 py-16 md:px-24 relative animate-reveal">
+        
+        {/* Language switcher */}
+        <div className="absolute top-6 md:top-12 right-6 md:right-12">
+          <button
+            onClick={() => setLangOpen((v) => !v)}
+            className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 border-4 border-white/10 bg-black hover:bg-[#F5E000] transition-all font-sans text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white hover:text-black shadow-[4px_4px_0px_0px_rgba(245,224,0,0.1)] hover:shadow-none"
+          >
+            <Globe size={14} strokeWidth={3} />
+            <span>{currentLang.label}</span>
+          </button>
+          {langOpen && (
+            <div className="absolute right-0 top-full mt-2 z-50 border-4 border-white/10 bg-black min-w-[120px] md:min-w-[140px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               {LOCALES.map((l) => (
                 <button
                   key={l.code}
-                  id={`lang-${l.code}`}
                   onClick={() => switchLocale(l.code)}
-                  className={`w-full flex items-center gap-2 px-4 py-2.5 font-sans text-sm font-medium transition-colors hover:bg-bg-elevated ${
-                    locale === l.code
-                      ? "text-accent-red"
-                      : "text-cm-text-secondary hover:text-cm-text-primary"
+                  className={`w-full flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 font-sans text-[10px] uppercase font-black tracking-widest transition-colors hover:bg-[#F5E000] hover:text-black ${
+                    locale === l.code ? "bg-[#F5E000] text-black" : "text-white/60"
                   }`}
                 >
                   <span>{l.flag}</span>
                   <span>{l.label}</span>
-                  {locale === l.code && (
-                    <span className="ml-auto w-1 h-1 rounded-full bg-accent-red" />
-                  )}
                 </button>
               ))}
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Logo */}
-      <div className="mb-10 text-center animate-fade-in">
-        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
-          Cult Machine
-        </p>
-        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
-          Submissions Portal
-        </h1>
-      </div>
+        <div className="max-w-md w-full mx-auto mt-12 md:mt-0">
+          {verified && (
+            <div className="mb-8 md:mb-12 px-6 py-4 border-4 border-[#F5E000] bg-[#F5E000] font-sans text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-black text-center shadow-[4px_4px_0px_0px_rgba(245,224,0,0.2)]">
+              {t("auth.accountCreated")}
+            </div>
+          )}
 
-      <div className="w-full max-w-sm animate-slide-up">
-        {/* Success banner */}
-        {(verified || industryCreated) && (
-          <div className="mb-6 px-4 py-3 rounded-md border border-ok/30 bg-ok/10 font-sans text-sm font-medium text-ok text-center shadow-sm">
-            {industryCreated ? t("auth.industryAccountCreated") : t("auth.accountCreated")}
+          <div className="mb-12 md:mb-16">
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 leading-none text-white">{t("auth.signIn")}</h2>
+            <p className="text-white/20 font-black uppercase text-[9px] md:text-[10px] tracking-[0.4em] italic">"NO ALGORITHMS. JUST EARS."</p>
           </div>
-        )}
 
-        <div className="card">
-          <p className="section-label mb-6 text-center">{t("auth.signIn")}</p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="space-y-12">
             <div>
-              <label className="label" htmlFor="email">
-                {t("auth.email")}
-              </label>
+              <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block text-white/40" htmlFor="email">{t("auth.email")}</label>
               <input
                 id="email"
                 type="email"
-                className="input"
+                className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black uppercase tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none"
                 placeholder={t("auth.placeholders.email")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label className="label" htmlFor="password">
-                {t("auth.password")}
-              </label>
+              <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block text-white/40" htmlFor="password">{t("auth.password")}</label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="input pr-10"
+                  className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black uppercase tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none pr-16"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  autoComplete="current-password"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text-muted hover:text-cm-text-secondary transition-colors"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-[#F5E000] transition-colors"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  {showPassword ? <EyeOff size={20} strokeWidth={3} /> : <Eye size={20} strokeWidth={3} />}
                 </button>
               </div>
             </div>
 
-            {/* Error */}
-            {error && <p className="error-msg">{error}</p>}
+            {error && (
+              <div className="p-6 border-4 border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000] font-black uppercase text-[10px] tracking-[0.2em]">
+                ERROR: {error}
+              </div>
+            )}
 
-            {/* Submit */}
             <button
               type="submit"
-              className="btn-primary w-full mt-2"
+              className="w-full py-8 bg-[#F5E000] text-black border-4 border-[#F5E000] font-sans font-black text-xs uppercase tracking-[0.4em] hover:bg-white transition-all shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
               disabled={loading}
             >
-              {loading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : null}
-              {loading ? t("common.loading") : t("auth.signIn")}
+              {loading ? <Loader2 size={24} className="animate-spin mx-auto" strokeWidth={3} /> : t("auth.signIn")}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="divider my-6" />
-
-          <p className="font-sans text-sm text-cm-text-secondary text-center">
-            {t("auth.noAccount")}{" "}
-            <Link
-              href={`/${locale}/register`}
-              className="text-cm-text-primary hover:text-accent-red underline underline-offset-2 transition-colors"
-            >
-              {t("auth.signUp")}
-            </Link>
-          </p>
+          <div className="mt-20 pt-12 border-t-2 border-white/5">
+            <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] text-white/20 text-center">
+              {t("auth.noAccount")}{" "}
+              <Link
+                href={`/${locale}/register`}
+                className="text-[#F5E000] underline underline-offset-[8px] decoration-4 hover:text-white transition-colors"
+              >
+                {t("auth.signUp")}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

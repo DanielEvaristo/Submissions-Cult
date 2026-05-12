@@ -110,91 +110,94 @@ export default function AdminStaffPage() {
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-10 space-y-10">
+    <div className="max-w-6xl mx-auto px-8 py-12 space-y-12 animate-reveal">
 
       {/* Header */}
-      <div>
-        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
-          Staff Management
-        </h1>
-        <p className="font-sans text-base text-cm-text-secondary mt-2">
-          Create and manage curator accounts.
-        </p>
+      <div className="border-b-4 border-black pb-8 mb-12 flex justify-between items-end">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40 mb-4 block">ADMINISTRATION</span>
+          <h1 className="font-sans text-6xl font-black text-black tracking-tighter uppercase leading-none">
+            STAFF<br/>MANAGEMENT
+          </h1>
+        </div>
+        <div className="hidden md:block text-[10px] font-black uppercase tracking-[0.4em] text-black/10">
+          SEC_AUTH_LEVEL_02
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
         {/* Creation Form */}
         <div className="lg:col-span-1">
-          <div className="bg-bg-surface border border-border rounded-xl p-6 shadow-sm">
-            <h2 className="font-sans text-lg font-bold text-cm-text-primary mb-4 flex items-center gap-2">
-              <Plus size={18} /> Add New Staff
+          <div className="border-4 border-black bg-white p-8">
+            <h2 className="font-sans text-xl font-black uppercase tracking-widest text-black mb-8 border-b-2 border-black pb-4 flex items-center gap-3">
+              <Plus size={20} strokeWidth={3} /> ADD NEW STAFF
             </h2>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleCreate} className="space-y-6">
               <div>
-                <label className="label">Name</label>
+                <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-2">FULL NAME</label>
                 <input
                   type="text"
                   required
-                  className="input"
-                  placeholder="John Doe"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  placeholder="EX. JOHN DOE"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="label">Email</label>
+                <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-2">EMAIL ADDRESS</label>
                 <input
                   type="email"
                   required
-                  className="input"
-                  placeholder="john@example.com"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  placeholder="STAFF@CULTMACHINE.COM"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="label">Temporary Password</label>
+                <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-2">ACCESS KEY (TEMP PW)</label>
                 <input
                   type="text"
                   required
-                  className="input"
-                  placeholder="secret123"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  placeholder="••••••••"
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                 />
-                <p className="text-[11px] text-cm-text-muted mt-1">They can change this after logging in.</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mt-2">MUST BE RESET ON FIRST LOGIN.</p>
               </div>
 
               <div>
-                <label className="label">Role</label>
+                <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-2">SECURITY CLEARANCE</label>
                 <select
-                  className="input"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight appearance-none"
                   value={form.role}
                   onChange={e => setForm({ ...form, role: e.target.value })}
                 >
-                  <option value="CURATOR">Curator (Level 1)</option>
-                  <option value="MASTER_CURATOR">Master Curator (Level 2)</option>
+                  <option value="CURATOR">CURATOR (L1)</option>
+                  <option value="MASTER_CURATOR">MASTER CURATOR (L2)</option>
                 </select>
               </div>
 
               {form.role === "CURATOR" && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="label mb-0">Assigned Genres</label>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em]">GENRE SPECIALISATION</label>
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, assignedGenres: [...GENRES] })}
-                      className="text-[10px] uppercase font-bold text-accent-red hover:bg-accent-red/10 px-2 py-1 rounded transition-colors"
+                      className="text-[9px] font-black uppercase tracking-widest bg-black text-white px-2 py-1 hover:bg-[#F5E000] hover:text-black transition-colors"
                     >
-                      Assign All
+                      ASSIGN ALL
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 bg-bg-elevated border border-border rounded-md">
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-4 border-2 border-black bg-[#F5F5F5]">
                     {GENRES.map(g => (
-                      <label key={g} className="flex items-center gap-2 cursor-pointer group">
+                      <label key={g} className="flex items-center gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={form.assignedGenres.includes(g)}
@@ -205,22 +208,19 @@ export default function AdminStaffPage() {
                               setForm({ ...form, assignedGenres: form.assignedGenres.filter(x => x !== g) });
                             }
                           }}
-                          className="rounded border-border text-accent-red focus:ring-accent-red/20 bg-bg cursor-pointer"
+                          className="w-4 h-4 rounded-none border-2 border-black text-black focus:ring-0 cursor-pointer"
                         />
-                        <span className="font-sans text-xs text-cm-text-secondary group-hover:text-cm-text-primary transition-colors">{g}</span>
+                        <span className="font-sans text-[10px] font-black uppercase tracking-widest text-black group-hover:bg-[#F5E000] px-1">{g}</span>
                       </label>
                     ))}
                   </div>
-                  <p className="text-[10px] text-cm-text-muted mt-2 leading-tight">
-                    Select genres this curator handles. If empty, they are considered a "Generalist" and can receive any genre if no specialist is available.
-                  </p>
                 </div>
               )}
 
               {message && (
-                <div className={`p-3 rounded-md text-sm font-medium border ${message.type === "success"
-                    ? "bg-ok/10 text-ok border-ok/20"
-                    : "bg-danger/10 text-danger border-danger/20"
+                <div className={`p-4 font-sans text-[10px] font-black uppercase tracking-[0.2em] ${message.type === "success"
+                    ? "bg-[#F5E000] text-black border-2 border-black"
+                    : "bg-[#FF0000] text-white border-2 border-black"
                   }`}>
                   {message.text}
                 </div>
@@ -229,9 +229,9 @@ export default function AdminStaffPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="btn-primary w-full flex items-center justify-center gap-2"
+                className="w-full py-6 bg-black text-white font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-[#F5E000] hover:text-black transition-all flex items-center justify-center gap-3"
               >
-                {creating ? <Loader2 size={16} className="animate-spin" /> : "Create Account"}
+                {creating ? <Loader2 size={16} className="animate-spin" /> : "CREATE ACCESS"}
               </button>
             </form>
           </div>
@@ -239,62 +239,58 @@ export default function AdminStaffPage() {
 
         {/* Staff List */}
         <div className="lg:col-span-2">
-          <div className="bg-bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-border flex items-center gap-2">
-              <Users size={18} className="text-cm-text-secondary" />
-              <h2 className="font-sans text-lg font-bold text-cm-text-primary">Current Staff</h2>
+          <div className="border-4 border-black bg-white">
+            <div className="px-8 py-6 border-b-4 border-black bg-black text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Users size={20} strokeWidth={3} />
+                <h2 className="font-sans text-xl font-black uppercase tracking-widest">ACTIVE ROSTER</h2>
+              </div>
+              <span className="font-sans text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+                {staff.length} PERSONNEL
+              </span>
             </div>
 
             {loading ? (
-              <div className="p-10 flex justify-center">
-                <Loader2 className="animate-spin text-cm-text-muted" size={24} />
+              <div className="p-20 flex justify-center text-black">
+                <Loader2 className="animate-spin" size={32} strokeWidth={3} />
               </div>
             ) : staff.length === 0 ? (
-              <div className="p-10 text-center text-cm-text-muted">
-                No staff members found.
+              <div className="p-20 text-center font-sans text-xs font-black uppercase tracking-widest text-black/20">
+                ROSTER EMPTY.
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y-2 divide-black/5">
                 {staff.map(member => (
-                  <div key={member.id} className="p-5 flex items-center justify-between hover:bg-bg-elevated transition-colors">
-                    <div>
-                      <p className="font-sans text-sm font-bold text-cm-text-primary">
-                        {member.name}
+                  <div key={member.id} className="p-8 flex items-center justify-between hover:bg-[#F5F5F5] transition-all group border-l-[12px] border-l-transparent hover:border-l-black">
+                    <div className="min-w-0">
+                      <p className="font-sans text-xl font-black uppercase tracking-tighter text-black truncate mb-1">
+                        {member.name || "UNNAMED"}
                       </p>
-                      <p className="font-sans text-xs text-cm-text-secondary">
+                      <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-black/40">
                         {member.email}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${member.isMasterCurator
-                          ? "bg-accent-red/10 text-accent-red border border-accent-red/20"
-                          : "bg-bg-elevated text-cm-text-secondary border border-border"
-                        }`}>
-                        {member.isMasterCurator ? "Master Curator" : "Curator"}
-                      </span>
-                      <p className="font-sans text-[10px] text-cm-text-muted mt-1">
-                        Added {formatDate(member.createdAt)}
-                      </p>
-                      {/* Show genres if L1 Curator */}
-                      {!member.isMasterCurator && member.isCurator && (
-                        <p className="font-sans text-[10px] text-cm-text-secondary mt-1">
-                          {member.assignedGenres && member.assignedGenres.length > 0
-                            ? member.assignedGenres.length === GENRES.length
-                              ? "All Genres"
-                              : member.assignedGenres.join(", ")
-                            : "Generalist (All)"}
+                    <div className="flex items-center gap-8">
+                      <div className="text-right hidden sm:block">
+                        <span className={`inline-block px-3 py-1 font-sans text-[9px] font-black uppercase tracking-widest border-2 border-black ${member.isMasterCurator
+                            ? "bg-[#F5E000] text-black"
+                            : "bg-white text-black"
+                          }`}>
+                          {member.isMasterCurator ? "LEVEL 2 / MASTER" : "LEVEL 1 / CURATOR"}
+                        </span>
+                        <p className="font-sans text-[9px] font-black uppercase tracking-widest text-black/20 mt-2">
+                          EST. {formatDate(member.createdAt)}
                         </p>
-                      )}
-                    </div>
-                    <div className="pl-4 ml-4 border-l border-border flex items-center justify-center">
-                      <button
-                        onClick={() => handleDelete(member.id, member.name)}
-                        disabled={deletingId === member.id}
-                        className="p-2 text-cm-text-muted hover:text-danger hover:bg-danger/10 rounded-md transition-colors"
-                        title="Delete Account"
-                      >
-                        {deletingId === member.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                      </button>
+                      </div>
+                      <div className="pl-6 border-l-2 border-black/5">
+                        <button
+                          onClick={() => handleDelete(member.id, member.name)}
+                          disabled={deletingId === member.id}
+                          className="w-12 h-12 flex items-center justify-center bg-white border-2 border-black text-black hover:bg-[#FF0000] hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                        >
+                          {deletingId === member.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={18} strokeWidth={3} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

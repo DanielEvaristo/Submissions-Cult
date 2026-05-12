@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Inbox, User, ShieldCheck } from "lucide-react";
+import { Inbox, User, ShieldCheck, Menu, X } from "lucide-react";
 
 export default function CuratorNav({ locale }: { locale: string }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [];
 
@@ -30,62 +32,96 @@ export default function CuratorNav({ locale }: { locale: string }) {
   }
 
   navItems.push({
-    name: "Profile",
+    name: "Profile Settings",
     href: `/${locale}/curator/profile`,
     icon: User,
     exact: false,
   });
 
-  return (
-    <div className="w-64 bg-bg-surface border-r border-border h-screen sticky top-0 flex flex-col z-10 hidden md:flex shrink-0">
+  const NavContent = () => (
+    <>
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-border shrink-0">
-        <Link href={`/${locale}/curator`} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-red flex items-center justify-center">
-            <span className="font-sans font-bold text-white text-sm">CM</span>
-          </div>
-          <div>
-            <p className="font-sans font-bold text-cm-text-primary text-sm leading-tight tracking-tight">
-              Cult Machine
-            </p>
-            <p className="font-sans text-[10px] uppercase font-bold tracking-widest text-cm-text-secondary">
-              Curator
-            </p>
-          </div>
+      <div className="px-6 py-10 border-b-4 border-black bg-black text-white shrink-0">
+        <Link href={`/${locale}/curator`} className="flex items-center gap-2 mb-2">
+          <span className="text-xl text-[#F5E000]">★</span>
+          <p className="font-sans text-xs font-black uppercase tracking-[0.3em]">
+            CULT MACHINE
+          </p>
         </Link>
+        <p className="font-sans text-2xl font-black uppercase leading-none tracking-tighter">
+          STAFF<br/>OS
+        </p>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-muted mb-4 px-2">
-          Staff Menu
+      <nav className="flex-1 py-10 px-0 overflow-y-auto">
+        <p className="px-6 mb-6 font-sans text-[10px] font-black uppercase tracking-[0.3em] text-[#999999]">
+          Curation Tools
         </p>
         
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.exact
-            ? pathname === item.href
-            : pathname.startsWith(item.href);
+        <div className="space-y-0">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                isActive
-                  ? "bg-bg-elevated text-cm-text-primary border border-border shadow-sm"
-                  : "text-cm-text-secondary hover:bg-bg-elevated/50 hover:text-cm-text-primary border border-transparent"
-              }`}
-            >
-              <Icon
-                size={18}
-                className={isActive ? "text-accent-red" : "text-cm-text-muted group-hover:text-cm-text-secondary transition-colors"}
-              />
-              <span className="font-sans text-sm font-semibold">{item.name}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-4 px-6 py-4 transition-all font-sans text-xs font-black uppercase tracking-widest border-b-2 border-white/5 last:border-b-0 ${
+                  isActive
+                    ? "bg-[#F5E000] text-black border-l-[12px] border-l-black pl-3"
+                    : "text-white/60 hover:bg-white/5 hover:text-[#F5E000]"
+                }`}
+              >
+                <Icon size={18} strokeWidth={3} />
+                <span className="font-sans">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
-    </div>
+
+      {/* Footer */}
+      <div className="p-6 border-t-4 border-black mt-auto shrink-0">
+        <p className="text-[10px] font-black text-black uppercase tracking-[0.2em] italic opacity-40 mb-4">
+          "FOR FANS, BY FANS."
+        </p>
+        <div className="bg-white/5 p-4 border-2 border-white/10">
+          <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Session</p>
+          <p className="text-[10px] font-black text-white/60 truncate uppercase">{session?.user?.email}</p>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-black border-b-2 border-[#F5E000]/20 flex items-center justify-between px-6 z-[1001]">
+        <div className="flex items-center gap-2">
+          <span className="text-[#F5E000] font-black text-xl">★</span>
+          <span className="text-white font-black text-xs uppercase tracking-widest">CULT STAFF</span>
+        </div>
+        <button onClick={() => setIsOpen(!isOpen)} className="text-[#F5E000]">
+          {isOpen ? <X size={24} strokeWidth={3} /> : <Menu size={24} strokeWidth={3} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-[1000] bg-black pt-16 flex flex-col">
+          <NavContent />
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-black border-r-4 border-white/10 flex flex-col h-screen sticky top-0 shrink-0 transition-all">
+        <NavContent />
+      </aside>
+    </>
   );
 }

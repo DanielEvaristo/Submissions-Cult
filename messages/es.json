@@ -263,6 +263,22 @@
     "thankYouMessage": "Recibimos tu envío y lo revisaremos en las próximas 72 horas.",
     "submitAnother": "Enviar otro track",
     "viewSubmissions": "Ver mis envíos",
+    "upgrades": {
+      "fastResponse": "Respuesta Rápida",
+      "fastResponseDesc": "Recibe respuesta en menos de 48 horas",
+      "writtenReview": "Reseña Escrita",
+      "writtenReviewDesc": "Recibe feedback editorial detallado",
+      "multiChannel": "Multi-Canal",
+      "multiChannelDesc": "Envía a todos los curadores relevantes"
+    },
+    "exclusive": {
+      "title": "Oportunidades Exclusivas",
+      "interview": "Entrevista Editorial",
+      "interviewDesc": "Reportaje individual dedicado",
+      "article": "Artículo de Prensa",
+      "articleDesc": "Post completo en blog y reseña",
+      "instagramCollab": "Estoy dispuesto a hacer colaboración en Instagram para la difusión de este contenido."
+    },
     "opportunities": {
       "WEEKLY": "Selección Semanal",
       "WEEKLY_desc": "Destacado en nuestras selecciones editoriales semanales",

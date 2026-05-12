@@ -10,41 +10,67 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Strict Cult Machine Palette
+        black: "#0A0A0A",
+        white: "#FFFFFF",
+        "cult-yellow": "#F5E000",
+        
+        // Semantic overrides for the platform
         bg: {
-          DEFAULT: "#121212", // Base dark background
-          surface: "#1C1C1E", // Slightly elevated for sidebar/main cards
-          elevated: "#2C2C2E", // Higher elevation for interactive/hover
+          DEFAULT: "#0A0A0A", // Black base for dark mode
+          surface: "#111111",
+          elevated: "#1A1A1A",
+          light: "#FFFFFF",
         },
         border: {
-          DEFAULT: "#3A3A3C", // Clear visible borders
-          subtle: "#2C2C2E",  // Soft borders
-          hover: "#48484A",   // Border hover state
+          DEFAULT: "rgba(255,255,255,0.1)", // Subtle white borders
+          subtle: "rgba(255,255,255,0.05)",
+          hover: "rgba(255,255,255,0.2)",
+          black: "#000000",
         },
         "cm-text": {
-          primary: "#FAFAFA",   // High contrast white
-          secondary: "#A1A1AA", // zinc-400 for secondary text
-          muted: "#71717A",     // zinc-500 for muted text (much more legible now)
+          primary: "#FFFFFF",
+          secondary: "rgba(255,255,255,0.6)",
+          muted: "rgba(255,255,255,0.4)",
+          inverted: "#0A0A0A",
         },
         accent: {
-          red: "#E8341C",
-          "red-hover": "#F05641", // Softer hover
+          red: "#FF4444",
+          yellow: "#F5E000",
         },
-        ok: "#10B981",    // emerald-500
-        warn: "#F59E0B",  // amber-500
-        danger: "#EF4444",// red-500
+        ok: "#00FF00",
+        warn: "#F5E000", 
+        danger: "#FF0000",
       },
       fontFamily: {
-        mono: ["var(--font-space-mono)", "monospace"],
-        sans: ["var(--font-dm-sans)", "sans-serif"],
+        sans: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        mono: ["Courier New", "monospace"],
+      },
+      borderRadius: {
+        none: "0",
+        sm: "0",
+        DEFAULT: "0",
+        md: "0",
+        lg: "0",
+        xl: "0",
+        "2xl": "0",
+        "3xl": "0",
+        full: "0",
+      },
+      borderWidth: {
+        DEFAULT: "1px",
+        "2": "2px",
+        "3": "3px",
+        "4": "4px",
       },
       animation: {
-        "fade-in": "fadeIn 0.2s ease-out",
-        "slide-up": "slideUp 0.25s ease-out",
+        "fade-in": "fadeIn 0.15s ease-out",
+        "slide-up": "slideUp 0.2s ease-out",
       },
       keyframes: {
         fadeIn: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
         slideUp: {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },

@@ -75,7 +75,7 @@ async function fetchOpenGraphTags(url: string, platform: string) {
     if (platform === "spotify") {
       // Spotify format variations: 
       // "Track Name - song and lyrics by Artist | Spotify"
-      // "Track Name - song by Artist | Spotify"
+      // "Album Name by Artist | Spotify"
       let cleanTitle = ogTitle.split(" | Spotify")[0] || ogTitle;
       
       if (cleanTitle.includes(" - song and lyrics by ")) {
@@ -86,6 +86,10 @@ async function fetchOpenGraphTags(url: string, platform: string) {
         const parts = cleanTitle.split(" - song by ");
         title = parts[0];
         artist = parts[1];
+      } else if (cleanTitle.includes(" by ")) {
+        const parts = cleanTitle.split(" by ");
+        artist = parts.pop() || "";
+        title = parts.join(" by ");
       } else {
         title = cleanTitle;
         // If not in title, Spotify puts it in description: "Artist, Featured · Album · Canción · Year"
@@ -111,6 +115,7 @@ async function fetchOpenGraphTags(url: string, platform: string) {
       cover: ogImage,
       platform: platform as any,
       source: "opengraph",
+      type: url.includes("/album/") || url.includes("/ep/") ? "ALBUM" : "SINGLE", // Simplified detection
     };
   } catch (err) {
     console.error("OG fetch error:", err);
@@ -119,8 +124,8 @@ async function fetchOpenGraphTags(url: string, platform: string) {
 }
 
 async function fetchFromSpotifyUrl(url: string) {
-  // Validate Spotify URL format
-  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?track\/([a-zA-Z0-9]+)/i)) return null;
+  // Validate Spotify URL format (tracks, albums, EPs)
+  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|ep)\/([a-zA-Z0-9]+)/i)) return null;
   return fetchOpenGraphTags(url, "spotify");
 }
 

@@ -15,9 +15,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Users,
+  Mail,
+  Lock,
 } from "lucide-react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useSession, signIn } from "next-auth/react";
+import { useForm } from "react-hook-form"; // I'll use simple state to avoid adding more deps if possible, or check if it's there.
 
 type Opportunity = "WEEKLY" | "SPOTIFY" | "WEBRADIO" | "ALBUM_STORY";
 type ReleaseType = "SINGLE" | "EP" | "ALBUM";
@@ -28,11 +30,8 @@ export interface ManagedArtistRef {
 }
 
 interface FormData {
-  // Step 0 (Industry Only)
   managedArtistId: string;
-  // Step 1
   opportunity: Opportunity | "";
-  // Step 2
   streamingUrl: string;
   streamingPlatform: string;
   trackTitle: string;
@@ -43,7 +42,6 @@ interface FormData {
   subgenre: string;
   pitch: string;
   pressKitUrl: string;
-  // Auto-fill metadata
   autoFilledTitle: string;
   autoFilledArtist: string;
   autoFilledCover: string;
@@ -89,20 +87,18 @@ const RELEASE_TYPES: ReleaseType[] = ["SINGLE", "EP", "ALBUM"];
 
 interface SubmitFlowProps {
   managedArtists?: ManagedArtistRef[];
-  basePath: string; // "/portal" or "/industry"
+  basePath: string;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps) {
   const t = useTranslations("submit");
   const locale = useLocale();
   const router = useRouter();
 
-  // If we have managed artists, we add an extra step at the beginning (Step 0)
   const hasManagedArtists = Array.isArray(managedArtists) && managedArtists.length > 0;
   const initialStep = hasManagedArtists ? 0 : 1;
 
+  const { data: session, status } = useSession();
   const [step, setStep] = useState(initialStep);
   const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
@@ -112,7 +108,18 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
   const [submitted, setSubmitted] = useState(false);
   const [submissionId, setSubmissionId] = useState("");
 
-  // ─── Funnel tracking ──────────────────────────────────────────────────────
+  // Add-ons
+  const [isFastResponse, setIsFastResponse] = useState(false);
+  const [isReviewRequired, setIsReviewRequired] = useState(false);
+  const [isMultiChannel, setIsMultiChannel] = useState(false);
+  const [isInterviewRequired, setIsInterviewRequired] = useState(false);
+  const [isArticleRequired, setIsArticleRequired] = useState(false);
+  const [isCollabAgreed, setIsCollabAgreed] = useState(false);
+
+  // Auth fields for anonymous flow
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const sessionId = useRef<string>("");
 
   function sendFunnelEvent(data: object) {
@@ -123,15 +130,12 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
     }).catch(() => {});
   }
 
-  // Each form mount = one new attempt → always generate a fresh ID.
   useEffect(() => {
     const sid = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     sessionId.current = sid;
-    // Track step 1 arrival immediately — even instant abandonments get recorded
     if (initialStep >= 1) {
       sendFunnelEvent({ sessionId: sid, step: initialStep, completed: false, locale });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const trackFunnel = useCallback(
@@ -148,10 +152,8 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
     [locale]
   );
 
-  // Track arrival at steps 2 and 3 (step 1 is handled by the init effect above)
   useEffect(() => {
     if (step >= 2) trackFunnel(step, false, form.opportunity || undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const set = useCallback(
@@ -160,16 +162,12 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
     []
   );
 
-  // ─── Auto-fill from streaming URL ─────────────────────────────────────────
-
   const handleAutoFill = async () => {
     if (!form.streamingUrl.trim()) return;
     setFetchingInfo(true);
     setAutoFillError("");
     try {
-      const res = await fetch(
-        `/api/track-info?url=${encodeURIComponent(form.streamingUrl)}`
-      );
+      const res = await fetch(`/api/track-info?url=${encodeURIComponent(form.streamingUrl)}`);
       if (!res.ok) {
         setAutoFillError(t("autoFillFailed"));
         return;
@@ -192,23 +190,24 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
     }
   };
 
-  // ─── Validation ───────────────────────────────────────────────────────────
-
   const canNext = (): boolean => {
     if (step === 0) return !!form.managedArtistId;
-    if (step === 1)
-      return (
-        !!form.streamingUrl &&
-        !!form.trackTitle &&
-        !!form.artistName &&
-        !!form.releaseType &&
-        !!form.genre
-      );
+    if (step === 1) return !!form.streamingUrl && !!form.trackTitle && !!form.artistName && !!form.releaseType && !!form.genre;
     if (step === 2) return !!form.opportunity;
+    if (step === 3 && !session) return true; // Review step, if no session, we show auth next
+    if (step === 4) return !!email && !!password && password.length >= 6;
     return true;
   };
 
-  // ─── Submit ───────────────────────────────────────────────────────────────
+  const handleNext = () => {
+    if (step === 3 && !session) {
+      setStep(4);
+    } else if (step === 3 && session) {
+      handleSubmit();
+    } else {
+      setStep(s => s + 1);
+    }
+  };
 
   const handleSubmit = async () => {
     setError("");
@@ -231,29 +230,46 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
         autoFilledArtist: form.autoFilledArtist || null,
         autoFilledCover: form.autoFilledCover || null,
         autoFillSource: form.autoFillSource || null,
+        isFastResponse,
+        isReviewRequired,
+        isMultiChannel,
+        isInterviewRequired,
+        isArticleRequired,
+        isCollabAgreed,
       };
 
-      if (hasManagedArtists && form.managedArtistId) {
+      if (!session) {
+        payload.email = email;
+        payload.password = password;
+      } else if (hasManagedArtists && form.managedArtistId) {
         payload.managedArtistId = form.managedArtistId;
       }
 
-      const res = await fetch("/api/submissions", {
+      const endpoint = session ? "/api/submissions" : "/api/submissions/anonymous";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error ?? "Something went wrong.");
         return;
       }
 
-      // Track successful completion
       trackFunnel(3, true, form.opportunity || undefined);
-
       setSubmissionId(data.id);
+      
+      // If was anonymous, sign in automatically
+      if (!session) {
+        await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+      }
+
       setSubmitted(true);
     } catch {
       setError("Network error. Please try again.");
@@ -262,347 +278,348 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
     }
   };
 
-  // ─── Success screen ───────────────────────────────────────────────────────
-
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 animate-fade-in">
-        <CheckCircle2 size={48} className="text-ok mb-6" />
-        <h1 className="font-sans text-3xl font-bold text-cm-text-primary mb-3 tracking-tight">
-          {t("thankYou")}
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 animate-reveal">
+        <div className="w-20 h-20 bg-cult-yellow border-4 border-black flex items-center justify-center mb-10">
+          <CheckCircle2 size={40} className="text-black" />
+        </div>
+        <h1 className="text-5xl font-black uppercase tracking-tighter text-white mb-4 text-center">
+          SUBMITTED.
         </h1>
-        <p className="font-sans text-base text-cm-text-secondary text-center max-w-sm mb-10">
-          {t("thankYouMessage")}
+        <p className="text-sm font-light text-white/40 text-center max-w-sm mb-12 italic">
+          "Your soul is in our hands now. We will listen."
         </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setForm(INITIAL);
-              setStep(initialStep);
-              setSubmitted(false);
-            }}
-            className="btn-ghost"
-          >
-            {t("submitAnother") ?? "Submit another"}
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+          <button onClick={() => { setForm(INITIAL); setStep(initialStep); setSubmitted(false); }} className="btn-secondary flex-1">
+            SUBMIT ANOTHER
           </button>
-          <button
-            onClick={() => router.push(`/${locale}${basePath}/submissions`)}
-            className="btn-primary"
-          >
-            {t("viewSubmissions") ?? "View my submissions"}
+          <button onClick={() => router.push(`/${locale}${basePath}/submissions`)} className="btn-primary flex-1">
+            VIEW QUEUE
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-4 md:px-8 py-12 animate-reveal">
       {/* Header */}
-      <div className="mb-8">
-        <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-2">
-          {step === 0 ? "Step 0" : t(`step${step}` as "step1" | "step2" | "step3")}
-        </p>
-        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
-          {step === 0 ? "Select Artist" : t("title")}
+      <div className="mb-12 border-b-4 border-white/20 pb-8">
+        <div className="flex justify-between items-baseline mb-4">
+          <p className="font-black text-[10px] uppercase tracking-[0.3em] text-[#999999]">
+            {step === 0 ? "ROSTER" : `PHASE 0${step}`}
+          </p>
+          <p className="font-black text-[9px] md:text-[10px] uppercase tracking-[0.3em] text-white italic">
+            CULT MACHINE PORTAL
+          </p>
+        </div>
+        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-none">
+          {step === 0 ? "WHO'S NEXT?" : "NEW SUBMISSION"}
         </h1>
 
-        {/* Step progress dots */}
-        <div className="flex items-center gap-2 mt-4">
-          {(hasManagedArtists ? [0, 1, 2, 3] : [1, 2, 3]).map((n) => (
+        {/* Brutalist Progress Bar */}
+        <div className="flex gap-1 mt-8">
+          {(hasManagedArtists ? [0, 1, 2, 3, 4] : [1, 2, 3, 4]).map((n) => (
             <div
               key={n}
-              className={`h-1 flex-1 transition-all duration-300 ${
-                n <= step ? "bg-accent-red" : "bg-border"
+              className={`h-4 flex-1 border-2 border-white/10 transition-all duration-300 ${
+                n <= step ? "bg-cult-yellow" : "bg-white/5"
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* ── STEP 0: Select Artist (Industry Only) ── */}
+      {/* ── STEP 0: Select Artist ── */}
       {step === 0 && hasManagedArtists && (
-        <div className="space-y-5 animate-fade-in">
-          <div>
-            <label className="label" htmlFor="managedArtistId">
-              Which artist are you submitting for? *
-            </label>
-            <div className="relative">
-              <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cm-text-muted" />
-              <select
-                id="managedArtistId"
-                className="input pl-10"
-                value={form.managedArtistId}
-                onChange={(e) => {
-                  set("managedArtistId", e.target.value);
-                  // Auto-fill artist name in the main form to save them time
-                  const selected = managedArtists.find(a => a.id === e.target.value);
-                  if (selected) {
-                    set("artistName", selected.artistName);
-                  }
-                }}
-              >
-                <option value="">— Select an artist from your roster —</option>
-                {managedArtists.map(artist => (
-                  <option key={artist.id} value={artist.id}>
-                    {artist.artistName}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="font-sans text-xs text-cm-text-muted mt-2">
-              If the artist is not listed, you must add them to your roster first in the "My Artists" section.
-            </p>
+        <div className="space-y-8 animate-reveal">
+          <div className="card border-4">
+            <label className="label" htmlFor="managedArtistId">SELECT ARTIST FROM ROSTER</label>
+            <select
+              id="managedArtistId"
+              className="input text-lg font-bold"
+              value={form.managedArtistId}
+              onChange={(e) => {
+                set("managedArtistId", e.target.value);
+                const selected = managedArtists.find(a => a.id === e.target.value);
+                if (selected) set("artistName", selected.artistName);
+              }}
+            >
+              <option value="">— CHOOSE ARTIST —</option>
+              {managedArtists.map(artist => (
+                <option key={artist.id} value={artist.id}>{artist.artistName.toUpperCase()}</option>
+              ))}
+            </select>
           </div>
         </div>
       )}
 
       {/* ── STEP 1: Track Details ── */}
       {step === 1 && (
-        <div className="space-y-5 animate-fade-in">
-          {/* Streaming URL + auto-fill */}
-          <div>
-            <label className="label" htmlFor="streamingUrl">
-              {t("streamingUrl")} *
-            </label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <LinkIcon
-                  size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cm-text-muted"
-                />
-                <input
-                  id="streamingUrl"
-                  type="url"
-                  className="input pl-8"
-                  placeholder="https://open.spotify.com/track/... or deezer.com/track/..."
-                  value={form.streamingUrl}
-                  onChange={(e) => {
-                    set("streamingUrl", e.target.value);
-                    setAutoFillError("");
-                  }}
-                  onBlur={handleAutoFill}
-                />
+        <div className="space-y-10 animate-reveal">
+          <section className="space-y-6">
+            <h3 className="section-label">Source & Info</h3>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="label">STREAMING URL</label>
+                <input type="url" className="input" placeholder="SPOTIFY / SOUNDCLOUD LINK..."
+                  value={form.streamingUrl} onChange={(e) => { set("streamingUrl", e.target.value); setAutoFillError(""); }}
+                  onBlur={handleAutoFill} />
               </div>
-              <button
-                type="button"
-                onClick={handleAutoFill}
-                disabled={fetchingInfo || !form.streamingUrl}
-                className="btn-ghost shrink-0 flex items-center gap-1.5 disabled:opacity-40"
-              >
-                {fetchingInfo ? (
-                  <Loader2 size={13} className="animate-spin" />
-                ) : null}
-                {fetchingInfo ? t("fetchingInfo") : "Auto-fill"}
+              <button type="button" onClick={handleAutoFill} disabled={fetchingInfo || !form.streamingUrl}
+                className="btn-secondary h-[46px] sm:mt-[26px] !px-4 w-full sm:w-auto">
+                {fetchingInfo ? <Loader2 size={16} className="animate-spin mx-auto" /> : "FETCH INFO"}
               </button>
             </div>
-            <p className="font-sans text-[11px] text-cm-text-muted mt-1">
-              {t("streamingUrlHint")}
-            </p>
-            {autoFillError && (
-              <p className="flex items-center gap-1.5 font-sans text-[11px] text-warning mt-1">
-                <AlertCircle size={11} /> {autoFillError}
-              </p>
-            )}
-          </div>
-
-          {/* Auto-fill cover preview */}
-          {form.autoFilledCover && (
-            <div className="flex items-center gap-4 p-4 rounded-xl border border-ok/30 bg-ok/10 shadow-sm">
-              <img
-                src={form.autoFilledCover}
-                alt="cover"
-                className="w-16 h-16 rounded-md object-cover shadow-sm"
-              />
-              <div>
-                <p className="font-sans text-base font-bold text-cm-text-primary">{form.autoFilledTitle}</p>
-                <p className="font-sans text-sm text-cm-text-secondary mt-0.5">{form.autoFilledArtist}</p>
+            
+            {form.autoFilledCover && (
+              <div className="flex items-center gap-6 p-6 border-4 border-black bg-black text-white">
+                <img src={form.autoFilledCover} alt="cover" className="w-24 h-24 object-cover border-2 border-white" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-cult-yellow mb-1">FOUND METADATA</p>
+                  <p className="text-2xl font-black uppercase tracking-tighter leading-none">{form.autoFilledTitle}</p>
+                  <p className="text-sm font-light text-[#999999] mt-2 italic">{form.autoFilledArtist}</p>
+                </div>
               </div>
+            )}
+          </section>
+
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="label">TRACK TITLE</label>
+              <input type="text" className="input" value={form.trackTitle} onChange={(e) => set("trackTitle", e.target.value)} />
             </div>
-          )}
+            <div>
+              <label className="label">ARTIST NAME</label>
+              <input type="text" className="input" value={form.artistName} onChange={(e) => set("artistName", e.target.value)} />
+            </div>
+          </section>
 
-          {/* Track title */}
-          <div>
-            <label className="label" htmlFor="trackTitle">{t("trackTitle")} *</label>
-            <input id="trackTitle" type="text" className="input"
-              value={form.trackTitle} onChange={(e) => set("trackTitle", e.target.value)} required />
-          </div>
-
-          {/* Artist name */}
-          <div>
-            <label className="label" htmlFor="artistName">{t("artistName")} *</label>
-            <input id="artistName" type="text" className="input"
-              value={form.artistName} onChange={(e) => set("artistName", e.target.value)} required />
-          </div>
-
-          {/* Release type */}
-          <div>
-            <label className="label">{t("releaseType")} *</label>
-            <div className="flex gap-2">
+          <section>
+            <label className="label">RELEASE TYPE</label>
+            <div className="grid grid-cols-3 gap-4">
               {RELEASE_TYPES.map((rt) => (
-                <button
-                  key={rt}
-                  type="button"
-                  onClick={() => set("releaseType", rt)}
-                  className={`flex-1 py-3 border rounded-lg font-sans text-sm font-medium transition-all shadow-sm ${
-                    form.releaseType === rt
-                      ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
-                      : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
-                  }`}
-                >
-                  {t(`releaseTypes.${rt}`)}
+                <button key={rt} type="button" onClick={() => set("releaseType", rt)}
+                  className={`py-4 border-2 border-white/10 font-black uppercase text-xs tracking-widest transition-all ${
+                    form.releaseType === rt ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white hover:bg-white/5"
+                  }`}>
+                  {rt}
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Release date */}
-          <div>
-            <label className="label" htmlFor="releaseDate">{t("releaseDate")}</label>
-            <input id="releaseDate" type="date" className="input"
-              value={form.releaseDate} onChange={(e) => set("releaseDate", e.target.value)} />
-          </div>
-
-          {/* Genre */}
-          <div>
-            <label className="label">{t("genre")} *</label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+          <section>
+            <label className="label">GENRE</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {GENRES.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => set("genre", g)}
-                  className={`px-3 py-2.5 border rounded-md text-left transition-all font-sans text-sm font-medium shadow-sm ${
-                    form.genre === g
-                      ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
-                      : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
-                  }`}
-                >
+                <button key={g} type="button" onClick={() => set("genre", g)}
+                  className={`px-4 py-3 border-2 border-white/10 text-left font-black uppercase text-[10px] tracking-widest transition-all ${
+                    form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white hover:bg-white/5"
+                  }`}>
                   {g}
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Subgenre */}
-          <div>
-            <label className="label" htmlFor="subgenre">{t("subgenre")}</label>
-            <input id="subgenre" type="text" className="input"
-              placeholder="e.g. Dream Pop, Lo-fi Hip-Hop"
-              value={form.subgenre} onChange={(e) => set("subgenre", e.target.value)} />
-          </div>
-
-          {/* Pitch */}
-          <div>
-            <label className="label" htmlFor="pitch">
-              {t("pitch")}
-              <span className="ml-2 text-cm-text-muted font-sans normal-case text-[11px]">
-                {form.pitch.length}/1000
-              </span>
-            </label>
-            <textarea
-              id="pitch"
-              className="input min-h-[120px] resize-none"
-              placeholder={t("pitchHint")}
-              maxLength={1000}
-              value={form.pitch}
-              onChange={(e) => set("pitch", e.target.value)}
-            />
-          </div>
-
-          {/* Press kit URL */}
-          <div>
-            <label className="label" htmlFor="pressKitUrl">{t("pressKitUrl")}</label>
-            <input id="pressKitUrl" type="url" className="input"
-              placeholder="https://..."
-              value={form.pressKitUrl} onChange={(e) => set("pressKitUrl", e.target.value)} />
-          </div>
+          <section>
+            <label className="label">THE PITCH</label>
+            <textarea className="input min-h-[150px]" placeholder="Tell us the story behind this track..."
+              maxLength={1000} value={form.pitch} onChange={(e) => set("pitch", e.target.value)} />
+          </section>
         </div>
       )}
 
       {/* ── STEP 2: Choose Opportunity ── */}
       {step === 2 && (
-        <div className="space-y-3 animate-fade-in">
-          {OPPORTUNITIES.map(({ key, icon: Icon, locked }) => {
-            const active = form.opportunity === key;
-            return (
-              <button
-                key={key}
-                id={`opp-${key.toLowerCase()}`}
-                type="button"
-                disabled={locked}
-                onClick={() => !locked && set("opportunity", key)}
-                className={`w-full flex items-start gap-4 p-5 border rounded-xl text-left transition-all duration-200 shadow-sm ${
-                  locked
-                    ? "border-border bg-bg-surface opacity-50 cursor-not-allowed"
-                    : active
-                    ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red/20"
-                    : "border-border bg-bg-surface hover:border-cm-text-muted hover:bg-bg-elevated"
-                }`}
-              >
-                <div className={`p-2 rounded-lg shrink-0 ${active ? "bg-accent-red text-white" : "bg-bg-elevated text-cm-text-secondary"}`}>
-                  <Icon size={20} />
-                </div>
-                <div className="min-w-0 flex-1 pt-0.5">
-                  <p className={`font-sans text-base font-bold mb-1 ${active ? "text-cm-text-primary" : "text-cm-text-primary"}`}>
-                    {t(`opportunities.${key}`)}
-                  </p>
-                  <p className="font-sans text-sm text-cm-text-secondary leading-relaxed">
-                    {locked
-                      ? t(`opportunities.ALBUM_STORY_locked`)
-                      : t(`opportunities.${key}_desc`)}
-                  </p>
-                </div>
-                {active && (
-                  <CheckCircle2 size={16} className="text-accent-red shrink-0 ml-auto mt-0.5" />
-                )}
-              </button>
-            );
-          })}
-
-          <p className="font-sans text-xs font-semibold text-ok uppercase tracking-wider mt-6">
-            ✓ {t("freeSubmission")}
-          </p>
+        <div className="space-y-6 animate-reveal">
+          <h3 className="section-label">SELECT DESTINATION</h3>
+          <div className="grid grid-cols-1 gap-4">
+            {OPPORTUNITIES.map(({ key, icon: Icon, locked }) => {
+              const active = form.opportunity === key;
+              return (
+                <button key={key} type="button" disabled={locked} onClick={() => !locked && set("opportunity", key)}
+                  className={`w-full flex items-center gap-8 p-8 border-4 transition-all ${
+                    locked ? "opacity-10 cursor-not-allowed bg-black border-white/10" :
+                    active ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white"
+                  }`}>
+                  <Icon size={32} />
+                  <div className="flex-1">
+                    <p className="text-2xl font-black uppercase tracking-tighter mb-1">{key.replace("_", " ")}</p>
+                    <p className={`text-xs font-light ${active ? "text-black/60" : "text-white/40"}`}>
+                      {t(`opportunities.${key}_desc`)}
+                    </p>
+                  </div>
+                  {active && <CheckCircle2 size={24} className="text-black" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* ── STEP 3: Review & Confirm ── */}
+      {/* ── STEP 3: Review ── */}
       {step === 3 && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="card space-y-4">
-            {form.managedArtistId && (
-              <ReviewRow label="Artist (Roster)" value={managedArtists?.find(a => a.id === form.managedArtistId)?.artistName || ""} />
-            )}
-            <ReviewRow label={t("step1")} value={t(`opportunities.${form.opportunity as Opportunity}`)} />
-            <ReviewRow label={t("trackTitle")} value={form.trackTitle} />
-            <ReviewRow label={t("artistName")} value={form.artistName} />
-            <ReviewRow label={t("releaseType")} value={t(`releaseTypes.${form.releaseType as ReleaseType}`)} />
-            {form.releaseDate && <ReviewRow label={t("releaseDate")} value={form.releaseDate} />}
-            <ReviewRow label={t("genre")} value={[form.genre, form.subgenre].filter(Boolean).join(" / ")} />
-            <ReviewRow label={t("streamingUrl")} value={form.streamingUrl} truncate />
-            {form.pitch && <ReviewRow label={t("pitch")} value={form.pitch} truncate />}
-            {form.pressKitUrl && <ReviewRow label={t("pressKitUrl")} value={form.pressKitUrl} truncate />}
-          </div>
-
-          {/* Cover art if auto-filled */}
-          {form.autoFilledCover && (
-            <div className="flex items-center gap-4">
-              <img src={form.autoFilledCover} alt="cover" className="w-20 h-20 rounded-md object-cover border border-border shadow-sm" />
-              <div>
-                <p className="font-sans text-xs font-bold text-cm-text-muted uppercase tracking-wider mb-1">Auto-filled cover</p>
-                <p className="font-sans text-base font-medium text-cm-text-secondary">{form.autoFilledArtist} — <span className="font-bold text-cm-text-primary">{form.autoFilledTitle}</span></p>
+        <div className="space-y-10 animate-reveal">
+          <section className="border-4 border-[#F5E000] p-8 bg-black text-white space-y-6">
+            <h3 className="text-cult-yellow font-black uppercase tracking-[0.3em] text-[10px]">FINAL VERDICT</h3>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="flex justify-between border-b border-white/10 pb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/20">TARGET</span>
+                <span className="font-black uppercase tracking-tighter">{form.opportunity}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/20">TRACK</span>
+                <span className="font-black uppercase tracking-tighter">{form.trackTitle}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/20">ARTIST</span>
+                <span className="font-black uppercase tracking-tighter">{form.artistName}</span>
               </div>
             </div>
-          )}
+          </section>
 
-          <p className="font-sans text-xs font-semibold text-ok uppercase tracking-wider mt-6">
-            ✓ {t("freeSubmission")}
-          </p>
+          <section className="space-y-6">
+            <h3 className="section-label">UPGRADE SUBMISSION</h3>
+            <div className="space-y-4">
+              <label className={`flex items-center justify-between p-6 border-4 transition-all ${isFastResponse ? 'bg-[#F5E000] text-black border-[#F5E000]' : 'bg-black text-white border-white/10 hover:border-white'}`}>
+                <div className="flex items-center gap-4">
+                  <input type="checkbox" checked={isFastResponse} onChange={(e) => setIsFastResponse(e.target.checked)} className="w-6 h-6 border-4 border-current rounded-none appearance-none checked:bg-current" />
+                  <div>
+                    <p className="font-black uppercase text-sm tracking-tighter">FAST RESPONSE ({"<"} 48H)</p>
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">GET HEARD WITHIN TWO DAYS</p>
+                  </div>
+                </div>
+                <span className="font-black text-lg">+2 CREDITS</span>
+              </label>
+
+              <label className={`flex items-center justify-between p-6 border-4 transition-all ${isReviewRequired ? 'bg-[#F5E000] text-black border-[#F5E000]' : 'bg-black text-white border-white/10 hover:border-white'}`}>
+                <div className="flex items-center gap-4">
+                  <input type="checkbox" checked={isReviewRequired} onChange={(e) => setIsReviewRequired(e.target.checked)} className="w-6 h-6 border-4 border-current rounded-none appearance-none checked:bg-current" />
+                  <div>
+                    <p className="font-black uppercase text-sm tracking-tighter">WRITTEN REVIEW</p>
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">GET DETAILED EDITORIAL FEEDBACK</p>
+                  </div>
+                </div>
+                <span className="font-black text-lg">+1 CREDIT</span>
+              </label>
+
+              <label className={`flex items-center justify-between p-6 border-4 transition-all ${isMultiChannel ? 'bg-[#F5E000] text-black border-[#F5E000]' : 'bg-black text-white border-white/10 hover:border-white'}`}>
+                <div className="flex items-center gap-4">
+                  <input type="checkbox" checked={isMultiChannel} onChange={(e) => setIsMultiChannel(e.target.checked)} className="w-6 h-6 border-4 border-current rounded-none appearance-none checked:bg-current" />
+                  <div>
+                    <p className="font-black uppercase text-sm tracking-tighter">MULTI-CHANNEL SUBMISSION</p>
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">SEND TO ALL RELEVANT CURATORS</p>
+                  </div>
+                </div>
+                <span className="font-black text-lg">+1 CREDIT</span>
+              </label>
+
+              {/* Premium Industry Services (Conditional) */}
+              {(session?.user?.accountType === "INDUSTRY" || (session?.user?.monthlyListeners && session?.user?.monthlyListeners !== 'UNDER_1K')) && (
+                <div className="pt-8 space-y-4">
+                  <p className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-[#666666]">EXCLUSIVE OPPORTUNITIES</p>
+                  
+                  <label className={`flex items-center justify-between p-6 border-4 transition-all ${isInterviewRequired ? 'bg-[#F5E000] text-black border-[#F5E000]' : 'bg-black text-white border-white/10 hover:border-white'}`}>
+                    <div className="flex items-center gap-4">
+                      <input type="checkbox" checked={isInterviewRequired} onChange={(e) => setIsInterviewRequired(e.target.checked)} className="w-6 h-6 border-4 border-current rounded-none appearance-none checked:bg-current" />
+                      <div>
+                        <p className="font-black uppercase text-sm tracking-tighter">EDITORIAL INTERVIEW</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-inherit">DEDICATED 1-ON-1 FEATURE</p>
+                      </div>
+                    </div>
+                    <span className="font-black text-lg">$30 USD</span>
+                  </label>
+
+                  <label className={`flex items-center justify-between p-6 border-4 transition-all ${isArticleRequired ? 'bg-[#F5E000] text-black border-[#F5E000]' : 'bg-black text-white border-white/10 hover:border-white'}`}>
+                    <div className="flex items-center gap-4">
+                      <input type="checkbox" checked={isArticleRequired} onChange={(e) => setIsArticleRequired(e.target.checked)} className="w-6 h-6 border-4 border-current rounded-none appearance-none checked:bg-current" />
+                      <div>
+                        <p className="font-black uppercase text-sm tracking-tighter">PRESS ARTICLE</p>
+                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-inherit">FULL BLOG POST & REVIEW</p>
+                      </div>
+                    </div>
+                    <span className="font-black text-lg">$25 USD</span>
+                  </label>
+
+                  {(isInterviewRequired || isArticleRequired) && (
+                    <div className="p-6 bg-[#F5E000] border-4 border-black flex items-start gap-4">
+                      <input 
+                        type="checkbox" 
+                        id="collab-check"
+                        checked={isCollabAgreed}
+                        onChange={(e) => setIsCollabAgreed(e.target.checked)}
+                        className="w-5 h-5 border-2 border-black rounded-none appearance-none checked:bg-black mt-1" 
+                      />
+                      <label htmlFor="collab-check" className="font-sans text-[10px] font-black uppercase tracking-tight text-black cursor-pointer">
+                        ESTOY DISPUESTO A HACER COLABORACIÓN EN INSTAGRAM PARA LA DIFUSIÓN DE ESTE CONTENIDO.
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center p-8 bg-[#F5E000] text-black border-4 border-[#F5E000]">
+              <span className="font-black uppercase tracking-[0.3em] text-xs opacity-60">TOTAL CREDITS</span>
+              <span className="text-4xl font-black">{(isFastResponse ? 2 : 0) + (isReviewRequired ? 1 : 0) + (isMultiChannel ? 1 : 0)}</span>
+            </div>
+            {(isInterviewRequired || isArticleRequired) && (
+              <div className="flex justify-between items-center p-8 bg-black text-white border-4 border-white/20 border-t-0 -mt-4 shadow-[8px_8px_0px_0px_rgba(245,224,0,0.2)]">
+                <span className="font-black uppercase tracking-[0.3em] text-xs text-white/20">PREMIUM SERVICES</span>
+                <span className="text-4xl font-black">${(isInterviewRequired ? 30 : 0) + (isArticleRequired ? 25 : 0)} USD</span>
+              </div>
+            )}
+          </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm mt-4">
+            <div className="p-6 border-4 border-danger bg-danger/5 text-danger font-black uppercase text-xs tracking-widest">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── STEP 4: Authentication (Anonymous Only) ── */}
+      {step === 4 && !session && (
+        <div className="space-y-10 animate-reveal">
+          <div className="border-4 border-white/10 p-10 bg-black shadow-[12px_12px_0px_0px_rgba(245,224,0,0.1)]">
+            <h3 className="font-sans text-3xl font-black uppercase tracking-tighter mb-8 border-b-4 border-white/10 pb-4 text-white">FINAL STEP: IDENTITY SYNC</h3>
+            <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-10 leading-relaxed">
+              Create your account to finalize the submission and track its progress in the portal.
+            </p>
+            
+            <div className="space-y-8">
+              <div>
+                <label className="label flex items-center gap-2"><Mail size={14}/> EMAIL ADDRESS</label>
+                <input 
+                  type="email" 
+                  className="input" 
+                  placeholder="YOU@EXAMPLE.COM"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label flex items-center gap-2"><Lock size={14}/> PASSWORD</label>
+                <input 
+                  type="password" 
+                  className="input" 
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <p className="text-[9px] font-black uppercase text-black/40 mt-2 tracking-widest">MINIMUM 6 CHARACTERS</p>
+              </div>
+            </div>
+          </div>
+          
+          {error && (
+            <div className="p-6 border-4 border-danger bg-danger/5 text-danger font-black uppercase text-xs tracking-widest">
               {error}
             </div>
           )}
@@ -610,63 +627,24 @@ export default function SubmitFlow({ managedArtists, basePath }: SubmitFlowProps
       )}
 
       {/* ── Navigation ── */}
-      <div className="mt-10 flex items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={() => { setStep((s) => s - 1); setError(""); }}
-          disabled={step === initialStep}
-          className="btn-ghost flex items-center gap-1 text-cm-text-secondary disabled:opacity-30"
-        >
-          <ChevronLeft size={14} />
+      <div className="mt-16 flex items-center justify-between">
+        <button type="button" onClick={() => { setStep((s) => s - 1); setError(""); }}
+          disabled={step === initialStep} className="btn-secondary !px-6 disabled:opacity-20">
+          BACK
         </button>
 
-        {step < 3 ? (
-          <button
-            type="button"
-            id={`submit-next-${step}`}
-            onClick={() => setStep((s) => s + 1)}
-            disabled={!canNext()}
-            className="btn-primary flex items-center gap-2 disabled:opacity-40"
-          >
-            {step === 2 ? t("step3") : "Next"}
-            <ChevronRight size={14} />
+        {step < 3 || (step === 3 && !session) ? (
+          <button type="button" onClick={handleNext} disabled={!canNext()}
+            className="btn-primary !px-12">
+            PROCEED →
           </button>
         ) : (
-          <button
-            id="submit-confirm"
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading}
-            className="btn-primary flex items-center gap-2"
-          >
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            {t("step3")} →
+          <button type="button" onClick={handleSubmit} disabled={loading || !canNext()}
+            className="btn-primary bg-cult-yellow !text-black hover:bg-white !px-12">
+            {loading ? <Loader2 size={16} className="animate-spin" /> : "CONFIRM SUBMISSION"}
           </button>
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── Sub-component ────────────────────────────────────────────────────────────
-
-function ReviewRow({
-  label,
-  value,
-  truncate,
-}: {
-  label: string;
-  value: string;
-  truncate?: boolean;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-3 border-b border-border last:border-0">
-      <p className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary shrink-0">
-        {label}
-      </p>
-      <p className={`font-sans text-sm font-medium text-cm-text-primary text-right ${truncate ? "truncate max-w-[60%]" : ""}`}>
-        {value || "—"}
-      </p>
     </div>
   );
 }

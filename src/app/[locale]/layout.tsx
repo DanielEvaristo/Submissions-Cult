@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n/request";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
+import FloatingDonation from "@/components/global/FloatingDonation";
 
 export default async function LocaleLayout({
   children,
@@ -26,7 +27,10 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <NextAuthProvider>{children}</NextAuthProvider>
+      <NextAuthProvider>
+        {children}
+        <FloatingDonation />
+      </NextAuthProvider>
     </NextIntlClientProvider>
   );
 }

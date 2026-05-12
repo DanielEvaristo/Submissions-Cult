@@ -3,18 +3,18 @@ import { AlertCircle } from "lucide-react";
 
 export default function UnverifiedLock({ locale }: { locale: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in px-4">
-      <div className="w-20 h-20 bg-warning/10 text-warning rounded-full flex items-center justify-center mb-6">
-        <AlertCircle size={40} />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-reveal px-8 bg-black">
+      <div className="w-24 h-24 bg-black text-[#F5E000] border-4 border-white/10 flex items-center justify-center mb-10 shadow-[8px_8px_0px_0px_rgba(245,224,0,0.1)]">
+        <AlertCircle size={48} strokeWidth={3} />
       </div>
-      <h2 className="font-sans text-2xl font-bold text-cm-text-primary mb-3">
-        Account Pending Verification
+      <h2 className="font-sans text-5xl font-black uppercase tracking-tighter text-white mb-6 leading-none">
+        PENDING<br/>VERIFICATION.
       </h2>
-      <p className="font-sans text-base text-cm-text-secondary max-w-md mx-auto mb-8">
-        You will be able to access this feature once your agency account has been verified by our team. Please make sure your profile is fully complete.
+      <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] text-white/40 max-w-sm mx-auto mb-12 leading-relaxed">
+        YOUR AGENCY ACCOUNT IS UNDER REVIEW. ACCESS TO SUBMISSION TOOLS IS RESTRICTED UNTIL SECURITY CLEARANCE IS GRANTED.
       </p>
-      <Link href={`/${locale}/industry/profile`} className="btn-primary">
-        Go to Agency Profile
+      <Link href={`/${locale}/industry/profile`} className="px-12 py-6 bg-[#F5E000] text-black font-sans font-black text-xs uppercase tracking-[0.4em] border-4 border-black hover:bg-white transition-all shadow-[8px_8px_0px_0px_rgba(245,224,0,0.2)] hover:shadow-none">
+        VIEW AGENCY PROFILE
       </Link>
     </div>
   );

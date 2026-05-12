@@ -22,9 +22,9 @@ export default async function AdminLayout({ children, params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex">
+    <div className="min-h-screen bg-bg flex flex-col lg:flex-row">
       <AdminNav locale={locale} />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto pt-16 lg:pt-0">{children}</main>
     </div>
   );
 }

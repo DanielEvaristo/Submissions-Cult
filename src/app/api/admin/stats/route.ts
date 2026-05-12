@@ -3,91 +3,87 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// Never cache this route — stats must always be fresh
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
+    const { searchParams } = new URL(req.url);
+    const period = searchParams.get("period") || "week"; // week, month, year
+    
     const now = new Date();
-    const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    let startDate: Date;
+    let prevStartDate: Date;
+    let prevEndDate: Date;
+    let funnelStartDate: Date;
+
+    if (period === "month") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      prevStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      prevEndDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      funnelStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (period === "year") {
+      startDate = new Date(now.getFullYear(), 0, 1);
+      prevStartDate = new Date(now.getFullYear() - 1, 0, 1);
+      prevEndDate = new Date(now.getFullYear() - 1, 11, 31);
+      funnelStartDate = new Date(now.getFullYear(), 0, 1);
+    } else {
+      // Default to 7 days
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      prevStartDate = new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+      prevEndDate = startDate;
+      funnelStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
     const slaThreshold = new Date(now.getTime() - 72 * 60 * 60 * 1000);
 
-    // ── Run all queries in parallel ──────────────────────────────────────────
+    // ── Run current period queries ──
     const [
       totalArtists,
-      newArtistsWeek,
-      newArtistsMonth,
+      newArtists,
+      prevNewArtists,
       totalIndustry,
       pendingVerification,
-      artistsWithCredits,
       totalSubmissions,
-      submissionsWeek,
-      submissionsMonth,
+      submissionsPeriod,
+      prevSubmissionsPeriod,
       slaBreaches,
       reviewedSubs,
-      profileComplete,
       allGenres,
-      ghostArtistsCount,
       submissionsByOpportunity,
       submissionsByStatus,
-      usersByRole,
       usersByCountry,
       curatorQueue,
+      artistsWithCredits,
+      artistsWithGenre,
+      roleDistribution,
+      ghostArtists,
+      dupSubmissions,
+      retainedSubmissions,
+      funnelEvents,
     ] = await Promise.all([
-      // Business
       prisma.user.count({ where: { accountType: "ARTIST" } }),
-      prisma.user.count({ where: { accountType: "ARTIST", createdAt: { gte: startOfWeek } } }),
-      prisma.user.count({ where: { accountType: "ARTIST", createdAt: { gte: startOfMonth } } }),
+      prisma.user.count({ where: { accountType: "ARTIST", createdAt: { gte: startDate } } }),
+      prisma.user.count({ where: { accountType: "ARTIST", createdAt: { gte: prevStartDate, lte: prevEndDate } } }),
       prisma.user.count({ where: { accountType: "INDUSTRY" } }),
       prisma.user.count({ where: { accountType: "INDUSTRY", labelStatus: "PENDING_VERIFICATION" } }),
-      prisma.user.count({ where: { accountType: "ARTIST", credits: { gt: 0 } } }),
-
-      // Editorial
       prisma.submission.count(),
-      prisma.submission.count({ where: { submittedAt: { gte: startOfWeek } } }),
-      prisma.submission.count({ where: { submittedAt: { gte: startOfMonth } } }),
+      prisma.submission.count({ where: { submittedAt: { gte: startDate } } }),
+      prisma.submission.count({ where: { submittedAt: { gte: prevStartDate, lte: prevEndDate } } }),
       prisma.submission.count({ where: { status: "PENDING", submittedAt: { lte: slaThreshold } } }),
       prisma.submission.findMany({
+
         where: { curatorReviewedAt: { not: null } },
         select: { submittedAt: true, curatorReviewedAt: true },
         take: 500,
       }),
-
-      // Product
-      prisma.user.count({ where: { accountType: "ARTIST", genre: { not: null } } }),
       prisma.submission.findMany({ select: { genres: true }, take: 2000 }),
-
-      // Ghost artists (no submissions)
-      prisma.user.count({
-        where: { accountType: "ARTIST", submissions: { none: {} } },
-      }),
-
-      // GroupBy: submissions by opportunity
-      prisma.submission.groupBy({
-        by: ["opportunity"],
-        _count: { opportunity: true },
-      }),
-
-      // GroupBy: submissions by status
-      prisma.submission.groupBy({
-        by: ["status"],
-        _count: { status: true },
-      }),
-
-      // GroupBy: users by role
-      prisma.user.groupBy({
-        by: ["roleType"],
-        where: { accountType: "ARTIST" },
-        _count: { roleType: true },
-      }),
-
-      // GroupBy: users by country (top 10)
+      prisma.submission.groupBy({ by: ["opportunity"], _count: { opportunity: true } }),
+      prisma.submission.groupBy({ by: ["status"], _count: { status: true } }),
       prisma.user.groupBy({
         by: ["country"],
         where: { accountType: "ARTIST", country: { not: null } },
@@ -95,53 +91,28 @@ export async function GET() {
         orderBy: { _count: { country: "desc" } },
         take: 10,
       }),
-
-      // Curator queue: IN_REVIEW submissions grouped by curatorId
       prisma.submission.groupBy({
         by: ["curatorId"],
         where: { status: "IN_REVIEW", curatorId: { not: null } },
         _count: { curatorId: true },
         orderBy: { _count: { curatorId: "desc" } },
       }),
+      prisma.user.count({ where: { accountType: "ARTIST", credits: { gt: 0 } } }),
+      prisma.user.count({ where: { accountType: "ARTIST", genre: { not: null } } }),
+      prisma.user.groupBy({ by: ["roleType"], where: { accountType: "ARTIST" }, _count: { roleType: true } }),
+      prisma.user.count({ where: { accountType: "ARTIST", submissions: { none: {} } } }),
+      prisma.submission.groupBy({ by: ["userId", "trackTitle"], _count: { id: true }, having: { id: { _count: { gt: 1 } } } }),
+      prisma.submission.groupBy({ by: ["userId"], _count: { id: true }, having: { id: { _count: { gt: 1 } } } }),
+      prisma.funnelEvent.findMany({ where: { createdAt: { gte: funnelStartDate } } }),
     ]);
 
-    // ── Funnel events (queried separately to handle stale client gracefully) ──
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const funnelEvents: { sessionId: string; step: number; completed: boolean }[] =
-      await (prisma as any).funnelEvent
-        .findMany({ select: { sessionId: true, step: true, completed: true }, take: 10000 })
-        .catch(() => []);
+    // Average response time
+    const avgResponseHours = reviewedSubs.length === 0 ? null : Math.round(
+      reviewedSubs.reduce((acc, s) => acc + (new Date(s.curatorReviewedAt!).getTime() - new Date(s.submittedAt).getTime()), 0) /
+      reviewedSubs.length / (1000 * 60 * 60)
+    );
 
-    // ── Retention: artists with 2+ submissions ────────────────────────────
-    // Raw SQL to avoid groupBy having issues
-    const retentionResult = await prisma.$queryRaw<{ cnt: bigint }[]>`
-      SELECT COUNT(*) as cnt FROM (
-        SELECT "userId" FROM "Submission" GROUP BY "userId" HAVING COUNT(*) >= 2
-      ) sub
-    `;
-    const retentionArtists = Number(retentionResult[0]?.cnt ?? 0);
-
-    // ── Duplicate submissions: same userId + trackTitle with count > 1 ────
-    const dupResult = await prisma.$queryRaw<{ cnt: bigint }[]>`
-      SELECT COUNT(*) as cnt FROM (
-        SELECT "userId", "trackTitle" FROM "Submission" GROUP BY "userId", "trackTitle" HAVING COUNT(*) > 1
-      ) dup
-    `;
-    const duplicateSubmissions = Number(dupResult[0]?.cnt ?? 0);
-
-    // ── Average response time ─────────────────────────────────────────────
-    const avgResponseHours =
-      reviewedSubs.length === 0
-        ? null
-        : Math.round(
-            reviewedSubs.reduce((acc, s) => {
-              return acc + (new Date(s.curatorReviewedAt!).getTime() - new Date(s.submittedAt).getTime());
-            }, 0) /
-              reviewedSubs.length /
-              (1000 * 60 * 60)
-          );
-
-    // ── Genre frequency ───────────────────────────────────────────────────
+    // Genre frequency
     const genreMap: Record<string, number> = {};
     for (const sub of allGenres) {
       for (const g of sub.genres) {
@@ -153,61 +124,67 @@ export async function GET() {
       .slice(0, 8)
       .map(([genre, count]) => ({ genre, count }));
 
-    // ── Funnel: unique sessions per step ─────────────────────────────────
-    const funnelStep1 = new Set(funnelEvents.filter((e) => e.step >= 1).map((e) => e.sessionId)).size;
-    const funnelStep2 = new Set(funnelEvents.filter((e) => e.step >= 2).map((e) => e.sessionId)).size;
-    const funnelStep3 = new Set(funnelEvents.filter((e) => e.step >= 3).map((e) => e.sessionId)).size;
-    const funnelCompleted = new Set(funnelEvents.filter((e) => e.completed).map((e) => e.sessionId)).size;
+    const duplicatePairs = dupSubmissions.length;
+    const retainedArtists = retainedSubmissions.length;
+
+    // Funnel calculations
+    let step1 = 0; let step2 = 0; let step3 = 0; let completed = 0;
+    const sessions = new Map<string, { maxStep: number, done: boolean }>();
+    funnelEvents.forEach(evt => {
+      const current = sessions.get(evt.sessionId) || { maxStep: 0, done: false };
+      sessions.set(evt.sessionId, {
+        maxStep: Math.max(current.maxStep, evt.step),
+        done: current.done || evt.completed
+      });
+    });
+    
+    sessions.forEach(s => {
+      if (s.maxStep >= 1) step1++;
+      if (s.maxStep >= 2) step2++;
+      if (s.maxStep >= 3) step3++;
+      if (s.done) completed++;
+    });
 
     return NextResponse.json({
+      period,
       business: {
         totalArtists,
-        newArtistsWeek,
-        newArtistsMonth,
+        newArtists,
+        prevNewArtists,
+        growthArtists: prevNewArtists === 0 ? 100 : Math.round(((newArtists - prevNewArtists) / prevNewArtists) * 100),
         totalIndustry,
         pendingVerification,
-        retentionArtists,
+        retainedArtists,
         artistsWithCredits,
       },
       editorial: {
         totalSubmissions,
-        submissionsWeek,
-        submissionsMonth,
-        byOpportunity: submissionsByOpportunity.map((r) => ({
-          name: r.opportunity,
-          count: r._count.opportunity,
-        })),
-        byStatus: submissionsByStatus.map((r) => ({
-          name: r.status,
-          count: r._count.status,
-        })),
+        submissionsPeriod,
+        prevSubmissionsPeriod,
+        growthSubmissions: prevSubmissionsPeriod === 0 ? 100 : Math.round(((submissionsPeriod - prevSubmissionsPeriod) / prevSubmissionsPeriod) * 100),
+        byOpportunity: submissionsByOpportunity.map(r => ({ name: r.opportunity, count: r._count.opportunity })),
+        byStatus: submissionsByStatus.map(r => ({ name: r.status, count: r._count.status })),
         slaBreaches,
         avgResponseHours,
       },
       product: {
-        byRole: usersByRole.map((r) => ({ role: r.roleType, count: r._count.roleType })),
-        byCountry: usersByCountry.map((r) => ({ country: r.country ?? "Unknown", count: r._count.country })),
-        profileCompletePct: totalArtists === 0 ? 0 : Math.round((profileComplete / totalArtists) * 100),
+        byCountry: usersByCountry.map(r => ({ country: r.country ?? "Unknown", count: r._count.country })),
         topGenres,
+        profileCompletion: totalArtists === 0 ? 0 : Math.round((artistsWithGenre / totalArtists) * 100),
+        roleDistribution: roleDistribution.map(r => ({ name: r.roleType, count: r._count.roleType })),
+        funnel: {
+          step1, step2, step3, completed,
+        }
       },
       alerts: {
-        queueByCurator: curatorQueue.map((r) => ({
-          curatorId: r.curatorId,
-          count: r._count.curatorId,
-        })),
-        ghostArtists: ghostArtistsCount,
-        duplicateSubmissions,
+        queueByCurator: curatorQueue.map(r => ({ curatorId: r.curatorId, count: r._count.curatorId })),
         slaBreaches,
-      },
-      funnel: {
-        step1: funnelStep1,
-        step2: funnelStep2,
-        step3: funnelStep3,
-        completed: funnelCompleted,
-      },
+        ghostArtists,
+        duplicateSubmissions: duplicatePairs,
+      }
     });
   } catch (err) {
-    console.error("[GET /api/admin/stats]", err);
-    return NextResponse.json({ error: "Internal Server Error", detail: String(err) }, { status: 500 });
+    console.error("[GET /api/admin/stats] ERROR:", err);
+    return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
   }
 }

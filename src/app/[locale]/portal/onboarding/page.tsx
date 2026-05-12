@@ -50,31 +50,64 @@ const MUSIC_LANGUAGES = [
 
 const AGE_RANGES = ["UNDER_18", "AGE_18_24", "AGE_25_34", "AGE_35_44", "AGE_45_PLUS"] as const;
 const LISTENERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
+const FOLLOWERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
 const DISTRIBUTION = ["DISTROKID", "TUNECORE", "CD_BABY", "RECORD_LABEL", "INDEPENDENT", "OTHER"] as const;
 
 const COUNTRIES = [
-  { code: "MX", name: "Mexico" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "FR", name: "France" },
-  { code: "ES", name: "Spain" },
-  { code: "DE", name: "Germany" },
-  { code: "IT", name: "Italy" },
-  { code: "BR", name: "Brazil" },
-  { code: "AR", name: "Argentina" },
-  { code: "CO", name: "Colombia" },
-  { code: "CL", name: "Chile" },
-  { code: "CA", name: "Canada" },
-  { code: "AU", name: "Australia" },
-  { code: "JP", name: "Japan" },
-  { code: "KR", name: "South Korea" },
-  { code: "PT", name: "Portugal" },
-  { code: "NL", name: "Netherlands" },
-  { code: "SE", name: "Sweden" },
-  { code: "NO", name: "Norway" },
-  { code: "PL", name: "Poland" },
-  { code: "other", name: "Other" },
+  { code: "AF", name: "Afghanistan" }, { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" }, { code: "AD", name: "Andorra" }, { code: "AO", name: "Angola" },
+  { code: "AG", name: "Antigua and Barbuda" }, { code: "AR", name: "Argentina" }, { code: "AM", name: "Armenia" }, { code: "AU", name: "Australia" }, { code: "AT", name: "Austria" },
+  { code: "AZ", name: "Azerbaijan" }, { code: "BS", name: "Bahamas" }, { code: "BH", name: "Bahrain" }, { code: "BD", name: "Bangladesh" }, { code: "BB", name: "Barbados" },
+  { code: "BY", name: "Belarus" }, { code: "BE", name: "Belgium" }, { code: "BZ", name: "Belize" }, { code: "BJ", name: "Benin" }, { code: "BT", name: "Bhutan" },
+  { code: "BO", name: "Bolivia" }, { code: "BA", name: "Bosnia and Herzegovina" }, { code: "BW", name: "Botswana" }, { code: "BR", name: "Brazil" }, { code: "BN", name: "Brunei" },
+  { code: "BG", name: "Bulgaria" }, { code: "BF", name: "Burkina Faso" }, { code: "BI", name: "Burundi" }, { code: "CV", name: "Cabo Verde" }, { code: "KH", name: "Cambodia" },
+  { code: "CM", name: "Cameroon" }, { code: "CA", name: "Canada" }, { code: "CF", name: "Central African Republic" }, { code: "TD", name: "Chad" }, { code: "CL", name: "Chile" },
+  { code: "CN", name: "China" }, { code: "CO", name: "Colombia" }, { code: "KM", name: "Comoros" }, { code: "CG", name: "Congo" }, { code: "CR", name: "Costa Rica" },
+  { code: "HR", name: "Croatia" }, { code: "CU", name: "Cuba" }, { code: "CY", name: "Cyprus" }, { code: "CZ", name: "Czech Republic" }, { code: "DK", name: "Denmark" },
+  { code: "DJ", name: "Djibouti" }, { code: "DM", name: "Dominica" }, { code: "DO", name: "Dominican Republic" }, { code: "EC", name: "Ecuador" }, { code: "EG", name: "Egypt" },
+  { code: "SV", name: "El Salvador" }, { code: "GQ", name: "Equatorial Guinea" }, { code: "ER", name: "Eritrea" }, { code: "EE", name: "Estonia" }, { code: "SZ", name: "Eswatini" },
+  { code: "ET", name: "Ethiopia" }, { code: "FJ", name: "Fiji" }, { code: "FI", name: "Finland" }, { code: "FR", name: "France" }, { code: "GA", name: "Gabon" },
+  { code: "GM", name: "Gambia" }, { code: "GE", name: "Georgia" }, { code: "DE", name: "Germany" }, { code: "GH", name: "Ghana" }, { code: "GR", name: "Greece" },
+  { code: "GD", name: "Grenada" }, { code: "GT", name: "Guatemala" }, { code: "GN", name: "Guinea" }, { code: "GW", name: "Guinea-Bissau" }, { code: "GY", name: "Guyana" },
+  { code: "HT", name: "Haiti" }, { code: "HN", name: "Honduras" }, { code: "HU", name: "Hungary" }, { code: "IS", name: "Iceland" }, { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" }, { code: "IR", name: "Iran" }, { code: "IQ", name: "Iraq" }, { code: "IE", name: "Ireland" }, { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" }, { code: "JM", name: "Jamaica" }, { code: "JP", name: "Japan" }, { code: "JO", name: "Jordan" }, { code: "KZ", name: "Kazakhstan" },
+  { code: "KE", name: "Kenya" }, { code: "KI", name: "Kiribati" }, { code: "KP", name: "North Korea" }, { code: "KR", name: "South Korea" }, { code: "KW", name: "Kuwait" },
+  { code: "KG", name: "Kyrgyzstan" }, { code: "LA", name: "Laos" }, { code: "LV", name: "Latvia" }, { code: "LB", name: "Lebanon" }, { code: "LS", name: "Lesotho" },
+  { code: "LR", name: "Liberia" }, { code: "LY", name: "Libya" }, { code: "LI", name: "Liechtenstein" }, { code: "LT", name: "Lithuania" }, { code: "LU", name: "Luxembourg" },
+  { code: "MG", name: "Madagascar" }, { code: "MW", name: "Malawi" }, { code: "MY", name: "Malaysia" }, { code: "MV", name: "Maldives" }, { code: "ML", name: "Mali" },
+  { code: "MT", name: "Malta" }, { code: "MH", name: "Marshall Islands" }, { code: "MR", name: "Mauritania" }, { code: "MU", name: "Mauritius" }, { code: "MX", name: "Mexico" },
+  { code: "FM", name: "Micronesia" }, { code: "MD", name: "Moldova" }, { code: "MC", name: "Monaco" }, { code: "MN", name: "Mongolia" }, { code: "ME", name: "Montenegro" },
+  { code: "MA", name: "Morocco" }, { code: "MZ", name: "Mozambique" }, { code: "MM", name: "Myanmar" }, { code: "NA", name: "Namibia" }, { code: "NR", name: "Nauru" },
+  { code: "NP", name: "Nepal" }, { code: "NL", name: "Netherlands" }, { code: "NZ", name: "New Zealand" }, { code: "NI", name: "Nicaragua" }, { code: "NE", name: "Niger" },
+  { code: "NG", name: "Nigeria" }, { code: "MK", name: "North Macedonia" }, { code: "NO", name: "Norway" }, { code: "OM", name: "Oman" }, { code: "PK", name: "Pakistan" },
+  { code: "PW", name: "Palau" }, { code: "PA", name: "Panama" }, { code: "PG", name: "Papua New Guinea" }, { code: "PY", name: "Paraguay" }, { code: "PE", name: "Peru" },
+  { code: "PH", name: "Philippines" }, { code: "PL", name: "Poland" }, { code: "PT", name: "Portugal" }, { code: "QA", name: "Qatar" }, { code: "RO", name: "Romania" },
+  { code: "RU", name: "Russia" }, { code: "RW", name: "Rwanda" }, { code: "KN", name: "Saint Kitts and Nevis" }, { code: "LC", name: "Saint Lucia" }, { code: "VC", name: "Saint Vincent and the Grenadines" },
+  { code: "WS", name: "Samoa" }, { code: "SM", name: "San Marino" }, { code: "ST", name: "Sao Tome and Principe" }, { code: "SA", name: "Saudi Arabia" }, { code: "SN", name: "Senegal" },
+  { code: "RS", name: "Serbia" }, { code: "SC", name: "Seychelles" }, { code: "SL", name: "Sierra Leone" }, { code: "SG", name: "Singapore" }, { code: "SK", name: "Slovakia" },
+  { code: "SI", name: "Slovenia" }, { code: "SB", name: "Solomon Islands" }, { code: "SO", name: "Somalia" }, { code: "ZA", name: "South Africa" }, { code: "SS", name: "South Sudan" },
+  { code: "ES", name: "Spain" }, { code: "LK", name: "Sri Lanka" }, { code: "SD", name: "Sudan" }, { code: "SR", name: "Suriname" }, { code: "SE", name: "Sweden" },
+  { code: "CH", name: "Switzerland" }, { code: "SY", name: "Syria" }, { code: "TW", name: "Taiwan" }, { code: "TJ", name: "Tajikistan" }, { code: "TZ", name: "Tanzania" },
+  { code: "TH", name: "Thailand" }, { code: "TL", name: "Timor-Leste" }, { code: "TG", name: "Togo" }, { code: "TO", name: "Tonga" }, { code: "TT", name: "Trinidad and Tobago" },
+  { code: "TN", name: "Tunisia" }, { code: "TR", name: "Turkey" }, { code: "TM", name: "Turkmenistan" }, { code: "TV", name: "Tuvalu" }, { code: "UG", name: "Uganda" },
+  { code: "UA", name: "Ukraine" }, { code: "AE", name: "United Arab Emirates" }, { code: "GB", name: "United Kingdom" }, { code: "US", name: "United States" }, { code: "UY", name: "Uruguay" },
+  { code: "UZ", name: "Uzbekistan" }, { code: "VU", name: "Vanuatu" }, { code: "VA", name: "Vatican City" }, { code: "VE", name: "Venezuela" }, { code: "VN", name: "Vietnam" },
+  { code: "YE", name: "Yemen" }, { code: "ZM", name: "Zambia" }, { code: "ZW", name: "Zimbabwe" },
 ];
+
+const CITIES_BY_COUNTRY: Record<string, string[]> = {
+  MX: ["Ciudad de Mexico", "Guadalajara", "Monterrey", "Queretaro", "Puebla", "Tijuana", "Merida", "Leon", "Juarez", "Cancun"],
+  US: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Miami", "Nashville", "Atlanta"],
+  ES: ["Madrid", "Barcelona", "Valencia", "Sevilla", "Zaragoza", "Malaga", "Murcia", "Palma", "Bilbao", "Alicante"],
+  CO: ["Bogota", "Medellin", "Cali", "Barranquilla", "Cartagena", "Cucuta", "Bucaramanga", "Pereira"],
+  AR: ["Buenos Aires", "Cordoba", "Rosario", "Mendoza", "Tucuman", "La Plata", "Mar del Plata", "Salta"],
+  CL: ["Santiago", "Valparaiso", "Concepcion", "La Serena", "Antofagasta", "Temuco", "Iquique"],
+  BR: ["Sao Paulo", "Rio de Janeiro", "Brasilia", "Salvador", "Fortaleza", "Belo Horizonte", "Curitiba", "Manaus"],
+  CA: ["Toronto", "Montreal", "Vancouver", "Calgary", "Edmonton", "Ottawa", "Winnipeg", "Quebec City"],
+  GB: ["London", "Birmingham", "Manchester", "Glasgow", "Liverpool", "Leeds", "Sheffield", "Edinburgh"],
+  FR: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier"],
+  DE: ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Dusseldorf", "Leipzig"],
+};
 
 // ─── Form State ───────────────────────────────────────────────────────────────
 
@@ -103,6 +136,7 @@ interface FormData {
   // Step 6
   careerStartYear: string;
   monthlyListeners: string;
+  instagramFollowers: string;
   distributionMethod: string;
   hasManager: boolean;
 }
@@ -126,6 +160,7 @@ const INITIAL: FormData = {
   website: "",
   careerStartYear: "",
   monthlyListeners: "",
+  instagramFollowers: "",
   distributionMethod: "",
   hasManager: false,
 };
@@ -212,6 +247,7 @@ export default function OnboardingPage() {
       website: form.website || undefined,
       careerStartYear: form.careerStartYear ? parseInt(form.careerStartYear) : undefined,
       monthlyListeners: form.monthlyListeners || undefined,
+      instagramFollowers: form.instagramFollowers || undefined,
       distributionMethod: form.distributionMethod || undefined,
       hasManager: form.hasManager,
     };
@@ -250,7 +286,7 @@ export default function OnboardingPage() {
       {/* ── Progress bar ── */}
       <div className="w-full h-[2px] bg-border">
         <div
-          className="h-full bg-accent-red transition-all duration-500"
+          className="h-full bg-[#F5E000] transition-all duration-500"
           style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
         />
       </div>
@@ -270,7 +306,7 @@ export default function OnboardingPage() {
                   key={key}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full flex-1 min-w-0 transition-all duration-200 shadow-sm ${
                     active
-                      ? "bg-accent-red border border-accent-red text-white"
+                      ? "bg-[#F5E000] border border-[#F5E000] text-black"
                       : done
                       ? "bg-ok/10 border border-ok/40 text-ok"
                       : "bg-bg-surface border border-border text-cm-text-muted"
@@ -278,11 +314,11 @@ export default function OnboardingPage() {
                 >
                   <Icon
                     size={14}
-                    className={`shrink-0 ${active ? "text-white" : done ? "text-ok" : "text-cm-text-muted"}`}
+                    className={`shrink-0 ${active ? "text-black" : done ? "text-ok" : "text-cm-text-muted"}`}
                   />
                   <span
                     className={`font-sans text-xs font-bold uppercase tracking-wider truncate ${
-                      active ? "text-white" : done ? "text-ok" : "text-cm-text-muted"
+                      active ? "text-black" : done ? "text-ok" : "text-cm-text-muted"
                     }`}
                   >
                     {t(`steps.${key}`)}
@@ -295,8 +331,8 @@ export default function OnboardingPage() {
           {/* ── STEP 1: Basics ── */}
           {step === 1 && (
             <div className="animate-fade-in space-y-6">
-              <div className="p-4 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-start gap-3">
-                <Info size={18} className="text-accent-red shrink-0 mt-0.5" />
+              <div className="p-4 bg-[#F5E000]/10 border border-[#F5E000]/20 flex items-start gap-3">
+                <Info size={18} className="text-[#F5E000] shrink-0 mt-0.5" />
                 <p className="font-sans text-sm text-cm-text-primary leading-relaxed">
                   {t("uxMessage")}
                 </p>
@@ -324,14 +360,39 @@ export default function OnboardingPage() {
                 <label className="label" htmlFor="city">
                   {t("basics.city")}
                 </label>
-                <input
-                  id="city"
-                  type="text"
-                  className="input"
-                  placeholder={t("basics.cityPlaceholder")}
-                  value={form.city}
-                  onChange={(e) => set("city", e.target.value)}
-                />
+                {CITIES_BY_COUNTRY[form.country] ? (
+                  <select
+                    id="city"
+                    className="input"
+                    value={form.city}
+                    onChange={(e) => set("city", e.target.value)}
+                  >
+                    <option value="">{t("basics.cityPlaceholder")}</option>
+                    {CITIES_BY_COUNTRY[form.country].map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                    <option value="OTHER">OTHER / NOT LISTED</option>
+                  </select>
+                ) : (
+                  <input
+                    id="city"
+                    type="text"
+                    className="input"
+                    placeholder={t("basics.cityPlaceholder")}
+                    value={form.city}
+                    onChange={(e) => set("city", e.target.value)}
+                  />
+                )}
+                {form.city === "OTHER" && (
+                  <input
+                    type="text"
+                    className="input mt-2"
+                    placeholder="TYPE YOUR CITY NAME"
+                    onChange={(e) => set("city", e.target.value)}
+                  />
+                )}
               </div>
               <div>
                 <label className="label" htmlFor="bio">
@@ -366,17 +427,15 @@ export default function OnboardingPage() {
                       key={r}
                       type="button"
                       onClick={() => set("roleType", r)}
-                      className={`p-4 border rounded-xl text-left transition-all duration-200 shadow-sm ${
+                      className={`p-6 border-4 transition-all duration-150 rounded-none text-left flex flex-col justify-between ${
                         form.roleType === r
-                          ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red/20"
-                          : "border-border bg-bg-surface hover:border-cm-text-muted hover:bg-bg-elevated"
+                          ? "border-[#F5E000] bg-[#F5E000] text-black shadow-[6px_6px_0px_0px_rgba(245,224,0,0.1)]"
+                          : "border-white/10 bg-white/5 text-white/40 hover:border-white/20 hover:text-white"
                       }`}
                     >
-                      <p className="font-sans text-sm font-bold text-cm-text-primary mb-1">
+                      <p className="font-sans text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">PROJECT_TYPE</p>
+                      <p className="font-sans text-2xl font-black uppercase tracking-tighter leading-none">
                         {r === "ARTIST" ? t("project.soloArtist") : t("project.band")}
-                      </p>
-                      <p className="font-sans text-xs text-cm-text-secondary">
-                        {r === "ARTIST" ? "Solo performer" : "2+ members"}
                       </p>
                     </button>
                   ))}
@@ -419,10 +478,10 @@ export default function OnboardingPage() {
                       key={g}
                       type="button"
                       onClick={() => set("genre", g)}
-                      className={`px-4 py-3 border rounded-lg text-left transition-all duration-200 font-sans text-sm font-medium shadow-sm ${
+                      className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${
                         form.genre === g
-                          ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
-                          : "border-border bg-bg-surface text-cm-text-secondary hover:border-cm-text-muted hover:bg-bg-elevated"
+                          ? "bg-[#F5E000] text-black border-[#F5E000]"
+                          : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {g}
@@ -458,10 +517,10 @@ export default function OnboardingPage() {
                       key={code}
                       type="button"
                       onClick={() => toggleLanguage(code)}
-                      className={`px-4 py-3 border rounded-lg text-left transition-all duration-200 font-sans text-sm font-medium shadow-sm ${
+                      className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${
                         selected
-                          ? "border-accent-red bg-accent-red/10 text-cm-text-primary ring-1 ring-accent-red/20"
-                          : "border-border bg-bg-surface text-cm-text-secondary hover:border-cm-text-muted hover:bg-bg-elevated"
+                          ? "bg-[#F5E000] text-black border-[#F5E000]"
+                          : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {t(`languages.${labelKey}`)}
@@ -548,6 +607,24 @@ export default function OnboardingPage() {
                 </select>
               </div>
               <div>
+                <label className="label" htmlFor="instagramFollowers">
+                  {tRegister("instagramFollowers")}
+                </label>
+                <select
+                  id="instagramFollowers"
+                  className="input"
+                  value={form.instagramFollowers}
+                  onChange={(e) => set("instagramFollowers", e.target.value)}
+                >
+                  <option value="">— select —</option>
+                  {FOLLOWERS.map((f) => (
+                    <option key={f} value={f}>
+                      {tRegister(`followers.${f}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="label" htmlFor="distributionMethod">
                   {t("career.distribution")}
                 </label>
@@ -573,10 +650,10 @@ export default function OnboardingPage() {
                       key={String(val)}
                       type="button"
                       onClick={() => set("hasManager", val)}
-                      className={`px-6 py-2 border rounded-md font-sans text-sm font-medium transition-all duration-200 shadow-sm ${
+                      className={`flex-1 py-4 border-2 transition-all font-sans text-[10px] font-black uppercase tracking-widest ${
                         form.hasManager === val
-                          ? "border-accent-red bg-accent-red text-white"
-                          : "border-border bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:border-cm-text-muted"
+                          ? "bg-[#F5E000] text-black border-[#F5E000]"
+                          : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {val ? t("career.yes") : t("career.no")}

@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { Loader2, Music, ExternalLink } from "lucide-react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { Loader2, Music, ExternalLink, Lock, ArrowRight } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 type Status =
   | "PENDING"
@@ -29,30 +28,37 @@ interface Submission {
   submittedAt: string;
 }
 
-const STATUS_COLORS: Record<Status, string> = {
-  PENDING: "badge-review",
-  IN_REVIEW: "badge-review",
-  CURATOR_APPROVED: "badge-selected",
-  CURATOR_REJECTED: "badge-rejected",
-  MASTER_REVIEW: "badge-review",
-  ACCEPTED: "badge-selected",
-  REJECTED: "badge-rejected",
-};
-
 const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;
 type Filter = (typeof FILTER_OPTIONS)[number];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SubmissionsPage() {
   const t = useTranslations("submissions");
   const tStatus = useTranslations("status");
-  const tOpp = useTranslations("submit.opportunities");
   const locale = useLocale();
+  const { data: session } = useSession();
+  const isProfileIncomplete = session?.user?.accountType === "ARTIST" && !session?.user?.genre;
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("ALL");
+  const [hasPaidActivity, setHasPaidActivity] = useState(false);
+  const [accessLoading, setAccessLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAccess = async () => {
+      try {
+        const res = await fetch("/api/user/access");
+        if (res.ok) {
+          const data = (await res.json()) as { hasPaidActivity: boolean };
+          setHasPaidActivity(data.hasPaidActivity);
+        }
+      } finally {
+        setAccessLoading(false);
+      }
+    };
+
+    fetchAccess();
+  }, []);
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -64,7 +70,7 @@ export default function SubmissionsPage() {
             : `/api/submissions?status=${filter}`;
         const res = await fetch(url);
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as Submission[];
           setSubmissions(data);
         }
       } finally {
@@ -89,34 +95,54 @@ export default function SubmissionsPage() {
     return tStatus("notSelected");
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity;
+  const shouldShowReminder = isProfileIncomplete && hasPaidActivity;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-sans text-3xl font-bold text-cm-text-primary tracking-tight">
-          {t("title")}
-        </h1>
+    <div className="max-w-6xl mx-auto px-8 py-12 space-y-12 animate-reveal">
+      <div className="border-b-4 border-white/10 pb-8 mb-12 flex justify-between items-end">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-4 block">MY WORKSPACE</span>
+          <h1 className="font-sans text-6xl font-black text-white tracking-tighter uppercase leading-none">
+            TRACK<br/>HISTORY
+          </h1>
+        </div>
         <Link
           href={`/${locale}/portal/submit`}
-          className="btn-primary"
+          className="bg-black text-white px-8 py-4 font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-[#F5E000] hover:text-black transition-all border-2 border-white/10"
           id="new-submission-btn"
         >
-          + {t("submitAnother")}
+          + SUBMIT NEW
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-1.5 mb-6 flex-wrap">
+      {shouldShowReminder && (
+        <div className="border-2 border-[#F5E000] bg-[#F5E000]/10 p-5 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F5E000] mb-2">Profile Reminder</p>
+            <p className="text-sm font-bold uppercase tracking-[0.12em]">
+              Complete your profile to unlock the full artist experience.
+            </p>
+          </div>
+          <Link
+            href={`/${locale}/portal/onboarding`}
+            className="inline-flex items-center justify-center px-5 py-3 bg-[#F5E000] text-black text-[10px] font-black uppercase tracking-[0.25em] hover:bg-white transition-all"
+          >
+            Complete Profile
+          </Link>
+        </div>
+      )}
+
+      <div className="flex items-center gap-0 border-4 border-white/10 bg-black p-1 w-fit">
         {FILTER_OPTIONS.map((f) => (
           <button
             key={f}
             id={`filter-${f.toLowerCase()}`}
             onClick={() => setFilter(f)}
-            className={`font-sans text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-md transition-all ${
+            className={`font-sans text-[10px] font-black uppercase tracking-widest px-6 py-3 transition-all ${
               filter === f
-                ? "bg-accent-red text-white shadow-sm"
-                : "bg-bg-surface text-cm-text-secondary hover:bg-bg-elevated hover:text-cm-text-primary border border-border"
+                ? "bg-[#F5E000] text-black"
+                : "bg-black text-white hover:bg-white/10"
             }`}
           >
             {f === "ALL"
@@ -130,93 +156,107 @@ export default function SubmissionsPage() {
         ))}
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-20 text-cm-text-muted">
-          <Loader2 size={20} className="animate-spin" />
+      {(loading || accessLoading) && (
+        <div className="flex items-center justify-center py-20 text-[#F5E000]">
+          <Loader2 size={32} className="animate-spin" strokeWidth={3} />
         </div>
       )}
 
-      {/* Empty state */}
-      {!loading && submissions.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Music size={48} className="text-cm-text-muted mb-6" />
-          <p className="font-sans text-base font-medium text-cm-text-secondary mb-4">{t("empty")}</p>
-          <Link href={`/${locale}/portal/submit`} className="btn-primary">
+      {!loading && !accessLoading && submissions.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-32 border-4 border-white/10 border-dashed bg-black">
+          <Music size={64} className="text-white/5 mb-8" strokeWidth={3} />
+          <p className="font-sans text-xl font-black uppercase tracking-tighter text-white/20 mb-8">{t("empty")}</p>
+          <Link href={`/${locale}/portal/submit`} className="bg-[#F5E000] text-black px-12 py-6 font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all">
             {t("submitFirst")}
           </Link>
         </div>
       )}
 
-      {/* Submissions list */}
-      {!loading && submissions.length > 0 && (
-        <div className="bg-bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
-          {/* Column headers */}
-          <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto] gap-4 px-6 py-4 bg-bg-elevated border-b border-border">
-            <span className="w-10 shrink-0" />
-            <span className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary">
-              {t("columns.track")}
-            </span>
-            <span className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary">
-              {t("columns.status")}
-            </span>
-            <span className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary">
-              {t("columns.date")}
-            </span>
-          </div>
-
-          {submissions.map((sub) => (
-            <div
-              key={sub.id}
-              className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto] gap-4 items-center px-6 py-5 border-b border-border last:border-0 hover:bg-bg-elevated transition-colors"
-            >
-              {/* Cover */}
-              <div className="w-12 h-12 rounded-md shrink-0 bg-bg-elevated border border-border overflow-hidden flex items-center justify-center">
-                {sub.autoFilledCover ? (
-                  <img
-                    src={sub.autoFilledCover}
-                    alt={sub.trackTitle}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Music size={16} className="text-cm-text-muted" />
-                )}
-              </div>
-
-              {/* Track info */}
-              <div className="min-w-0">
-                <p className="font-sans text-base font-bold text-cm-text-primary truncate">
-                  {sub.trackTitle}
+      {!loading && !accessLoading && submissions.length > 0 && (
+        <div className="relative">
+          {shouldLockTracker && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center p-10 bg-black/40 backdrop-blur-[4px]">
+              <div className="bg-black text-white p-10 border-8 border-[#F5E000] max-w-lg text-center shadow-[20px_20px_0px_0px_rgba(245,224,0,0.1)] animate-reveal">
+                <div className="w-20 h-20 bg-[#F5E000] text-black flex items-center justify-center mx-auto mb-8 border-4 border-black">
+                  <Lock size={40} strokeWidth={3} />
+                </div>
+                <h2 className="font-sans text-3xl font-black uppercase tracking-tighter mb-4">TRACKING LOCKED</h2>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-white/60 mb-10 leading-relaxed">
+                  Complete your profile to unlock this section.
                 </p>
-                <p className="font-sans text-sm text-cm-text-secondary truncate mt-0.5">
-                  {sub.artistName} · {sub.genres[0] ?? "—"} · {sub.opportunity}
-                </p>
-              </div>
-
-              {/* Status badge */}
-              <div className={`shrink-0 ${STATUS_COLORS[sub.status]}`}>
-                <span className="font-sans text-xs font-bold uppercase tracking-wider">
-                  {statusLabel(sub.status)}
-                </span>
-              </div>
-
-              {/* Date + link */}
-              <div className="flex items-center gap-4 shrink-0">
-                <span className="font-sans text-sm text-cm-text-secondary">
-                  {formatDate(sub.submittedAt)}
-                </span>
-                <a
-                  href={sub.streamingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-elevated p-2 rounded-md transition-all"
-                  title="Open streaming link"
+                <Link
+                  href={`/${locale}/portal/onboarding`}
+                  className="w-full py-5 bg-[#F5E000] text-black font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all flex items-center justify-center gap-4"
                 >
-                  <ExternalLink size={16} />
-                </a>
+                  COMPLETE PROFILE <ArrowRight size={16} strokeWidth={3} />
+                </Link>
               </div>
             </div>
-          ))}
+          )}
+
+          <div className={`border-4 border-white/10 bg-black transition-all duration-700 ${shouldLockTracker ? "blur-md select-none pointer-events-none" : ""}`}>
+            <div className="hidden sm:grid grid-cols-[100px_1fr_200px_200px] gap-8 px-10 py-6 bg-black text-white items-center border-b-2 border-white/5">
+              <span className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40">COVER</span>
+              <span className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40">{t("columns.track")}</span>
+              <span className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40 text-center">{t("columns.status")}</span>
+              <span className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40 text-right">{t("columns.date")}</span>
+            </div>
+
+            <div className="divide-y-2 divide-black/5">
+              {submissions.map((sub) => (
+                <div
+                  key={sub.id}
+                  className="grid grid-cols-1 sm:grid-cols-[100px_1fr_200px_200px] gap-8 items-center px-10 py-10 hover:bg-white/5 transition-all group"
+                >
+                  <div className="w-20 h-20 bg-black border-2 border-white/10 shadow-[4px_4px_0px_0px_rgba(245,224,0,0.1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 transition-all overflow-hidden flex items-center justify-center">
+                    {sub.autoFilledCover ? (
+                      <img
+                        src={sub.autoFilledCover}
+                        alt={sub.trackTitle}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Music size={24} className="text-[#F5E000]" strokeWidth={3} />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="font-sans text-2xl font-black uppercase tracking-tighter text-white truncate mb-1">
+                      {sub.trackTitle}
+                    </p>
+                    <p className="font-sans text-[10px] font-black uppercase tracking-widest text-white/40">
+                      {sub.artistName} · {sub.genres[0] ?? "GENRE"} · {sub.opportunity ? sub.opportunity.replace(/_/g, " ") : "GENERAL SUBMISSION"}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <div className={`px-4 py-2 border-2 font-sans text-[10px] font-black uppercase tracking-widest ${
+                      sub.status === "ACCEPTED" ? "bg-[#F5E000] text-black border-black" :
+                      sub.status === "REJECTED" || sub.status === "CURATOR_REJECTED" ? "bg-[#FF0000] text-white border-[#FF0000]" :
+                      "bg-black text-white border-white/10"
+                    }`}>
+                      {statusLabel(sub.status)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-8">
+                    <span className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                      {formatDate(sub.submittedAt)}
+                    </span>
+                    <a
+                      href={sub.streamingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 flex items-center justify-center bg-black border-2 border-white/10 text-[#F5E000] hover:bg-[#F5E000] hover:text-black transition-all shadow-[4px_4px_0px_0px_rgba(245,224,0,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                      title="Open streaming link"
+                    >
+                      <ExternalLink size={18} strokeWidth={3} />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
