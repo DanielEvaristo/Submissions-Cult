@@ -168,7 +168,7 @@ export async function GET(req: NextRequest) {
       if (statusFilter === "UNDER_REVIEW") {
         where.status = { in: ["PENDING", "IN_REVIEW", "MASTER_REVIEW", "CURATOR_APPROVED"] };
       } else if (statusFilter === "SELECTED") {
-        where.status = "ACCEPTED";
+        where.status = { in: ["ACCEPTED", "PUBLISHED"] };
       } else if (statusFilter === "NOT_SELECTED") {
         where.status = { in: ["REJECTED", "CURATOR_REJECTED"] };
       } else {
@@ -190,6 +190,12 @@ export async function GET(req: NextRequest) {
         autoFilledCover: true,
         streamingUrl: true,
         submittedAt: true,
+        placement: true,
+        publicationUrl: true,
+        publishedAt: true,
+        masterNotes: true,
+        curatorNotes: true,
+        curatorRating: true,
         managedArtist: {
           select: {
             artistName: true,

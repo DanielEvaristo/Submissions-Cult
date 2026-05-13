@@ -11,7 +11,9 @@ import {
   Star,
   ExternalLink,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  Send,
+  Link2
 } from "lucide-react";
 
 type Opportunity = "WEEKLY" | "SPOTIFY" | "WEBRADIO" | "ALBUM_STORY";
@@ -19,9 +21,19 @@ type Opportunity = "WEEKLY" | "SPOTIFY" | "WEBRADIO" | "ALBUM_STORY";
 type Status = 
   | "MASTER_REVIEW"
   | "ACCEPTED"
-  | "PENDING_PUBLICATION"
   | "PUBLISHED"
   | "REJECTED";
+
+interface QueueItem {
+  id: string;
+  trackTitle: string;
+  artistName: string;
+  opportunity: string;
+  autoFilledCover: string | null;
+  placement: string | null;
+  masterReviewedAt: string | null;
+  user: { name: string | null; email: string | null };
+}
 
 interface ArtistData {
   country: string | null;
@@ -70,9 +82,18 @@ const OPP_COLORS: Record<Opportunity, string> = {
 
 export default function MasterCuratorDashboard() {
   const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<"inbox" | "queue">("inbox");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // Publication queue state
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [queueLoading, setQueueLoading] = useState(false);
+  const [publishModalId, setPublishModalId] = useState<string | null>(null);
+  const [publicationUrl, setPublicationUrl] = useState("");
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   
   // Review form state
   const [rating, setRating] = useState<number>(0);
@@ -85,10 +106,7 @@ export default function MasterCuratorDashboard() {
     setLoading(true);
     try {
       const res = await fetch("/api/master/submissions");
-      if (res.ok) {
-        const data = await res.json();
-        setSubmissions(data);
-      }
+      if (res.ok) setSubmissions(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -96,9 +114,44 @@ export default function MasterCuratorDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [fetchSubmissions]);
+  const fetchQueue = useCallback(async () => {
+    setQueueLoading(true);
+    try {
+      const res = await fetch("/api/master/publications");
+      if (res.ok) setQueue(await res.json());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setQueueLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+  useEffect(() => { if (activeTab === "queue") fetchQueue(); }, [activeTab, fetchQueue]);
+
+  const handlePublish = async () => {
+    if (!publishModalId || !publicationUrl) return;
+    setPublishLoading(true);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/master/submissions/${publishModalId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "publish", publicationUrl }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to publish");
+      }
+      setQueue(prev => prev.filter(q => q.id !== publishModalId));
+      setPublishModalId(null);
+      setPublicationUrl("");
+    } catch (err: any) {
+      setPublishError(err.message);
+    } finally {
+      setPublishLoading(false);
+    }
+  };
 
   // Reset form when selection changes
   useEffect(() => {
@@ -163,38 +216,97 @@ export default function MasterCuratorDashboard() {
   return (
     <div className="h-[calc(100vh-64px)] lg:h-screen flex flex-col lg:flex-row overflow-hidden relative">
       
-      {/* ── Left Column: Inbox ── */}
+      {/* ── Left Column: Tabs ── */}
       <div className={`w-full lg:w-1/3 lg:min-w-[350px] border-r-4 border-white/10 bg-black flex flex-col h-full ${selectedId ? 'hidden lg:flex' : 'flex'}`}>
-        <div className="px-8 py-8 border-b-4 border-white/10 bg-[#F5E000] text-black shrink-0">
-          <div className="flex items-center gap-3 mb-2">
-            <ShieldCheck size={24} className="text-[#F5E000]" strokeWidth={3} />
+        {/* Header */}
+        <div className="px-8 py-6 border-b-4 border-white/10 bg-[#F5E000] text-black shrink-0">
+          <div className="flex items-center gap-3 mb-1">
+            <ShieldCheck size={24} className="text-black" strokeWidth={3} />
             <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">MASTER</h1>
           </div>
-          <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] text-black/60">
-            {submissions.length} PENDING VERDICTS
-          </p>
+        </div>
+        {/* Tabs */}
+        <div className="flex border-b-4 border-white/10 shrink-0">
+          <button
+            onClick={() => setActiveTab("inbox")}
+            className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "inbox" ? "bg-[#F5E000] text-black" : "bg-black text-white/40 hover:text-white"
+            }`}
+          >
+            INBOX ({submissions.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("queue")}
+            className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "queue" ? "bg-[#F5E000] text-black" : "bg-black text-white/40 hover:text-white"
+            }`}
+          >
+            PUB QUEUE ({queue.length})
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 size={32} className="animate-spin text-[#F5E000]" strokeWidth={3} />
-            </div>
-          ) : submissions.length === 0 ? (
-            <div className="text-center py-10 text-white/20 px-4">
-              <ShieldCheck size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
-              <p className="font-sans text-[10px] font-black uppercase tracking-widest">NO_PENDING_REVIEW.</p>
-            </div>
-          ) : (
-            submissions.map((sub) => (
-              <SubmissionItem 
-                key={sub.id} 
-                sub={sub} 
-                selected={selectedId === sub.id}
-                onClick={() => setSelectedId(sub.id)}
-                formatDate={formatDate}
-              />
-            ))
+          {/* ── INBOX TAB ── */}
+          {activeTab === "inbox" && (
+            loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 size={32} className="animate-spin text-[#F5E000]" strokeWidth={3} />
+              </div>
+            ) : submissions.length === 0 ? (
+              <div className="text-center py-10 text-white/20 px-4">
+                <ShieldCheck size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest">NO_PENDING_REVIEW.</p>
+              </div>
+            ) : (
+              submissions.map((sub) => (
+                <SubmissionItem
+                  key={sub.id}
+                  sub={sub}
+                  selected={selectedId === sub.id}
+                  onClick={() => setSelectedId(sub.id)}
+                  formatDate={formatDate}
+                />
+              ))
+            )
+          )}
+
+          {/* ── PUBLICATION QUEUE TAB ── */}
+          {activeTab === "queue" && (
+            queueLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 size={32} className="animate-spin text-[#F5E000]" strokeWidth={3} />
+              </div>
+            ) : queue.length === 0 ? (
+              <div className="text-center py-10 text-white/20 px-4">
+                <Send size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest">QUEUE IS EMPTY.</p>
+              </div>
+            ) : (
+              queue.map((item) => (
+                <div key={item.id} className="p-5 bg-black border-l-4 border-[#F5E000] hover:bg-white/5 transition-all">
+                  <div className="flex gap-4 items-start">
+                    <div className="w-12 h-12 shrink-0 bg-white/5 overflow-hidden flex items-center justify-center">
+                      {item.autoFilledCover
+                        ? <img src={item.autoFilledCover} alt="" className="w-full h-full object-cover" />
+                        : <Music size={16} className="text-[#F5E000]" strokeWidth={3} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-sm font-black uppercase tracking-tight text-white truncate">{item.trackTitle}</p>
+                      <p className="font-sans text-[9px] font-black uppercase tracking-widest text-white/40 truncate">{item.artistName}</p>
+                      {item.placement && (
+                        <p className="font-sans text-[9px] font-black uppercase tracking-widest text-[#F5E000] mt-1">{item.placement}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setPublishModalId(item.id); setPublicationUrl(""); setPublishError(null); }}
+                    className="mt-4 w-full py-3 bg-[#F5E000] text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send size={12} strokeWidth={3} /> MARK AS PUBLISHED
+                  </button>
+                </div>
+              ))
+            )
           )}
         </div>
       </div>
@@ -462,6 +574,46 @@ export default function MasterCuratorDashboard() {
         )}
       </div>
 
+      {/* ── Publish Modal ── */}
+      {publishModalId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
+          <div className="bg-black border-4 border-[#F5E000] p-10 w-full max-w-md shadow-[12px_12px_0px_0px_rgba(245,224,0,0.2)]">
+            <h2 className="font-sans text-2xl font-black uppercase tracking-tighter text-white mb-2">MARK AS PUBLISHED</h2>
+            <p className="font-sans text-[10px] font-black uppercase tracking-widest text-white/40 mb-8">
+              Enter the publication link (Instagram post, Spotify playlist, etc.)
+            </p>
+            <div className="flex items-center gap-3 bg-white/5 border-2 border-white/10 focus-within:border-[#F5E000] transition-all mb-4">
+              <Link2 size={16} className="ml-4 text-white/40 shrink-0" strokeWidth={2.5} />
+              <input
+                type="url"
+                value={publicationUrl}
+                onChange={(e) => setPublicationUrl(e.target.value)}
+                placeholder="https://instagram.com/p/..."
+                className="w-full p-4 bg-transparent font-sans text-sm font-bold text-white placeholder:text-white/20 focus:outline-none"
+                autoFocus
+              />
+            </div>
+            {publishError && (
+              <p className="font-sans text-[10px] font-black uppercase tracking-widest text-[#FF0000] mb-4">{publishError}</p>
+            )}
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => { setPublishModalId(null); setPublicationUrl(""); }}
+                className="flex-1 py-4 bg-white/10 text-white font-sans font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={!publicationUrl || publishLoading}
+                className="flex-1 py-4 bg-[#F5E000] text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {publishLoading ? <Loader2 size={14} className="animate-spin" /> : <><Send size={14} strokeWidth={3} /> CONFIRM</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

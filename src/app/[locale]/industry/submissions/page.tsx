@@ -16,7 +16,8 @@ type Status =
   | "CURATOR_REJECTED"
   | "MASTER_REVIEW"
   | "ACCEPTED"
-  | "REJECTED";
+  | "REJECTED"
+  | "PUBLISHED";
 
 interface Submission {
   id: string;
@@ -29,6 +30,9 @@ interface Submission {
   autoFilledCover: string | null;
   streamingUrl: string;
   submittedAt: string;
+  placement: string | null;
+  publicationUrl: string | null;
+  publishedAt: string | null;
   managedArtist?: {
     artistName: string;
   } | null;
@@ -90,7 +94,8 @@ export default function IndustrySubmissionsPage() {
     if (s === "PENDING" || s === "IN_REVIEW" || s === "CURATOR_APPROVED" || s === "MASTER_REVIEW") {
       return tStatus("underReview");
     }
-    if (s === "ACCEPTED") return tStatus("selected");
+    if (s === "ACCEPTED") return "ACCEPTED — PENDING PUB";
+    if (s === "PUBLISHED") return tStatus("selected");
     return tStatus("notSelected");
   };
 
@@ -230,6 +235,7 @@ export default function IndustrySubmissionsPage() {
                 {/* Status badge */}
                 <div className="flex justify-center">
                   <div className={`px-4 py-2 border-2 font-sans text-[9px] font-black uppercase tracking-widest ${
+                    sub.status === 'PUBLISHED' ? 'bg-[#00CC66] text-black border-[#00CC66]' :
                     sub.status === 'ACCEPTED' ? 'bg-[#F5E000] text-black border-black' : 
                     sub.status === 'REJECTED' || sub.status === 'CURATOR_REJECTED' ? 'bg-[#FF0000] text-white border-[#FF0000]' : 
                     'bg-black text-white border-white/10'
@@ -239,7 +245,17 @@ export default function IndustrySubmissionsPage() {
                 </div>
 
                 {/* Date + link */}
-                <div className="flex items-center justify-end gap-6">
+                <div className="flex items-center justify-end gap-6 flex-wrap">
+                  {sub.status === 'PUBLISHED' && sub.publicationUrl && (
+                    <a
+                      href={sub.publicationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-[#00CC66] text-black font-sans font-black text-[8px] uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"
+                    >
+                      <ExternalLink size={10} strokeWidth={3} /> LINK
+                    </a>
+                  )}
                   <span className="font-sans text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                     {formatDate(sub.submittedAt)}
                   </span>

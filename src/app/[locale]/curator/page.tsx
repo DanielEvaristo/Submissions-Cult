@@ -59,6 +59,8 @@ interface Submission {
   reviewRequested: boolean;
   isMultiChannel: boolean;
   submittedAt: string;
+  curatorNotes: string | null;
+  curatorRating: number | null;
   user: ArtistData;
 }
 
@@ -71,9 +73,14 @@ const OPP_COLORS: Record<Opportunity, string> = {
 
 export default function CuratorDashboard() {
   const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<"inbox" | "history">("inbox");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // History
+  const [history, setHistory] = useState<Submission[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   
   // Review form state
   const [rating, setRating] = useState<number>(0);
@@ -85,10 +92,7 @@ export default function CuratorDashboard() {
     setLoading(true);
     try {
       const res = await fetch("/api/curator/submissions");
-      if (res.ok) {
-        const data = await res.json();
-        setSubmissions(data);
-      }
+      if (res.ok) setSubmissions(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -96,9 +100,20 @@ export default function CuratorDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [fetchSubmissions]);
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch("/api/curator/history");
+      if (res.ok) setHistory(await res.json());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+  useEffect(() => { if (activeTab === "history") fetchHistory(); }, [activeTab, fetchHistory]);
 
   // Reset form when selection changes
   useEffect(() => {
@@ -157,47 +172,106 @@ export default function CuratorDashboard() {
   return (
     <div className="h-[calc(100vh-64px)] flex overflow-hidden">
       
-      {/* ── Left Column: Inbox ── */}
+      {/* ── Left Column: Inbox + History Tabs ── */}
       <div className="w-1/3 min-w-[350px] border-r-4 border-white/10 bg-black flex flex-col h-full">
-        <div className="px-8 py-8 border-b-4 border-white/10 bg-black text-white">
-          <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">INBOX</h1>
-          <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] text-[#F5E000] mt-2">
-            {myQueueSubs.length} PENDING ASSIGNMENTS
-          </p>
+        {/* Header */}
+        <div className="px-8 py-6 border-b-4 border-white/10 bg-black text-white shrink-0">
+          <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">CURATOR</h1>
+        </div>
+        {/* Tabs */}
+        <div className="flex border-b-4 border-white/10 shrink-0">
+          <button
+            onClick={() => setActiveTab("inbox")}
+            className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "inbox" ? "bg-[#F5E000] text-black" : "bg-black text-white/40 hover:text-white"
+            }`}
+          >
+            INBOX ({myQueueSubs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "history" ? "bg-[#F5E000] text-black" : "bg-black text-white/40 hover:text-white"
+            }`}
+          >
+            HISTORY
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 size={20} className="animate-spin text-cm-text-muted" />
-            </div>
-          ) : (
-            <>
-              {/* My Queue */}
-              <div>
-                <h2 className="font-sans text-xs font-bold uppercase tracking-wider text-cm-text-muted mb-3 px-2">
-                  My Queue (In Review)
-                </h2>
-                {myQueueSubs.length === 0 ? (
-                  <div className="text-center py-10 text-cm-text-muted px-4">
-                    <Inbox size={24} className="mx-auto mb-2 opacity-50" />
-                    <p className="font-sans text-sm">Inbox zero! No assigned submissions.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {myQueueSubs.map((sub) => (
-                      <SubmissionItem 
-                        key={sub.id} 
-                        sub={sub} 
-                        selected={selectedId === sub.id}
-                        onClick={() => setSelectedId(sub.id)}
-                        formatDate={formatDate}
-                      />
-                    ))}
-                  </div>
-                )}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {/* INBOX TAB */}
+          {activeTab === "inbox" && (
+            loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 size={20} className="animate-spin text-cm-text-muted" />
               </div>
-            </>
+            ) : myQueueSubs.length === 0 ? (
+              <div className="text-center py-10 text-white/20 px-4">
+                <Inbox size={48} className="mx-auto mb-4 opacity-10" />
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest">INBOX_ZERO.</p>
+              </div>
+            ) : (
+              myQueueSubs.map((sub) => (
+                <SubmissionItem
+                  key={sub.id}
+                  sub={sub}
+                  selected={selectedId === sub.id}
+                  onClick={() => setSelectedId(sub.id)}
+                  formatDate={formatDate}
+                />
+              ))
+            )
+          )}
+
+          {/* HISTORY TAB */}
+          {activeTab === "history" && (
+            historyLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 size={20} className="animate-spin text-cm-text-muted" />
+              </div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-10 text-white/20 px-4">
+                <Inbox size={48} className="mx-auto mb-4 opacity-10" />
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest">NO HISTORY YET.</p>
+              </div>
+            ) : (
+              history.map((sub) => (
+                <div key={sub.id} className={`p-4 border-l-4 ${
+                  sub.status === "CURATOR_APPROVED" ? "border-[#F5E000] bg-[#F5E000]/5" : "border-[#FF0000] bg-[#FF0000]/5"
+                }`}>
+                  <div className="flex gap-3 items-start">
+                    <div className="w-10 h-10 shrink-0 bg-white/5 overflow-hidden flex items-center justify-center">
+                      {sub.autoFilledCover
+                        ? <img src={sub.autoFilledCover} alt="" className="w-full h-full object-cover" />
+                        : <Music size={14} className="text-[#F5E000]" strokeWidth={3} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-xs font-black uppercase tracking-tight text-white truncate">{sub.trackTitle}</p>
+                      <p className="font-sans text-[9px] font-black uppercase tracking-widest text-white/40 truncate">{sub.artistName}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 ${
+                          sub.status === "CURATOR_APPROVED"
+                            ? "bg-[#F5E000] text-black"
+                            : "bg-[#FF0000] text-white"
+                        }`}>
+                          {sub.status === "CURATOR_APPROVED" ? "APPROVED" : "REJECTED"}
+                        </span>
+                        {sub.curatorRating && (
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(s => (
+                              <Star key={s} size={8} className={s <= (sub.curatorRating || 0) ? "fill-[#F5E000] text-[#F5E000]" : "text-white/20"} strokeWidth={0} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {sub.curatorNotes && (
+                        <p className="font-sans text-[9px] text-white/40 mt-1 italic truncate">"{sub.curatorNotes}"</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )
           )}
         </div>
       </div>

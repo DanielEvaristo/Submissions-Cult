@@ -104,6 +104,7 @@ enum Status {
   MASTER_REVIEW      // master curator reviewing
   ACCEPTED           // master accepted → placement assigned
   REJECTED           // master rejected → end of flow
+  PUBLISHED          // master published → link provided
 }
 
 // ─── NextAuth Tables ────────────────────────────────────────────────────────
@@ -307,6 +308,8 @@ model Submission {
   masterNotes      String?
   masterRating     Int? // 1-5 stars
   placement        String?
+  publicationUrl   String?  // link to the published placement (Instagram, etc.)
+  publishedAt      DateTime?
   masterReviewedAt DateTime?
 
   // Phase 2 ready

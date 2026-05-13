@@ -13,7 +13,8 @@ type Status =
   | "CURATOR_REJECTED"
   | "MASTER_REVIEW"
   | "ACCEPTED"
-  | "REJECTED";
+  | "REJECTED"
+  | "PUBLISHED";
 
 interface Submission {
   id: string;
@@ -26,6 +27,12 @@ interface Submission {
   autoFilledCover: string | null;
   streamingUrl: string;
   submittedAt: string;
+  placement: string | null;
+  publicationUrl: string | null;
+  publishedAt: string | null;
+  masterNotes: string | null;
+  curatorNotes: string | null;
+  curatorRating: number | null;
 }
 
 const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;
@@ -91,12 +98,14 @@ export default function SubmissionsPage() {
     if (s === "PENDING" || s === "IN_REVIEW" || s === "CURATOR_APPROVED" || s === "MASTER_REVIEW") {
       return tStatus("underReview");
     }
-    if (s === "ACCEPTED") return tStatus("selected");
+    if (s === "ACCEPTED") return "ACCEPTED — PENDING PUBLICATION";
+    if (s === "PUBLISHED") return tStatus("selected");
     return tStatus("notSelected");
   };
 
-  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity;
-  const shouldShowReminder = isProfileIncomplete && hasPaidActivity;
+  const hasSubmissions = submissions.length > 0;
+  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity && !hasSubmissions;
+  const shouldShowReminder = isProfileIncomplete && (hasPaidActivity || hasSubmissions);
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-12 space-y-12 animate-reveal">
@@ -231,6 +240,7 @@ export default function SubmissionsPage() {
 
                   <div className="flex justify-center">
                     <div className={`px-4 py-2 border-2 font-sans text-[10px] font-black uppercase tracking-widest ${
+                      sub.status === "PUBLISHED" ? "bg-[#00CC66] text-black border-[#00CC66]" :
                       sub.status === "ACCEPTED" ? "bg-[#F5E000] text-black border-black" :
                       sub.status === "REJECTED" || sub.status === "CURATOR_REJECTED" ? "bg-[#FF0000] text-white border-[#FF0000]" :
                       "bg-black text-white border-white/10"
@@ -239,7 +249,22 @@ export default function SubmissionsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-8">
+                  <div className="flex items-center justify-end gap-4 flex-wrap">
+                    {(sub.status === "ACCEPTED" || sub.status === "PUBLISHED") && sub.placement && (
+                      <span className="font-sans text-[9px] font-black uppercase tracking-widest text-[#F5E000] border border-[#F5E000]/30 px-2 py-1">
+                        {sub.placement}
+                      </span>
+                    )}
+                    {sub.status === "PUBLISHED" && sub.publicationUrl && (
+                      <a
+                        href={sub.publicationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-[#00CC66] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"
+                      >
+                        <ExternalLink size={12} strokeWidth={3} /> VER PUBLICACIÓN
+                      </a>
+                    )}
                     <span className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
                       {formatDate(sub.submittedAt)}
                     </span>
