@@ -332,7 +332,7 @@ export default function CuratorDashboard() {
                         <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4" htmlFor="curatorNotes">Internal Editorial Notes</label>
                         <textarea
                           id="curatorNotes"
-                          className="w-full p-6 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight min-h-[160px] transition-all"
+                          className="w-full p-6 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight min-h-[160px] transition-all text-black placeholder:text-black/30"
                           placeholder="WRITE YOUR FEEDBACK HERE..."
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}

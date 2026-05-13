@@ -135,7 +135,7 @@ export default function MasterCuratorDashboard() {
           notes, 
           rating, 
           placements: selectedPlacements,
-          status: action === "accept" ? "PENDING_PUBLICATION" : "REJECTED"
+          status: action === "accept" ? "ACCEPTED" : "REJECTED"
         })
       });
 

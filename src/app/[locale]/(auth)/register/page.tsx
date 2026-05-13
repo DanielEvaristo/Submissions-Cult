@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Eye, EyeOff, Mic2, Building2, Check } from "lucide-react";
@@ -12,13 +12,17 @@ type Step = "type" | "form";
 const ROLE_TYPES_ARTIST = ["ARTIST", "BAND", "MANAGEMENT", "PR", "AGENCY"] as const;
 const ROLE_TYPES_INDUSTRY = ["MANAGEMENT", "PR", "AGENCY"] as const;
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const typeParam = searchParams.get("type");
+  const initialType = typeParam === "INDUSTRY" ? AccountType.INDUSTRY : (typeParam === "ARTIST" ? AccountType.ARTIST : null);
 
-  const [step, setStep] = useState<Step>("type");
-  const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [step, setStep] = useState<Step>(initialType ? "form" : "type");
+  const [accountType, setAccountType] = useState<AccountType | null>(initialType);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -96,7 +100,7 @@ export default function RegisterPage() {
           </div>
           <div className="mt-auto relative z-10">
             <p className="text-[#444444] text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] italic">
-              SEC_REG_STEP_01 / AUTH_INIT
+              {t('aestheticLabels.secRegStep01AuthInit')}
             </p>
           </div>
           <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[400px] leading-none select-none pointer-events-none">
@@ -105,7 +109,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Right: Selection */}
-        <div className="w-full md:w-2/3 bg-white p-6 md:p-24 flex flex-col justify-center animate-reveal">
+        <div className="w-full md:w-2/3 bg-white p-6 md:p-24 flex flex-col justify-center animate-reveal text-black">
           <div className="max-w-3xl w-full mx-auto">
             <div className="border-b-4 border-black pb-8 mb-12 md:mb-16">
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">{t("accountType.title")}</h2>
@@ -126,7 +130,7 @@ export default function RegisterPage() {
                   {t("accountType.artistDesc")}
                 </p>
                 <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#F5E000]">
-                  <Check size={16} strokeWidth={3} /> IMMEDIATE_ACCESS
+                  <Check size={16} strokeWidth={3} /> {t('aestheticLabels.immediateAccess')}
                 </div>
               </button>
 
@@ -144,7 +148,7 @@ export default function RegisterPage() {
                   {t("accountType.industryDesc")}
                 </p>
                 <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white/40">
-                  <Check size={16} strokeWidth={3} /> REVIEW_QUEUE_ACTIVE
+                  <Check size={16} strokeWidth={3} /> {t('aestheticLabels.reviewQueueActive')}
                 </div>
               </button>
             </div>
@@ -173,7 +177,7 @@ export default function RegisterPage() {
         </Link>
         <div className="mt-12 md:mt-24 relative z-10">
           <button onClick={() => setStep("type")} className="text-[#F5E000] font-black uppercase text-[10px] tracking-[0.4em] hover:text-white mb-8 md:mb-12 flex items-center gap-2">
-            ← RETURN_TO_STEP_01
+            ← {t('aestheticLabels.returnToStep01')}
           </button>
           <h1 className="text-white text-[clamp(40px,10vw,100px)] font-black uppercase leading-[0.85] tracking-tighter">
             JOIN<br />THE<br /><span className="text-[#F5E000]">CULT.</span>
@@ -181,7 +185,7 @@ export default function RegisterPage() {
         </div>
         <div className="mt-auto relative z-10">
           <p className="text-white/20 font-black uppercase text-[9px] md:text-[10px] tracking-[0.4em]">
-            {accountType === AccountType.ARTIST ? "ARTIST_REGISTRATION_SYSTEM" : "INDUSTRY_APPLICATION_PORTAL"}
+            {accountType === AccountType.ARTIST ? t('aestheticLabels.artistRegistrationSystem') : t('aestheticLabels.industryApplicationPortal')}
           </p>
         </div>
         <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[400px] leading-none select-none pointer-events-none">
@@ -189,33 +193,33 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="w-full md:w-2/3 bg-white p-6 md:p-24 overflow-y-auto animate-reveal">
+      <div className="w-full md:w-2/3 bg-white text-black p-6 md:p-24 overflow-y-auto animate-reveal">
         <div className="max-w-2xl w-full mx-auto">
           <form onSubmit={handleSubmit} className="space-y-16">
             
             {/* Account Info Section */}
             <section className="space-y-12">
               <div className="border-b-4 border-black pb-4">
-                <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black">CORE_CREDENTIALS</h3>
+                <h3 className="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-black">{t('aestheticLabels.coreCredentials')}</h3>
               </div>
               
               <div className="grid grid-cols-1 gap-10">
                 {accountType === AccountType.ARTIST ? (
                   <div>
                     <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="artistName">{t("register.artistName")} ★</label>
-                    <input id="artistName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="E.G. THE_MIDNIGHT_ECHO"
+                    <input id="artistName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder={t('aestheticLabels.egMidnightEcho')}
                       value={artistName} onChange={(e) => setArtistName(e.target.value)} required />
                   </div>
                 ) : (
                   <div className="space-y-10">
                     <div>
                       <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="legalName">{t("industry.legalName")} ★</label>
-                      <input id="legalName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="E.G. UNDERGROUND_PR"
+                      <input id="legalName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder="E.G. UNDERGROUND_PR"
                         value={legalName} onChange={(e) => setLegalName(e.target.value)} required />
                     </div>
                     <div>
                       <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="websiteUrl">{t("industry.websiteUrl")} ★</label>
-                      <input id="websiteUrl" type="url" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="HTTPS://..."
+                      <input id="websiteUrl" type="url" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder="HTTPS://..."
                         value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} required />
                     </div>
                   </div>
@@ -223,19 +227,19 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="email">{t("auth.email")} ★</label>
-                  <input id="email" type="email" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="USER@CULT.MACHINE"
+                  <input id="email" type="email" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder="USER@CULT.MACHINE"
                     value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
                     <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="password">{t("auth.password")} ★</label>
-                    <input id="password" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
+                    <input id="password" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
                       value={password} onChange={(e) => setPassword(e.target.value)} required />
                   </div>
                   <div>
                     <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="confirmPassword">{t("auth.confirmPassword")} ★</label>
-                    <input id="confirmPassword" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black uppercase tracking-tight focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
+                    <input id="confirmPassword" type="password" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder="••••••••"
                       value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                   </div>
                 </div>
@@ -255,5 +259,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><Loader2 className="animate-spin text-black" size={48} /></div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

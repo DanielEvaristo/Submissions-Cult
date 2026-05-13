@@ -46,11 +46,11 @@ export async function PATCH(
       const updated = await prisma.submission.update({
         where: { id },
         data: {
-          status: status || "PENDING_PUBLICATION",
+          status: "ACCEPTED",
           masterCuratorId: session.user.id,
           masterNotes: notes,
           masterRating: rating,
-          placements: placements,
+          placement: placements.join(", "),
           masterReviewedAt: new Date()
         }
       });

@@ -74,7 +74,7 @@
     "artistName": "Nom d'artiste ou de groupe",
     "roleType": "Type de rôle",
     "country": "Pays",
-    "city": "Ville",
+    "city": "État / Région",
     "bio": "Bio",
     "bioHint": "Maximum 500 caractères",
     "genre": "Genre",
@@ -149,8 +149,9 @@
       "title": "D'où créez-vous ?",
       "country": "Pays",
       "countryPlaceholder": "Sélectionnez votre pays",
-      "city": "Ville",
-      "cityPlaceholder": "ex. Paris",
+      "city": "État / Région",
+      "cityPlaceholder": "ex. Île-de-France",
+      "statePlaceholder": "Sélectionnez votre état / région",
       "bio": "Bio courte",
       "bioPlaceholder": "Parlez-nous de votre son et votre vision… (max. 500 caractères)",
       "bioHint": "{count}/500 caractères"
@@ -390,5 +391,140 @@
     "unauthorized": "Vous n'êtes pas autorisé à voir cette page.",
     "notFound": "Page introuvable.",
     "serverError": "Erreur serveur. Veuillez réessayer plus tard."
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "Comment ça marche",
+      "pricing": "Tarifs",
+      "industry": "Industrie",
+      "logIn": "Se connecter",
+      "submitNow": "SOUMETTRE"
+    },
+    "hero": {
+      "get": "FAITES-VOUS ",
+      "heard": "ENTENDRE.",
+      "notBuried": "\nPAS ENTERRER.",
+      "subtitle": "La plateforme de soumission anti-algorithme pour les artistes indépendants. Nous mettons directement vos titres en relation avec des curateurs humains, des labels indépendants et la presse underground.",
+      "ctaFree": "SOUMETTRE — GRATUIT",
+      "marquee": "★ SOUMISSIONS GRATUITES ★ VRAIS RETOURS ★ RÉPONSE RAPIDE ★ ARTICLES DE PRESSE ★ ENTREVTIENS ★"
+    },
+    "stats": {
+      "views": "VUES",
+      "viewsDesc": "30 derniers jours sur IG",
+      "reached": "ATTEINTS",
+      "reachedDesc": "Comptes organiques",
+      "founded": "FONDATION",
+      "foundedDesc": "Éditorial indépendant"
+    },
+    "outcome": {
+      "title": "LE RÉSULTAT",
+      "subtitle": "OÙ VA VRAIMENT VOTRE MUSIQUE.",
+      "curators": "Curateurs de Playlists",
+      "labels": "Labels Discographiques",
+      "press": "Presse Musicale",
+      "radio": "Web Radios",
+      "item1": {
+        "name": "Recommandation Hebdomadaire",
+        "desc": "Mis en avant dans notre sélection sur tous nos réseaux et site principal.",
+        "cost": "GRATUIT"
+      },
+      "item2": {
+        "name": "Playlist Spotify",
+        "desc": "Placement direct dans nos playlists 'Cult Sounds' par genre avec rotation active.",
+        "cost": "ADD-ON"
+      },
+      "item3": {
+        "name": "Web Radio",
+        "desc": "Placement et mention dans notre émission radio underground hebdomadaire.",
+        "cost": "ADD-ON"
+      },
+      "item4": {
+        "name": "Histoire d'Album",
+        "desc": "Comptes agence uniquement. Plongée approfondie dans le processus créatif de votre sortie.",
+        "cost": "PRO"
+      }
+    },
+    "why": {
+      "title1": "HORS DE LA\n",
+      "title2": "CHAMBRE D'ÉCHO.",
+      "desc1": "La plupart des plateformes touchent les mêmes personnes. Notre portée est virale et organique. Près de toutes nos vues proviennent de personnes qui ne nous suivent pas encore.",
+      "desc2": "Si un curateur rejette votre titre, il doit fournir une raison. S'il l'accepte, il est partagé avec son public. Du pur signal, pas de bruit.",
+      "point1Title": "Identité Éditoriale",
+      "point1Desc": "Nous ne sommes pas un agrégateur générique. Nous sommes un magazine musical avec une esthétique définie et des abonnés fidèles.",
+      "point2Title": "Curation Honnête",
+      "point2Desc": "Nous n'acceptons que 10-15% des soumissions. Si nous vous choisissons, c'est parce que nous aimons vraiment le morceau.",
+      "point3Title": "Prix Équitables",
+      "point3Desc": "Pas de forfaits de soumission à 50$. 1$ par crédit. Fort impact, faible barrière à l'entrée.",
+      "point4Title": "Vrais Partenaires",
+      "point4Desc": "Nous parlons aux labels et aux agences de relations publiques comme RCA et Virgin. Nous comblons le vide."
+    },
+    "genres": {
+      "title1": "NOUS PARLONS VOTRE\n",
+      "title2": "LANGUE.",
+      "electronic": "Électronique",
+      "indieRock": "Indie Rock",
+      "postPunk": "Post-Punk",
+      "hipHop": "Hip-Hop",
+      "ambient": "Ambient",
+      "experimental": "Expérimental",
+      "metal": "Metal"
+    },
+    "pricing": {
+      "title": "TARIFS",
+      "subtitle": "UN ACCÈS ÉQUITABLE POUR CHAQUE ARTISTE.",
+      "firstTrack": "Premier Titre",
+      "free": "GRATUIT",
+      "oneSubmission": "1 Soumission",
+      "getStarted": "COMMENCER",
+      "singleCredit": "Crédit Unique",
+      "oneDollar": "1$",
+      "payAsYouGo": "Payez à l'utilisation",
+      "buyNow": "ACHETER",
+      "artistPacks": "Packs Artiste",
+      "fiveSubmissions": "5 Soumissions",
+      "fiveDollars": "5$",
+      "tenSubmissions": "10 Soumissions",
+      "eightDollars": "8$"
+    },
+    "partners": {
+      "virginMusic": "VIRGIN MUSIC",
+      "acRecords": "A&C RECORDS",
+      "pitchPerfectPr": "PITCH PERFECT PR",
+      "subPop": "SUB POP"
+    },
+    "cta": {
+      "title1": "VOTRE MUSIQUE MÉRITE\nD'ÊTRE ",
+      "titleHighlight": "ENTENDUE.",
+      "button": "COMMENCER"
+    },
+    "footer": {
+      "desc": "PLATEFORME ÉDITORIALE INDÉ. POUR L'UNDERGROUND, PAR L'UNDERGROUND.",
+      "slogan": "Le Seul Culte Dont Vous Faites Partie.",
+      "legal": "LÉGAL",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation",
+      "social": "SOCIAL",
+      "instagram": "Instagram",
+      "spotify": "Spotify",
+      "rights": "© 2025 CULT MACHINE WORLDWIDE. TOUS DROITS RÉSERVÉS."
+    }
+  },
+  "aestheticLabels": {
+    "secRoleSelectInit": "SEC SELECTION ROLE / INIT",
+    "directSubmissionFlow": "FLUX DE SOUMISSION DIRECT",
+    "createAgencyAccount": "CREER COMPTE AGENCE",
+    "secRegStep01AuthInit": "SEC ENREGISTREMENT 01 / INIT AUTH",
+    "immediateAccess": "ACCES IMMEDIAT",
+    "reviewQueueActive": "FILE ATTENTE ACTIVE",
+    "artistRegistrationSystem": "SYSTEME INSCRIPTION ARTISTE",
+    "industryApplicationPortal": "PORTAIL CANDIDATURE INDUSTRIE",
+    "initialStep": "ÉTAPE INITIALE",
+    "standardRate": "TARIF STANDARD",
+    "volumePacks": "PACKS DE VOLUME",
+    "mostFair": "LE PLUS JUSTE",
+    "trustedBy": "APPROUVÉ PAR DES ARTISTES TRAVAILLANT AVEC",
+    "coreCredentials": "IDENTIFIANTS DE BASE",
+    "egMidnightEcho": "EX. THE MIDNIGHT ECHO",
+    "returnToStep01": "RETOUR A L ETAPE 01"
   }
 }

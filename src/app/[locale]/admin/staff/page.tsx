@@ -129,7 +129,7 @@ export default function AdminStaffPage() {
 
         {/* Creation Form */}
         <div className="lg:col-span-1">
-          <div className="border-4 border-black bg-white p-8">
+          <div className="border-4 border-black bg-white text-black p-8">
             <h2 className="font-sans text-xl font-black uppercase tracking-widest text-black mb-8 border-b-2 border-black pb-4 flex items-center gap-3">
               <Plus size={20} strokeWidth={3} /> ADD NEW STAFF
             </h2>
@@ -139,7 +139,7 @@ export default function AdminStaffPage() {
                 <input
                   type="text"
                   required
-                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight text-black placeholder:text-black/30"
                   placeholder="EX. JOHN DOE"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
@@ -151,7 +151,7 @@ export default function AdminStaffPage() {
                 <input
                   type="email"
                   required
-                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight text-black placeholder:text-black/30"
                   placeholder="STAFF@CULTMACHINE.COM"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
@@ -163,7 +163,7 @@ export default function AdminStaffPage() {
                 <input
                   type="text"
                   required
-                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight text-black placeholder:text-black/30"
                   placeholder="••••••••"
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
@@ -174,7 +174,7 @@ export default function AdminStaffPage() {
               <div>
                 <label className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-2">SECURITY CLEARANCE</label>
                 <select
-                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight appearance-none"
+                  className="w-full p-4 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight appearance-none text-black"
                   value={form.role}
                   onChange={e => setForm({ ...form, role: e.target.value })}
                 >
@@ -239,7 +239,7 @@ export default function AdminStaffPage() {
 
         {/* Staff List */}
         <div className="lg:col-span-2">
-          <div className="border-4 border-black bg-white">
+          <div className="border-4 border-black bg-white text-black">
             <div className="px-8 py-6 border-b-4 border-black bg-black text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Users size={20} strokeWidth={3} />

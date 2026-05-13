@@ -146,7 +146,7 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
-                className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black uppercase tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none"
+                className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none"
                 placeholder={t("auth.placeholders.email")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black uppercase tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none pr-16"
+                  className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none pr-16"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

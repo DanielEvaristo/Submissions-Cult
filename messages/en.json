@@ -74,7 +74,7 @@
     "artistName": "Artist or Band Name",
     "roleType": "Role Type",
     "country": "Country",
-    "city": "City",
+    "city": "State / Region",
     "bio": "Bio",
     "bioHint": "Max 500 characters",
     "genre": "Genre",
@@ -149,8 +149,9 @@
       "title": "Where are you based?",
       "country": "Country",
       "countryPlaceholder": "Select your country",
-      "city": "City",
-      "cityPlaceholder": "e.g. Mexico City",
+      "city": "State / Region",
+      "cityPlaceholder": "e.g. California",
+      "statePlaceholder": "Select your state / region",
       "bio": "Short Bio",
       "bioPlaceholder": "Tell us about your sound and vision… (max 500 chars)",
       "bioHint": "{count}/500 characters"
@@ -406,5 +407,140 @@
     "unauthorized": "You are not authorized to view this page.",
     "notFound": "Page not found.",
     "serverError": "Server error. Please try again later."
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "How it works",
+      "pricing": "Pricing",
+      "industry": "Industry",
+      "logIn": "Log In",
+      "submitNow": "SUBMIT NOW"
+    },
+    "hero": {
+      "get": "GET ",
+      "heard": "HEARD.",
+      "notBuried": "\nBURIED.",
+      "subtitle": "The anti-algorithm submission platform for independent artists. We match your tracks directly with human curators, boutique labels, and underground press.",
+      "ctaFree": "SUBMIT NOW — FREE",
+      "marquee": "★ FREE SUBMISSIONS ★ REAL FEEDBACK ★ FAST RESPONSE ★ PRESS ARTICLES ★ INTERVIEWS ★"
+    },
+    "stats": {
+      "views": "VIEWS",
+      "viewsDesc": "Last 30 days on IG",
+      "reached": "REACHED",
+      "reachedDesc": "Organic accounts",
+      "founded": "FOUNDED",
+      "foundedDesc": "Independent editorial"
+    },
+    "outcome": {
+      "title": "THE OUTCOME",
+      "subtitle": "WHERE YOUR MUSIC ACTUALLY GOES.",
+      "curators": "Playlist Curators",
+      "labels": "Record Labels",
+      "press": "Music Press",
+      "radio": "Web Radios",
+      "item1": {
+        "name": "Weekly Recommendation",
+        "desc": "Featured in our curated highlights across all social channels and main site.",
+        "cost": "FREE"
+      },
+      "item2": {
+        "name": "Spotify Playlist",
+        "desc": "Direct placement into our genre-specific 'Cult Sounds' playlists with active rotation.",
+        "cost": "ADD-ON"
+      },
+      "item3": {
+        "name": "Web Radio",
+        "desc": "Track placement and shoutout in our weekly underground radio show.",
+        "cost": "ADD-ON"
+      },
+      "item4": {
+        "name": "Album Story",
+        "desc": "Agency accounts only. Deep dive into your release's creative process and visuals.",
+        "cost": "PRO"
+      }
+    },
+    "why": {
+      "title1": "OUTSIDE THE\n",
+      "title2": "ECHO CHAMBER.",
+      "desc1": "Most platforms reach the same people. Our reach is viral and organic. Nearly all our views come from people who don't follow us yet. That's how you get discovered.",
+      "desc2": "If a curator rejects your track, they must provide a reason. If they accept it, it gets shared with their audience. Pure signal, no noise.",
+      "point1Title": "Editorial Identity",
+      "point1Desc": "We aren't a generic aggregator. We are a music magazine with a defined aesthetic and a loyal following.",
+      "point2Title": "Honest Curation",
+      "point2Desc": "We only accept 10-15% of submissions. If we pick you, it's because we actually love the track.",
+      "point3Title": "Fair Pricing",
+      "point3Desc": "No $50 submission packages. $1 per credit. High impact, low barrier to entry.",
+      "point4Title": "Real Partners",
+      "point4Desc": "We talk to labels and PR firms like RCA and Virgin. We bridge the gap."
+    },
+    "genres": {
+      "title1": "WE SPEAK YOUR\n",
+      "title2": "LANGUAGE.",
+      "electronic": "Electronic",
+      "indieRock": "Indie Rock",
+      "postPunk": "Post-Punk",
+      "hipHop": "Hip-Hop",
+      "ambient": "Ambient",
+      "experimental": "Experimental",
+      "metal": "Metal"
+    },
+    "pricing": {
+      "title": "PRICING",
+      "subtitle": "FAIR ACCESS FOR EVERY ARTIST.",
+      "firstTrack": "First Track",
+      "free": "FREE",
+      "oneSubmission": "1 Submission",
+      "getStarted": "GET STARTED",
+      "singleCredit": "Single Credit",
+      "oneDollar": "$1",
+      "payAsYouGo": "Pay as you go",
+      "buyNow": "BUY NOW",
+      "artistPacks": "Artist Packs",
+      "fiveSubmissions": "5 Submissions",
+      "fiveDollars": "$5",
+      "tenSubmissions": "10 Submissions",
+      "eightDollars": "$8"
+    },
+    "partners": {
+      "virginMusic": "VIRGIN MUSIC",
+      "acRecords": "A&C RECORDS",
+      "pitchPerfectPr": "PITCH PERFECT PR",
+      "subPop": "SUB POP"
+    },
+    "cta": {
+      "title1": "YOUR MUSIC DESERVES\nTO BE ",
+      "titleHighlight": "HEARD.",
+      "button": "START NOW"
+    },
+    "footer": {
+      "desc": "INDIE EDITORIAL PLATFORM. FOR THE UNDERGROUND, BY THE UNDERGROUND.",
+      "slogan": "The Only Cult You're Apart Of.",
+      "legal": "LEGAL",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "social": "SOCIAL",
+      "instagram": "Instagram",
+      "spotify": "Spotify",
+      "rights": "© 2025 CULT MACHINE WORLDWIDE. ALL RIGHTS RESERVED."
+    }
+  },
+  "aestheticLabels": {
+    "secRoleSelectInit": "SEC ROLE SELECT / INIT",
+    "directSubmissionFlow": "DIRECT SUBMISSION FLOW",
+    "createAgencyAccount": "CREATE AGENCY ACCOUNT",
+    "secRegStep01AuthInit": "SEC REG STEP 01 / AUTH INIT",
+    "immediateAccess": "IMMEDIATE ACCESS",
+    "reviewQueueActive": "REVIEW QUEUE ACTIVE",
+    "artistRegistrationSystem": "ARTIST REGISTRATION SYSTEM",
+    "industryApplicationPortal": "INDUSTRY APPLICATION PORTAL",
+    "initialStep": "INITIAL STEP",
+    "standardRate": "STANDARD RATE",
+    "volumePacks": "VOLUME PACKS",
+    "mostFair": "MOST FAIR",
+    "trustedBy": "TRUSTED BY ARTISTS WORKING WITH",
+    "coreCredentials": "CORE CREDENTIALS",
+    "egMidnightEcho": "E.G. THE MIDNIGHT ECHO",
+    "returnToStep01": "RETURN TO STEP 01"
   }
 }

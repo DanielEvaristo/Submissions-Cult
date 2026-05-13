@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  * { box-sizing: border-box; cursor: crosshair !important; }
+  * { box-sizing: border-box; cursor: crosshair; }
   html { scroll-behavior: smooth; }
 
   body {
@@ -56,6 +56,10 @@
            text-white font-sans text-sm font-medium placeholder:text-white/20
            focus:outline-none focus:border-[#F5E000] focus:bg-[#F5E000]/5
            transition-all duration-150;
+  }
+  
+  select.input option {
+    @apply bg-black text-white;
   }
   
   .input-error { @apply border-danger; }

@@ -74,7 +74,7 @@
     "artistName": "Nombre artístico o de banda",
     "roleType": "Tipo de rol",
     "country": "País",
-    "city": "Ciudad",
+    "city": "Estado / Región",
     "bio": "Bio",
     "bioHint": "Máximo 500 caracteres",
     "genre": "Género",
@@ -149,8 +149,9 @@
       "title": "¿Desde dónde creas?",
       "country": "País",
       "countryPlaceholder": "Selecciona tu país",
-      "city": "Ciudad",
-      "cityPlaceholder": "ej. Ciudad de México",
+      "city": "Estado / Región",
+      "cityPlaceholder": "ej. Estado de México",
+      "statePlaceholder": "Selecciona tu estado / región",
       "bio": "Bio corta",
       "bioPlaceholder": "Cuéntanos sobre tu sonido y visión… (máx. 500 caracteres)",
       "bioHint": "{count}/500 caracteres"
@@ -406,5 +407,140 @@
     "unauthorized": "No estás autorizado para ver esta página.",
     "notFound": "Página no encontrada.",
     "serverError": "Error en el servidor. Por favor intenta de nuevo más tarde."
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "Cómo funciona",
+      "pricing": "Precios",
+      "industry": "Industria",
+      "logIn": "Iniciar Sesión",
+      "submitNow": "ENVIAR AHORA"
+    },
+    "hero": {
+      "get": "HAZ QUE TE ",
+      "heard": "ESCUCHEN.",
+      "notBuried": "\nNO TE ENTIERRES.",
+      "subtitle": "La plataforma de envíos anti-algoritmo para artistas independientes. Conectamos tus canciones directamente con curadores humanos, sellos boutique y prensa underground.",
+      "ctaFree": "ENVIAR AHORA — GRATIS",
+      "marquee": "★ ENVÍOS GRATUITOS ★ FEEDBACK REAL ★ RESPUESTA RÁPIDA ★ ARTÍCULOS DE PRENSA ★ ENTREVISTAS ★"
+    },
+    "stats": {
+      "views": "VISTAS",
+      "viewsDesc": "Últimos 30 días en IG",
+      "reached": "ALCANZADOS",
+      "reachedDesc": "Cuentas orgánicas",
+      "founded": "FUNDACIÓN",
+      "foundedDesc": "Editorial independiente"
+    },
+    "outcome": {
+      "title": "EL RESULTADO",
+      "subtitle": "DÓNDE LLEGA REALMENTE TU MÚSICA.",
+      "curators": "Curadores de Playlists",
+      "labels": "Sellos Discográficos",
+      "press": "Prensa Musical",
+      "radio": "Radios Web",
+      "item1": {
+        "name": "Recomendación Semanal",
+        "desc": "Destacado en nuestra selección curada en todas las redes sociales y el sitio principal.",
+        "cost": "GRATIS"
+      },
+      "item2": {
+        "name": "Playlist de Spotify",
+        "desc": "Ubicación directa en nuestras playlists 'Cult Sounds' por género con rotación activa.",
+        "cost": "ADD-ON"
+      },
+      "item3": {
+        "name": "Radio Web",
+        "desc": "Transmisión y mención en nuestro programa de radio underground semanal.",
+        "cost": "ADD-ON"
+      },
+      "item4": {
+        "name": "Historia de Álbum",
+        "desc": "Solo cuentas de agencia. Inmersión profunda en el proceso creativo y visuales de tu lanzamiento.",
+        "cost": "PRO"
+      }
+    },
+    "why": {
+      "title1": "FUERA DE LA\n",
+      "title2": "CÁMARA DE ECO.",
+      "desc1": "La mayoría de plataformas llegan a las mismas personas. Nuestro alcance es viral y orgánico. Casi todas nuestras vistas provienen de gente que aún no nos sigue. Así es como te descubren.",
+      "desc2": "Si un curador rechaza tu canción, debe darte una razón. Si la acepta, la comparte con su audiencia. Pura señal, sin ruido.",
+      "point1Title": "Identidad Editorial",
+      "point1Desc": "No somos un agregador genérico. Somos una revista musical con una estética definida y seguidores leales.",
+      "point2Title": "Curaduría Honesta",
+      "point2Desc": "Solo aceptamos el 10-15% de los envíos. Si te elegimos, es porque realmente amamos la pista.",
+      "point3Title": "Precios Justos",
+      "point3Desc": "No hay paquetes de envío de $50. $1 por crédito. Alto impacto, baja barrera de entrada.",
+      "point4Title": "Socios Reales",
+      "point4Desc": "Hablamos con sellos y agencias de relaciones públicas como RCA y Virgin. Acortamos la brecha."
+    },
+    "genres": {
+      "title1": "HABLAMOS TU\n",
+      "title2": "IDIOMA.",
+      "electronic": "Electrónica",
+      "indieRock": "Indie Rock",
+      "postPunk": "Post-Punk",
+      "hipHop": "Hip-Hop",
+      "ambient": "Ambient",
+      "experimental": "Experimental",
+      "metal": "Metal"
+    },
+    "pricing": {
+      "title": "PRECIOS",
+      "subtitle": "ACCESO JUSTO PARA CADA ARTISTA.",
+      "firstTrack": "Primer Track",
+      "free": "GRATIS",
+      "oneSubmission": "1 Envío",
+      "getStarted": "COMENZAR",
+      "singleCredit": "Crédito Único",
+      "oneDollar": "$1",
+      "payAsYouGo": "Paga lo que uses",
+      "buyNow": "COMPRAR",
+      "artistPacks": "Packs de Artista",
+      "fiveSubmissions": "5 Envíos",
+      "fiveDollars": "$5",
+      "tenSubmissions": "10 Envíos",
+      "eightDollars": "$8"
+    },
+    "partners": {
+      "virginMusic": "VIRGIN MUSIC",
+      "acRecords": "A&C RECORDS",
+      "pitchPerfectPr": "PITCH PERFECT PR",
+      "subPop": "SUB POP"
+    },
+    "cta": {
+      "title1": "TU MÚSICA MERECE\nSER ",
+      "titleHighlight": "ESCUCHADA.",
+      "button": "EMPEZAR AHORA"
+    },
+    "footer": {
+      "desc": "PLATAFORMA EDITORIAL INDIE. PARA EL UNDERGROUND, POR EL UNDERGROUND.",
+      "slogan": "El Único Culto Del Que Eres Parte.",
+      "legal": "LEGAL",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "social": "SOCIAL",
+      "instagram": "Instagram",
+      "spotify": "Spotify",
+      "rights": "© 2025 CULT MACHINE WORLDWIDE. TODOS LOS DERECHOS RESERVADOS."
+    }
+  },
+  "aestheticLabels": {
+    "secRoleSelectInit": "SEC SELECCION ROL / INIT",
+    "directSubmissionFlow": "FLUJO ENVIO DIRECTO",
+    "createAgencyAccount": "CREAR CUENTA AGENCIA",
+    "secRegStep01AuthInit": "SEC REG PASO 01 / AUTH INIT",
+    "immediateAccess": "ACCESO INMEDIATO",
+    "reviewQueueActive": "FILA REVISION ACTIVA",
+    "artistRegistrationSystem": "SISTEMA REGISTRO ARTISTA",
+    "industryApplicationPortal": "PORTAL APLICACION INDUSTRIA",
+    "initialStep": "PASO INICIAL",
+    "standardRate": "TARIFA ESTÁNDAR",
+    "volumePacks": "PAQUETES DE VOLUMEN",
+    "mostFair": "MÁS JUSTO",
+    "trustedBy": "CON LA CONFIANZA DE ARTISTAS TRABAJANDO CON",
+    "coreCredentials": "CREDENCIALES BASE",
+    "egMidnightEcho": "EJ. THE MIDNIGHT ECHO",
+    "returnToStep01": "VOLVER AL PASO 01"
   }
 }
