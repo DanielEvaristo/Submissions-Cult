@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
     },
     "accountCreated": "Compte créé — connectez-vous pour continuer.",
+    "invalidCredentials": "Email ou mot de passe incorrect.",
     "industryAccountCreated": "Compte de l'industrie créé ! Veuillez vous connecter pour accéder à votre tableau de bord.",
     "placeholders": {
       "email": "vous@exemple.com",

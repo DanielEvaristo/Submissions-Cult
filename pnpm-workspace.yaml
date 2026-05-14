@@ -1,0 +1,12 @@
+# Raíz del workspace pnpm (un solo paquete en este repo).
+packages:
+  - "."
+
+# Permite scripts de instalación solo en dependencias que lo necesitan (binarios nativos).
+# Ver: https://pnpm.io/settings#allowbuilds
+allowBuilds:
+  "@parcel/watcher": true
+  "@prisma/engines": true
+  "@swc/core": true
+  prisma: true
+  unrs-resolver: true

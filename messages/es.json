@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Las contraseñas no coinciden"
     },
     "accountCreated": "Cuenta creada — inicia sesión para continuar.",
+    "invalidCredentials": "Correo o contraseña incorrectos.",
     "industryAccountCreated": "¡Cuenta de industria creada! Inicia sesión para acceder a tu panel.",
     "placeholders": {
       "email": "tu@ejemplo.com",

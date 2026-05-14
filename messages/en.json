@@ -43,6 +43,7 @@
       "passwordsDoNotMatch": "Passwords do not match"
     },
     "accountCreated": "Account created — sign in to continue.",
+    "invalidCredentials": "Invalid email or password.",
     "industryAccountCreated": "Industry account created! Please sign in to access your dashboard.",
     "placeholders": {
       "email": "you@example.com",

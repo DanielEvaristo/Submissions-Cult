@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Eye, EyeOff, Globe } from "lucide-react";
@@ -16,7 +16,6 @@ const LOCALES = [
 export default function LoginPage() {
   const t = useTranslations();
   const locale = useLocale();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
 
@@ -26,6 +25,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [langOpen, setLangOpen] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("error");
+    if (code === "CredentialsSignin") {
+      setError(t("auth.invalidCredentials"));
+    }
+  }, [searchParams, t]);
 
   const switchLocale = (newLocale: string) => {
     const segments = window.location.pathname.split("/");
@@ -41,14 +47,22 @@ export default function LoginPage() {
     const result = await signIn("credentials", {
       email: email.toLowerCase().trim(),
       password,
-      redirect: true,
-      callbackUrl: `/api/auth/after-login?locale=${locale}`,
+      redirect: false,
     });
 
+    setLoading(false);
+
     if (result?.error) {
-      setLoading(false);
-      setError("Invalid email or password");
+      setError(t("auth.invalidCredentials"));
+      return;
     }
+
+    if (!result?.ok) {
+      setError(t("auth.invalidCredentials"));
+      return;
+    }
+
+    window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
   };
 
   const currentLang = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];

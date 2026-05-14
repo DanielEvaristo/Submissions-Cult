@@ -1,18 +1,23 @@
 FROM node:20-alpine AS base
+RUN corepack enable
 
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack prepare pnpm@10.33.4 --activate
+RUN pnpm install --frozen-lockfile
 
 # Build the Next.js app
 FROM base AS builder
 WORKDIR /app
+RUN corepack prepare pnpm@10.33.4 --activate
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY . .
-RUN npx prisma generate
-RUN npm run build
+RUN pnpm exec prisma generate
+RUN pnpm run build
 
 # Production image — minimal size
 FROM base AS runner
