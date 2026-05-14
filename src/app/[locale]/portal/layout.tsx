@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import PortalNav from "@/components/portal/PortalNav";
 import PortalHeader from "@/components/portal/PortalHeader";
@@ -23,8 +24,20 @@ export default async function PortalLayout({ children, params }: Props) {
     redirect(`/${locale}/industry`);
   }
 
-  // Check if onboarding is complete (using genre as proxy)
-  const isComplete = !!session.user.genre;
+  // Profile is complete when the user has gone through onboarding (country is the mandatory Step 1 field)
+  const isComplete = !!session.user.country;
+
+  // Server-side paid activity check (avoids client-side flash)
+  const [purchaseCount, paidSubmissionCount] = await Promise.all([
+    prisma.creditTransaction.count({
+      where: { userId: session.user.id, type: "PURCHASE" },
+    }),
+    prisma.submission.count({
+      where: { userId: session.user.id, totalCostUsd: { gt: 0 } },
+    }),
+  ]);
+  const hasPaidActivity = purchaseCount > 0 || paidSubmissionCount > 0;
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-black">
       <PortalNav locale={locale} />
@@ -32,8 +45,8 @@ export default async function PortalLayout({ children, params }: Props) {
       <div className="flex-1 flex flex-col min-w-0 pt-16 lg:pt-0">
         <PortalHeader locale={locale} />
         
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto relative">
-          <PortalGating isComplete={isComplete} locale={locale}>
+        <main className="flex-1 overflow-y-auto relative">
+          <PortalGating isComplete={isComplete} hasPaidActivity={hasPaidActivity} locale={locale}>
             {children}
           </PortalGating>
         </main>
@@ -41,3 +54,4 @@ export default async function PortalLayout({ children, params }: Props) {
     </div>
   );
 }
+

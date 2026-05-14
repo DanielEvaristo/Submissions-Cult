@@ -10,7 +10,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
   const t = useTranslations();
   const [isNavInverted, setIsNavInverted] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const cursorRef = useRef<HTMLDivElement>(null);
+
 
   // Animations and Nav Inversion logic
   useEffect(() => {
@@ -54,29 +54,14 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
     // Initial check on load
     handleScroll();
 
-    // Custom Cursor
-    const moveCursor = (e: MouseEvent) => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
-      }
-    };
-    window.addEventListener('mousemove', moveCursor);
-
     return () => {
       observer.disconnect();
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', moveCursor);
     };
   }, []);
 
   return (
-    <div className={`font-sans selection:bg-[#F5E000] selection:text-black cursor-none bg-white text-black`}>
-      {/* ── Custom Cursor ── */}
-      <div 
-        ref={cursorRef}
-        className={`fixed top-0 left-0 w-5 h-5 rounded-full pointer-events-none z-[9999] mix-blend-difference transition-transform duration-75 ease-out scale-100 bg-white`}
-        style={{ margin: '-10px 0 0 -10px' }}
-      />
+    <div className={`font-sans selection:bg-[#F5E000] selection:text-black bg-white text-black`}>
 
       <style jsx global>{`
         section {
@@ -333,7 +318,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               ].map((genre, i) => (
                 <span 
                   key={genre}
-                  className="px-8 py-4 border-4 border-black text-xs font-black uppercase tracking-[0.3em] hover:bg-black hover:text-[#F5E000] transition-all cursor-crosshair shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                  className="px-8 py-4 border-4 border-black text-xs font-black uppercase tracking-[0.3em] hover:bg-black hover:text-[#F5E000] transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
                 >
                   {genre}
                 </span>

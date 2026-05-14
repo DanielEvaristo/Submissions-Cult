@@ -19,6 +19,7 @@ declare module "next-auth" {
       labelStatus: LabelStatus;
       emailVerified: Date | null;
       genre?: string | null;
+      country?: string | null;
       instagram?: string | null;
       spotifyUrl?: string | null;
       subgenre?: string | null;
@@ -41,6 +42,7 @@ declare module "next-auth" {
     labelStatus: LabelStatus;
     emailVerified: Date | null;
     genre?: string | null;
+    country?: string | null;
     monthlyListeners?: ListenersRange | null;
     instagramFollowers?: FollowersRange | null;
     instagram?: string | null;
@@ -65,6 +67,7 @@ declare module "next-auth/jwt" {
     emailVerified: Date | null;
     genre?: string | null;
     subgenre?: string | null;
+    country?: string | null;
     instagram?: string | null;
     spotifyUrl?: string | null;
     monthlyListeners?: ListenersRange | null;

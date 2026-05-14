@@ -43,7 +43,9 @@ export default function SubmissionsPage() {
   const tStatus = useTranslations("status");
   const locale = useLocale();
   const { data: session } = useSession();
-  const isProfileIncomplete = session?.user?.accountType === "ARTIST" && !session?.user?.genre;
+  // 'country' is the mandatory Step 1 field of the onboarding flow — the only reliable proxy for profile completion.
+  // 'genre' is set automatically during the anonymous submit flow, so it can't be used as a proxy.
+  const isProfileIncomplete = session?.user?.accountType === "ARTIST" && !session?.user?.country;
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,8 +106,10 @@ export default function SubmissionsPage() {
   };
 
   const hasSubmissions = submissions.length > 0;
-  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity && !hasSubmissions;
-  const shouldShowReminder = isProfileIncomplete && (hasPaidActivity || hasSubmissions);
+  // CASE 1: Free user, profile incomplete → lock tracker (blur)
+  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity;
+  // CASE 2: Paid user, profile incomplete → show persistent reminder (handled by PortalGating in layout)
+  // No need to show additional reminder here — PortalGating banner covers it.
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-12 space-y-12 animate-reveal">
@@ -125,22 +129,6 @@ export default function SubmissionsPage() {
         </Link>
       </div>
 
-      {shouldShowReminder && (
-        <div className="border-2 border-[#F5E000] bg-[#F5E000]/10 p-5 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F5E000] mb-2">Profile Reminder</p>
-            <p className="text-sm font-bold uppercase tracking-[0.12em]">
-              Complete your profile to unlock the full artist experience.
-            </p>
-          </div>
-          <Link
-            href={`/${locale}/portal/onboarding`}
-            className="inline-flex items-center justify-center px-5 py-3 bg-[#F5E000] text-black text-[10px] font-black uppercase tracking-[0.25em] hover:bg-white transition-all"
-          >
-            Complete Profile
-          </Link>
-        </div>
-      )}
 
       <div className="flex items-center gap-0 border-4 border-white/10 bg-black p-1 w-fit">
         {FILTER_OPTIONS.map((f) => (
@@ -184,20 +172,25 @@ export default function SubmissionsPage() {
       {!loading && !accessLoading && submissions.length > 0 && (
         <div className="relative">
           {shouldLockTracker && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center p-10 bg-black/40 backdrop-blur-[4px]">
+            <div className="absolute inset-0 z-10 flex items-center justify-center p-10 bg-black/60 backdrop-blur-[6px]">
               <div className="bg-black text-white p-10 border-8 border-[#F5E000] max-w-lg text-center shadow-[20px_20px_0px_0px_rgba(245,224,0,0.1)] animate-reveal">
                 <div className="w-20 h-20 bg-[#F5E000] text-black flex items-center justify-center mx-auto mb-8 border-4 border-black">
                   <Lock size={40} strokeWidth={3} />
                 </div>
-                <h2 className="font-sans text-3xl font-black uppercase tracking-tighter mb-4">TRACKING LOCKED</h2>
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-white/60 mb-10 leading-relaxed">
-                  Complete your profile to unlock this section.
+                <p className="font-bold text-xs tracking-wider text-[#F5E000] mb-3">
+                  Track Status Locked
+                </p>
+                <h2 className="font-sans text-3xl font-bold tracking-tight mb-4 text-white">
+                  To view the status of your track, please complete your profile.
+                </h2>
+                <p className="font-sans text-sm text-white/60 mb-10 leading-relaxed">
+                  We need a bit more information about you to activate tracking for your submissions.
                 </p>
                 <Link
                   href={`/${locale}/portal/onboarding`}
-                  className="w-full py-5 bg-[#F5E000] text-black font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all flex items-center justify-center gap-4"
+                  className="w-full py-5 bg-[#F5E000] text-black font-bold text-sm hover:bg-white transition-all flex items-center justify-center gap-4"
                 >
-                  COMPLETE PROFILE <ArrowRight size={16} strokeWidth={3} />
+                  GO TO PROFILE <ArrowRight size={18} strokeWidth={2} />
                 </Link>
               </div>
             </div>

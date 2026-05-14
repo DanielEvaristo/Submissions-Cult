@@ -49,6 +49,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email already registered. Please login first." }, { status: 400 });
     }
 
+    // ── GUARD 1: Band/Artist name already claimed by another account ──────────
+    const bandConflict = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { artistName: { equals: artistName.trim(), mode: "insensitive" } },
+          { name: { equals: artistName.trim(), mode: "insensitive" } },
+        ],
+      },
+    });
+    if (bandConflict) {
+      return NextResponse.json(
+        { error: "BAND_ALREADY_REGISTERED", details: `The artist/band "${artistName}" is already registered to another account. If you believe this is a mistake, please contact support at support@cultmachine.com` },
+        { status: 409 }
+      );
+    }
+
+
     // 2. Find curators and manually count their active workload
     const curators = await prisma.user.findMany({
       where: { isCurator: true, isMasterCurator: false },

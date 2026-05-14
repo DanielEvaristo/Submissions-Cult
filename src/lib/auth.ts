@@ -20,12 +20,12 @@ export const authOptions: AuthOptions = {
         });
 
         if (!user) {
-          console.log("[AUTH] Login failed: User not found", credentials.email);
+          console.log("[AUTH] Login failed: User not found in database", credentials.email);
           return null;
         }
 
         if (!user.password) {
-          console.log("[AUTH] Login failed: User has no password set", credentials.email);
+          console.log("[AUTH] Login failed: User has no password set (OAuth user?)", credentials.email);
           return null;
         }
 
@@ -35,11 +35,11 @@ export const authOptions: AuthOptions = {
         );
 
         if (!isValid) {
-          console.log("[AUTH] Login failed: Invalid password", credentials.email);
+          console.log("[AUTH] Login failed: Password mismatch for", credentials.email);
           return null;
         }
 
-        console.log("[AUTH] Login successful:", credentials.email);
+        console.log("[AUTH] Login successful for user:", user.id, user.email);
         return {
           id: user.id,
           email: user.email,
@@ -57,6 +57,7 @@ export const authOptions: AuthOptions = {
           emailVerified: user.emailVerified,
           genre: user.genre,
           subgenre: user.subgenre,
+          country: user.country,
           instagram: user.instagram,
           spotifyUrl: user.spotifyUrl,
           monthlyListeners: user.monthlyListeners,
@@ -81,6 +82,7 @@ export const authOptions: AuthOptions = {
             token.credits = dbUser.credits;
             token.genre = dbUser.genre;
             token.subgenre = dbUser.subgenre;
+            token.country = dbUser.country;
             token.instagram = dbUser.instagram;
             token.spotifyUrl = dbUser.spotifyUrl;
             token.emailVerified = dbUser.emailVerified;
@@ -104,6 +106,7 @@ export const authOptions: AuthOptions = {
         token.emailVerified = user.emailVerified;
         token.genre = user.genre;
         token.subgenre = user.subgenre;
+        token.country = user.country;
         token.instagram = user.instagram;
         token.spotifyUrl = user.spotifyUrl;
         token.monthlyListeners = user.monthlyListeners;
@@ -127,6 +130,7 @@ export const authOptions: AuthOptions = {
       session.user.emailVerified = token.emailVerified;
       session.user.genre = token.genre;
       session.user.subgenre = token.subgenre;
+      session.user.country = token.country;
       session.user.instagram = token.instagram;
       session.user.spotifyUrl = token.spotifyUrl;
       session.user.monthlyListeners = token.monthlyListeners;

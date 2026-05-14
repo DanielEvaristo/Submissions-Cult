@@ -57,6 +57,53 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ── GUARD 1: Band/Artist name already claimed by another account ──────────
+    const artistNameNormalized = artistName.trim().toLowerCase();
+    const bandConflict = await prisma.user.findFirst({
+      where: {
+        id: { not: session.user.id },
+        OR: [
+          { artistName: { equals: artistName.trim(), mode: "insensitive" } },
+          { name: { equals: artistName.trim(), mode: "insensitive" } },
+        ],
+      },
+    });
+    if (bandConflict) {
+      return NextResponse.json(
+        { error: "BAND_ALREADY_REGISTERED", details: `The artist/band \"${artistName}\" is already registered to another account. If you believe this is a mistake, please contact support.` },
+        { status: 409 }
+      );
+    }
+
+    // ── GUARD 2: Authenticated artist submitting under a different band name ──
+    if (session.user.accountType === "ARTIST") {
+      const registeredName = (session.user.artistName || session.user.name || "").trim().toLowerCase();
+      if (registeredName && artistNameNormalized !== registeredName) {
+        return NextResponse.json(
+          { error: "ARTIST_NAME_MISMATCH", details: `Your account is registered as \"${session.user.artistName || session.user.name}\". You can only submit tracks under your registered artist name.` },
+          { status: 403 }
+        );
+      }
+    }
+
+    // ── GUARD 3: Previously rejected track (same streaming URL) ──────────────
+    const forceResubmit = body.forceResubmit === true;
+    if (!forceResubmit) {
+      const rejectedSubmission = await prisma.submission.findFirst({
+        where: {
+          userId: session.user.id,
+          streamingUrl: streamingUrl.trim(),
+          status: { in: ["REJECTED", "CURATOR_REJECTED"] },
+        },
+      });
+      if (rejectedSubmission) {
+        return NextResponse.json(
+          { error: "TRACK_PREVIOUSLY_REJECTED", details: "This track has been previously rejected. Are you sure you want to submit it again?" },
+          { status: 409 }
+        );
+      }
+    }
+
     // ── Least-Loaded Auto-Assignment Logic ──
     const curators = await prisma.user.findMany({
       where: {

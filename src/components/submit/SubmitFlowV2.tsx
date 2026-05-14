@@ -97,6 +97,10 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const [fetchingInfo, setFetchingInfo] = useState(false);
   const allowImmediateNavigationRef = useRef(false);
 
+  // Submission-guard state
+  const [showRejectedConfirm, setShowRejectedConfirm] = useState(false);
+  const [forceResubmit, setForceResubmit] = useState(false);
+
   const handleAutoFill = async () => {
     if (!form.streamingUrl.trim()) return;
     setFetchingInfo(true);
@@ -426,7 +430,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     setShowExitIntent(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (forceResubmitOverride = false) => {
     console.log("[SUBMIT] Starting submission process...", { step, isFreeFlow, totalCreditsNeeded });
     setLoading(true);
     setError("");
@@ -446,6 +450,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         email: form.email,
         password: form.password,
         instagram: form.instagram || session?.user?.instagram,
+        forceResubmit: forceResubmit || forceResubmitOverride,
       };
 
       if (session && hasManagedArtists && form.managedArtistId) {
@@ -468,6 +473,22 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
 
       const data = await res.json();
       if (!res.ok) {
+        // Handle specific business-rule errors with readable messages
+        if (data.error === "BAND_ALREADY_REGISTERED") {
+          setError(data.details || "This artist/band name is already registered to another account. Contact support.");
+          setLoading(false);
+          return;
+        }
+        if (data.error === "ARTIST_NAME_MISMATCH") {
+          setError(data.details || "You can only submit tracks under your registered artist name.");
+          setLoading(false);
+          return;
+        }
+        if (data.error === "TRACK_PREVIOUSLY_REJECTED") {
+          setLoading(false);
+          setShowRejectedConfirm(true);
+          return;
+        }
         setError(data.error ?? "Failed to create submission");
         setLoading(false);
         return;
@@ -708,7 +729,19 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
               <div>
                 <label className="label">ARTIST NAME</label>
                 <input type="text" className="input" value={form.artistName} onChange={(e) => set("artistName", e.target.value)} />
+                {session?.user?.accountType === "ARTIST" &&
+                  session.user.artistName &&
+                  form.artistName &&
+                  form.artistName.trim().toLowerCase() !== (session.user.artistName || "").trim().toLowerCase() && (
+                  <div className="mt-3 p-3 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-3 animate-reveal">
+                    <AlertCircle size={16} className="text-[#FF0000] shrink-0 mt-0.5" strokeWidth={3} />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF0000] leading-relaxed">
+                      Your account is registered as <span className="text-white">&quot;{session.user.artistName}&quot;</span>. You can only submit under your registered name.
+                    </p>
+                  </div>
+                )}
               </div>
+
               {(!session || !session.user?.instagram) && (
                 <div>
                   <label className="label">INSTAGRAM USERNAME</label>
@@ -1084,6 +1117,42 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         </div>
       )}
 
+      {/* ── REJECTED TRACK CONFIRMATION MODAL ── */}
+      {showRejectedConfirm && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-black border-4 border-[#FF0000] p-8 max-w-lg w-full shadow-[16px_16px_0px_0px_rgba(255,0,0,0.12)]">
+            <AlertCircle size={48} className="text-[#FF0000] mb-6" />
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#FF0000] mb-4">Previously Rejected</p>
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">
+              This track has been previously rejected.
+            </h2>
+            <p className="text-sm font-bold uppercase tracking-[0.08em] text-white/60 leading-relaxed mb-8">
+              Are you sure you want to submit it again? Our curators will review it with the same criteria as before. Make sure something has changed (mix, master, pitch, etc.) before resubmitting.
+            </p>
+            <div className="grid grid-cols-1 gap-4">
+              <button
+                onClick={() => {
+                  setShowRejectedConfirm(false);
+                  setForceResubmit(true);
+                  // Pass override directly to avoid async state race condition
+                  void handleSubmit(true);
+                }}
+                className="w-full p-4 bg-[#FF0000] text-white text-xs font-black uppercase tracking-[0.25em] hover:bg-white hover:text-black transition-all"
+              >
+                Yes, Submit Anyway
+              </button>
+              <button
+                onClick={() => setShowRejectedConfirm(false)}
+                className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.25em] hover:text-white hover:border-white/30 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+
