@@ -15,11 +15,12 @@ import {
   ChevronLeft,
   Loader2,
   Info,
+  Mail,
 } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 import { GENRES, GENRE_MAP } from "@/lib/genres";
 
@@ -39,7 +40,6 @@ const MUSIC_LANGUAGES = [
 const AGE_RANGES = ["UNDER_18", "AGE_18_24", "AGE_25_34", "AGE_35_44", "AGE_45_PLUS"] as const;
 const LISTENERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
 const FOLLOWERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
-const DISTRIBUTION = ["DISTROKID", "TUNECORE", "CD_BABY", "RECORD_LABEL", "INDEPENDENT", "OTHER"] as const;
 
 import { Country, State } from "country-state-city";
 
@@ -48,6 +48,7 @@ import { Country, State } from "country-state-city";
 interface FormData {
   // Step 1
   country: string;
+  state: string;
   city: string;
   artistName: string;
   bio: string;
@@ -72,12 +73,13 @@ interface FormData {
   careerStartYear: string;
   monthlyListeners: string;
   instagramFollowers: string;
-  distributionMethod: string;
+
   hasManager: boolean;
 }
 
 const INITIAL: FormData = {
   country: "",
+  state: "",
   city: "",
   artistName: "",
   bio: "",
@@ -97,13 +99,13 @@ const INITIAL: FormData = {
   careerStartYear: "",
   monthlyListeners: "",
   instagramFollowers: "",
-  distributionMethod: "",
+
   hasManager: false,
 };
 
 // ─── Step Labels ──────────────────────────────────────────────────────────────
 
-const STEP_ICONS = [MapPin, Mic2, Music2, Globe2, Globe2, BarChart2, CheckCircle2];
+const STEP_ICONS = [MapPin, Mic2, Music2, Globe2, Globe2, BarChart2, CheckCircle2, Mail];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -226,7 +228,8 @@ export default function OnboardingPage() {
     const payload = {
       artistName: form.artistName,
       country: form.country,
-      city: form.city,
+      state: form.state || undefined,
+      city: form.city || undefined,
       bio: form.bio,
       roleType: form.roleType,
       ageRange: form.ageRange || undefined,
@@ -242,7 +245,7 @@ export default function OnboardingPage() {
       careerStartYear: form.careerStartYear ? parseInt(form.careerStartYear) : undefined,
       monthlyListeners: form.monthlyListeners || undefined,
       instagramFollowers: form.instagramFollowers || undefined,
-      distributionMethod: form.distributionMethod || undefined,
+
       hasManager: form.hasManager,
     };
 
@@ -253,22 +256,33 @@ export default function OnboardingPage() {
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Something went wrong. Please try again.");
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        console.error("Non-JSON error response", e);
+      }
+      setError(data.error ?? `Error ${res.status}: Something went wrong. Please try again.`);
       setLoading(false);
       return;
     }
 
     // Refresh the session so genre and required fields are updated and the redirect check works
-    await update({ 
-      genre: form.genre,
-      monthlyListeners: form.monthlyListeners,
-      instagramFollowers: form.instagramFollowers
-    });
-    router.push(`/${locale}/portal`);
+    try {
+      await update({ 
+        genre: form.genre,
+        monthlyListeners: form.monthlyListeners,
+        instagramFollowers: form.instagramFollowers
+      });
+    } catch (e) {
+      console.warn("Error updating session:", e);
+    }
+    
+    // Redirect to profile instead of submissions
+    router.push(`/${locale}/portal/profile`);
   };
 
-  const stepKeys = ["basics", "project", "genres", "languages", "socials", "career", "review"] as const;
+  const stepKeys = ["basics", "project", "genres", "languages", "socials", "career", "review", "verify"] as const;
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -356,11 +370,11 @@ export default function OnboardingPage() {
                       />
                     </div>
                     <div>
-                      <label className="label">SoundCloud URL</label>
+                      <label className="label">Other Link URL</label>
                       <input 
                         type="url" 
                         className="input" 
-                        placeholder="https://soundcloud.com/..." 
+                        placeholder="https://..." 
                         value={form.soundcloudUrl}
                         onChange={(e) => set("soundcloudUrl", e.target.value)}
                         onBlur={(e) => autofillNameFromUrl(e.target.value)}
@@ -428,15 +442,15 @@ export default function OnboardingPage() {
                 </select>
               </div>
               <div>
-                <label className="label" htmlFor="city">
-                  {t("basics.city")}
+                <label className="label" htmlFor="state">
+                  STATE / REGION (OPTIONAL)
                 </label>
                 {(!form.country || State.getStatesOfCountry(form.country)?.length) ? (
                   <select
-                    id="city"
+                    id="state"
                     className="input"
-                    value={form.city}
-                    onChange={(e) => set("city", e.target.value)}
+                    value={form.state}
+                    onChange={(e) => set("state", e.target.value)}
                     disabled={!form.country}
                   >
                     <option value="">{t("basics.statePlaceholder")}</option>
@@ -449,22 +463,35 @@ export default function OnboardingPage() {
                   </select>
                 ) : (
                   <input
-                    id="city"
+                    id="state"
                     type="text"
                     className="input"
                     placeholder={t("basics.statePlaceholder")}
-                    value={form.city}
-                    onChange={(e) => set("city", e.target.value)}
+                    value={form.state}
+                    onChange={(e) => set("state", e.target.value)}
                   />
                 )}
-                {form.city === "OTHER" && (
+                {form.state === "OTHER" && (
                   <input
                     type="text"
                     className="input mt-2"
-                    placeholder="TYPE YOUR CITY NAME"
-                    onChange={(e) => set("city", e.target.value)}
+                    placeholder="TYPE YOUR STATE / REGION NAME"
+                    onChange={(e) => set("state", e.target.value)}
                   />
                 )}
+              </div>
+              <div>
+                <label className="label" htmlFor="city">
+                  CITY (OPTIONAL)
+                </label>
+                <input
+                  id="city"
+                  type="text"
+                  className="input"
+                  placeholder="e.g. Los Angeles, London, Tokyo..."
+                  value={form.city}
+                  onChange={(e) => set("city", e.target.value)}
+                />
               </div>
               <div>
                 <label className="label" htmlFor="bio">
@@ -552,7 +579,6 @@ export default function OnboardingPage() {
                       onClick={() => {
                         set("genre", g);
                         set("subgenre", "");
-                        setIsCustomSubgenre(false);
                       }}
                       className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${
                         form.genre === g
@@ -566,43 +592,23 @@ export default function OnboardingPage() {
                 </div>
               </div>
               
-              {form.genre && GENRE_MAP[form.genre] && (
+              {form.genre && (
                 <div>
                   <label className="label" htmlFor="subgenre">
                     {t("genres.subgenre")} *
                   </label>
-                  <select
+                  <input
                     id="subgenre"
-                    className="input mb-3"
-                    value={isCustomSubgenre ? "Other" : form.subgenre}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === "Other") {
-                        setIsCustomSubgenre(true);
-                        set("subgenre", "");
-                      } else {
-                        setIsCustomSubgenre(false);
-                        set("subgenre", val);
-                      }
-                    }}
-                  >
-                    <option value="">— Select Subgenre —</option>
-                    {GENRE_MAP[form.genre].map((sg) => (
-                      <option key={sg} value={sg}>
-                        {sg}
-                      </option>
-                    ))}
-                  </select>
-
-                  {isCustomSubgenre && (
-                    <input
-                      type="text"
-                      className="input animate-fade-in"
-                      placeholder={t("genres.subgenrePlaceholder")}
-                      value={form.subgenre}
-                      onChange={(e) => set("subgenre", e.target.value)}
-                    />
-                  )}
+                    type="text"
+                    className="input"
+                    placeholder={t("genres.subgenrePlaceholder")}
+                    value={form.subgenre}
+                    onChange={(e) => set("subgenre", e.target.value)}
+                    autoComplete="off"
+                  />
+                  <p className="mt-2 font-sans text-[10px] text-white/30 uppercase tracking-widest">
+                    e.g. Dark Pop, Bedroom Trap, Nu Metal, Bedroom Pop...
+                  </p>
                 </div>
               )}
             </div>
@@ -640,22 +646,34 @@ export default function OnboardingPage() {
               <StepHeader title={t("socials.title")} hint={t("socials.hint")} />
 
               <div>
-                <label className="label" htmlFor="instagram">{t("socials.instagram")}</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="label mb-0" htmlFor="instagram">{t("socials.instagram")}</label>
+                  <button type="button" onClick={() => set("instagram", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+                </div>
                 <input id="instagram" type="text" className="input" placeholder={t("socials.instagramPlaceholder")}
                   value={form.instagram} onChange={(e) => set("instagram", e.target.value)} />
               </div>
               <div>
-                <label className="label" htmlFor="tiktok">{t("socials.tiktok")}</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="label mb-0" htmlFor="tiktok">{t("socials.tiktok")}</label>
+                  <button type="button" onClick={() => set("tiktok", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+                </div>
                 <input id="tiktok" type="text" className="input" placeholder={t("socials.tiktokPlaceholder")}
                   value={form.tiktok} onChange={(e) => set("tiktok", e.target.value)} />
               </div>
               <div>
-                <label className="label" htmlFor="youtube">{t("socials.youtube")}</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="label mb-0" htmlFor="youtube">{t("socials.youtube")}</label>
+                  <button type="button" onClick={() => set("youtube", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+                </div>
                 <input id="youtube" type="text" className="input" placeholder={t("socials.youtubePlaceholder")}
                   value={form.youtube} onChange={(e) => set("youtube", e.target.value)} />
               </div>
               <div>
-                <label className="label" htmlFor="website">{t("socials.website")}</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="label mb-0" htmlFor="website">{t("socials.website")}</label>
+                  <button type="button" onClick={() => set("website", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+                </div>
                 <input id="website" type="text" className="input" placeholder={t("socials.websitePlaceholder")}
                   value={form.website} onChange={(e) => set("website", e.target.value)} />
               </div>
@@ -717,24 +735,7 @@ export default function OnboardingPage() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="label" htmlFor="distributionMethod">
-                  {t("career.distribution")}
-                </label>
-                <select
-                  id="distributionMethod"
-                  className="input"
-                  value={form.distributionMethod}
-                  onChange={(e) => set("distributionMethod", e.target.value)}
-                >
-                  <option value="">— select —</option>
-                  {DISTRIBUTION.map((d) => (
-                    <option key={d} value={d}>
-                      {tRegister(`distribution.${d}`)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+
               <div>
                 <p className="label mb-3">{t("career.manager")}</p>
                 <div className="flex gap-3">
@@ -762,20 +763,42 @@ export default function OnboardingPage() {
             <div className="animate-fade-in space-y-6">
               <StepHeader title={t("review.title")} hint={t("review.subtitle")} />
               <div className="space-y-4">
-                <ReviewRow label={t("review.location")} value={[form.country, form.city].filter(Boolean).join(", ")} fallback={t("review.notSet")} />
-                <ReviewRow label={t("review.projectType")} value={form.roleType === "BAND" ? `Band (${form.bandSize} members)` : "Solo Artist"} />
-                <ReviewRow label={t("review.genre")} value={[form.genre, form.subgenre].filter(Boolean).join(" / ")} fallback={t("review.notSet")} />
-                <ReviewRow label={t("review.languages")} value={form.musicLanguages.length > 0 ? form.musicLanguages.join(", ") : ""} fallback={t("review.notSet")} />
+                <ReviewRow 
+                  label={t("review.location")} 
+                  value={[form.city, form.state, form.country ? Country.getCountryByCode(form.country)?.name || form.country : null].filter(Boolean).filter(v => v !== "N/A" && v !== "OTHER").join(", ")} 
+                  fallback={t("review.notSet")} 
+                />
+                <ReviewRow 
+                  label={t("review.projectType")} 
+                  value={form.roleType === "BAND" ? `Band (${form.bandSize} members)` : "Solo Artist"} 
+                />
+                <ReviewRow 
+                  label={t("review.genre")} 
+                  value={[form.genre, form.subgenre].filter(Boolean).filter(v => v !== "Other").join(" / ")} 
+                  fallback={t("review.notSet")} 
+                />
+                <ReviewRow 
+                  label={t("review.languages")} 
+                  value={form.musicLanguages.length > 0 ? form.musicLanguages.map(l => MUSIC_LANGUAGES.find(m => m.code === l)?.labelKey || l).map(k => t(`languages.${k}`)).join(", ") : ""} 
+                  fallback={t("review.notSet")} 
+                />
                 <ReviewRow
                   label={t("review.socials")}
-                  value={[form.spotifyUrl, form.instagram, form.youtube, form.tiktok].filter(Boolean).join(", ")}
+                  value={[
+                    { name: "Spotify", url: form.spotifyUrl },
+                    { name: "Instagram", url: form.instagram },
+                    { name: "YouTube", url: form.youtube },
+                    { name: "TikTok", url: form.tiktok },
+                    { name: "Website", url: form.website },
+                    { name: "Other Link", url: form.soundcloudUrl },
+                  ].filter(s => s.url && s.url !== "N/A").map(s => s.name).join(", ")}
                   fallback={t("review.notSet")}
                 />
                 <ReviewRow
                   label={t("review.career")}
                   value={[
                     form.careerStartYear ? `Since ${form.careerStartYear}` : "",
-                    form.monthlyListeners ? `${form.monthlyListeners} listeners` : "",
+                    form.monthlyListeners ? tRegister(`listeners.${form.monthlyListeners}`) : "",
                   ].filter(Boolean).join(" · ")}
                   fallback={t("review.notSet")}
                 />
@@ -788,11 +811,26 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              {error && (
-                <div className="px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm">
-                  {error}
-                </div>
-              )}
+            </div>
+          )}
+
+          {/* ── STEP 8: Confirm Email ── */}
+          {step === 8 && (
+            <div className="animate-fade-in space-y-6 text-center py-10">
+              <div className="w-16 h-16 bg-[#00FF00]/10 border-2 border-[#00FF00] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail size={32} className="text-[#00FF00]" />
+              </div>
+              <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-2">VERIFICATION EMAIL SENT</h2>
+              <p className="text-sm font-bold text-cm-text-muted mb-8 leading-relaxed">
+                We've sent a verification link to your email address. Don't forget to confirm your email! <br/><br/>
+                Your account is fully functional for the next 3 days, after which submissions will be restricted until verified.
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-8 px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm text-center">
+              {error}
             </div>
           )}
 

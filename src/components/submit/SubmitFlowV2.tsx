@@ -355,6 +355,10 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       window.sessionStorage.removeItem("pending-submit-email");
       window.sessionStorage.removeItem("pending-submit-password");
       window.sessionStorage.removeItem(draftStorageKey);
+      setForm(INITIAL);
+      setStep(hasManagedArtists ? 0 : 1);
+      setIncludeDonation(false);
+      setRetentionDiscountApplied(false);
       setSubmitted(true);
     };
 
@@ -562,6 +566,10 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         await signIn("credentials", { redirect: false, email: form.email, password: form.password });
       }
       window.sessionStorage.removeItem(draftStorageKey);
+      setForm(INITIAL);
+      setStep(hasManagedArtists ? 0 : 1);
+      setIncludeDonation(false);
+      setRetentionDiscountApplied(false);
       setLoading(false);
       setSubmitted(true);
     } catch (err) {
@@ -589,6 +597,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       
       {/* ── HEADER ── */}
       <div className="mb-12 border-b-4 border-white/20 pb-8">
+        <h2 className="text-[#F5E000] text-sm font-black uppercase tracking-[0.3em] mb-4">CULT MACHINE</h2>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white leading-none">
             {step === 0 && "SELECT ARTIST"}
@@ -770,40 +779,16 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
                 ))}
               </div>
             </div>
-            {form.genre && GENRE_MAP[form.genre] && (
+            {form.genre && (
               <div>
                 <label className="label">SUBGENRE *</label>
-                <select
-                  className="input mb-3"
-                  value={isCustomSubgenre ? "Other" : form.subgenre}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "Other") {
-                      setIsCustomSubgenre(true);
-                      set("subgenre", "");
-                    } else {
-                      setIsCustomSubgenre(false);
-                      set("subgenre", val);
-                    }
-                  }}
-                >
-                  <option value="">— Select Subgenre —</option>
-                  {GENRE_MAP[form.genre].map((sg) => (
-                    <option key={sg} value={sg}>
-                      {sg.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
-                {isCustomSubgenre && (
-                  <input
-                    type="text"
-                    className="input animate-fade-in"
-                    placeholder="e.g. Melodic Techno, Lo-Fi..."
-                    value={form.subgenre}
-                    onChange={(e) => set("subgenre", e.target.value)}
-                  />
-                )}
+                <input
+                  type="text"
+                  className="input animate-fade-in"
+                  placeholder="e.g. Melodic Techno, Lo-Fi..."
+                  value={form.subgenre}
+                  onChange={(e) => set("subgenre", e.target.value)}
+                />
               </div>
             )}
           </div>
@@ -894,26 +879,42 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
 
       {/* ── STEP 4: Upsells ── */}
       {step === 4 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-reveal">
-          <button onClick={() => set("fastTrack", !form.fastTrack)}
-            className={`p-8 border-4 text-left transition-all ${
-              form.fastTrack ? "bg-[#FF0000] text-white border-[#FF0000]" : "bg-black text-white border-white/10"
-            }`}>
-            <Zap size={32} className="mb-4" />
-            <p className="text-2xl font-black uppercase tracking-tighter">FAST TRACK 48H</p>
-            <p className="text-xs font-bold opacity-60 mt-2">Skip the queue. Guaranteed response.</p>
-            <p className="mt-6 font-black text-xs px-3 py-1 bg-white/20 inline-block uppercase">+1 CREDIT</p>
-          </button>
+        <div className="space-y-8 animate-reveal">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <button onClick={() => set("fastTrack", !form.fastTrack)}
+              className={`p-8 border-4 text-left transition-all ${
+                form.fastTrack ? "bg-[#FF0000] text-white border-[#FF0000]" : "bg-black text-white border-white/10"
+              }`}>
+              <Zap size={32} className="mb-4" />
+              <p className="text-2xl font-black uppercase tracking-tighter">FAST TRACK 48H</p>
+              <p className="text-xs font-bold opacity-60 mt-2">Skip the queue. Guaranteed response.</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-white/20 inline-block uppercase">+1 CREDIT</p>
+            </button>
 
-          <button onClick={() => set("reviewRequested", !form.reviewRequested)}
-            className={`p-8 border-4 text-left transition-all ${
-              form.reviewRequested ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10"
-            }`}>
-            <Edit3 size={32} className="mb-4" />
-            <p className="text-2xl font-black uppercase tracking-tighter">DETAILED REVIEW</p>
-            <p className="text-xs font-bold opacity-60 mt-2">Get written feedback from our A&R.</p>
-            <p className="mt-6 font-black text-xs px-3 py-1 bg-black/20 inline-block uppercase">+1 CREDIT</p>
-          </button>
+            <button onClick={() => set("reviewRequested", !form.reviewRequested)}
+              className={`p-8 border-4 text-left transition-all ${
+                form.reviewRequested ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10"
+              }`}>
+              <Edit3 size={32} className="mb-4" />
+              <p className="text-2xl font-black uppercase tracking-tighter">DETAILED REVIEW</p>
+              <p className="text-xs font-bold opacity-60 mt-2">Get written feedback from our A&R.</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/20 inline-block uppercase">+1 CREDIT</p>
+            </button>
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button 
+              type="button"
+              onClick={() => {
+                set("fastTrack", false);
+                set("reviewRequested", false);
+                handleNext();
+              }}
+              className="text-xs font-black uppercase tracking-[0.2em] text-white/50 hover:text-white underline decoration-white/30 hover:decoration-white transition-all p-4"
+            >
+              NO THANKS, SKIP UPSELLS
+            </button>
+          </div>
         </div>
       )}
 
@@ -1035,7 +1036,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           <p className="text-xs font-bold uppercase tracking-widest text-center mb-8 opacity-60">Create an account to track your submission.</p>
           <div>
             <label className="label">EMAIL (CONFIRM)</label>
-            <input type="email" className="input" value={form.email} disabled />
+            <input type="email" className="input" value={form.email} onChange={(e) => set("email", e.target.value)} />
           </div>
           <div>
             <label className="label">CREATE PASSWORD</label>

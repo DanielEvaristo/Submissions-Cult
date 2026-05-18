@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ProfileForm from "@/components/portal/ProfileForm";
 import ChangePasswordForm from "@/components/portal/ChangePasswordForm";
+import ChangeEmailForm from "@/components/portal/ChangeEmailForm";
 
 export default async function ProfilePage({ params: { locale } }: { params: { locale: string } }) {
   const session = await getServerSession(authOptions);
@@ -17,6 +18,8 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
+      email: true,
+      emailVerified: true,
       artistName: true,
       country: true,
       city: true,
@@ -37,7 +40,7 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
       website: true,
       careerStartYear: true,
       monthlyListeners: true,
-      distributionMethod: true,
+      state: true,
       hasManager: true,
     },
   });
@@ -47,7 +50,7 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
   }
 
   // Redirect to onboarding if profile is incomplete
-  const isComplete = !!user.country && !!user.monthlyListeners && !!user.instagramFollowers;
+  const isComplete = !!user.country && !!user.monthlyListeners;
   if (!isComplete) {
     redirect(`/${locale}/portal/onboarding`);
   }
@@ -65,7 +68,11 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
 
       <ProfileForm initialData={user} />
 
-      <div className="max-w-3xl">
+      <div className="max-w-3xl space-y-0">
+        <ChangeEmailForm
+          currentEmail={user.email ?? ""}
+          emailVerified={user.emailVerified}
+        />
         <ChangePasswordForm />
       </div>
     </div>

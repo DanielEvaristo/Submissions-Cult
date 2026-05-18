@@ -34,7 +34,7 @@ export async function GET() {
             musicLanguages: true,
             careerStartYear: true,
             monthlyListeners: true,
-            distributionMethod: true,
+            state: true,
             hasManager: true,
             spotifyUrl: true,
             instagram: true,

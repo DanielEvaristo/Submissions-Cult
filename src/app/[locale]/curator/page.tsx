@@ -33,7 +33,7 @@ interface ArtistData {
   musicLanguages: string[];
   careerStartYear: number | null;
   monthlyListeners: string | null;
-  distributionMethod: string | null;
+  state: string | null;
   hasManager: boolean;
   spotifyUrl: string | null;
   instagram: string | null;

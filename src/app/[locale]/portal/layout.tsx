@@ -25,7 +25,7 @@ export default async function PortalLayout({ children, params }: Props) {
   }
 
   // Profile is complete when the user has provided all mandatory fields during onboarding
-  const isComplete = !!session.user.country && !!session.user.monthlyListeners && !!session.user.instagramFollowers;
+  const isComplete = !!session.user.country && !!session.user.monthlyListeners;
 
   // Server-side paid activity check (avoids client-side flash)
   const [purchaseCount, paidSubmissionCount] = await Promise.all([
@@ -42,10 +42,10 @@ export default async function PortalLayout({ children, params }: Props) {
     <div className="flex flex-col lg:flex-row min-h-screen bg-black">
       <PortalNav locale={locale} />
       
-      <div className="flex-1 flex flex-col min-w-0 pt-16 lg:pt-0">
+      <div className="flex-1 flex flex-col min-w-0 pt-14 lg:pt-0">
         <PortalHeader locale={locale} />
         
-        <main className="flex-1 overflow-y-auto relative">
+        <main className="flex-1 overflow-y-auto relative pb-16 lg:pb-0">
           <PortalGating isComplete={isComplete} hasPaidActivity={hasPaidActivity} locale={locale}>
             {children}
           </PortalGating>

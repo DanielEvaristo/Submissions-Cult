@@ -93,15 +93,6 @@ enum FollowersRange {
   OVER_500K
 }
 
-enum DistributionMethod {
-  DISTROKID
-  TUNECORE
-  CD_BABY
-  RECORD_LABEL
-  INDEPENDENT
-  OTHER
-}
-
 enum Status {
   PENDING            // just submitted, waiting for curator
   IN_REVIEW          // curator is reviewing
@@ -168,6 +159,7 @@ model User {
   roleType   RoleType @default(ARTIST) // ARTIST|BAND|MANAGEMENT|PR|AGENCY
 
   country String? // ISO 3166-1 alpha-2 code e.g. 'MX', 'US', 'FR'
+  state   String?
   city    String?
   bio     String? // max 500 chars
 
@@ -195,7 +187,7 @@ model User {
   careerStartYear    Int? // year they started (for 'years active' calc)
   monthlyListeners   ListenersRange? // enum range, not exact number
   instagramFollowers FollowersRange?
-  distributionMethod DistributionMethod?
+
   hasManager         Boolean             @default(false)
 
   // ── INDUSTRY fields ────────────────────────────────────────────

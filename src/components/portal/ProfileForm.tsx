@@ -23,7 +23,6 @@ const MUSIC_LANGUAGES = [
 const AGE_RANGES = ["UNDER_18", "AGE_18_24", "AGE_25_34", "AGE_35_44", "AGE_45_PLUS"] as const;
 const LISTENERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
 const FOLLOWERS = ["UNDER_1K", "FROM_1K_TO_10K", "FROM_10K_TO_50K", "FROM_50K_TO_100K", "FROM_100K_TO_500K", "OVER_500K"] as const;
-const DISTRIBUTION = ["DISTROKID", "TUNECORE", "CD_BABY", "RECORD_LABEL", "INDEPENDENT", "OTHER"] as const;
 
 import { Country, State } from "country-state-city";
 
@@ -35,6 +34,7 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
   const [form, setForm] = useState({
     artistName: initialData.artistName || "",
     country: initialData.country || "",
+    state: initialData.state || "",
     city: initialData.city || "",
     bio: initialData.bio || "",
     roleType: initialData.roleType || "ARTIST",
@@ -55,7 +55,7 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
     website: initialData.website || "",
     careerStartYear: initialData.careerStartYear?.toString() || "",
     monthlyListeners: initialData.monthlyListeners || "",
-    distributionMethod: initialData.distributionMethod || "",
+
     hasManager: !!initialData.hasManager,
   });
   
@@ -225,6 +225,7 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
             <label className="label" htmlFor="country">{t("basics.country")}</label>
             <select id="country" className="input" value={form.country} onChange={(e) => {
                 set("country", e.target.value);
+                set("state", "");
                 set("city", "");
               }}>
               <option value="">{t("basics.countryPlaceholder")}</option>
@@ -232,13 +233,13 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="city">{t("basics.city")}</label>
+            <label className="label" htmlFor="state">STATE / REGION (OPTIONAL)</label>
             {(!form.country || State.getStatesOfCountry(form.country)?.length) ? (
               <select 
-                id="city" 
+                id="state" 
                 className="input" 
-                value={form.city} 
-                onChange={(e) => set("city", e.target.value)}
+                value={form.state} 
+                onChange={(e) => set("state", e.target.value)}
                 disabled={!form.country}
               >
                 <option value="">{t("basics.statePlaceholder")}</option>
@@ -248,16 +249,27 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
                 {form.country && <option value="OTHER">OTHER / NOT LISTED</option>}
               </select>
             ) : (
-              <input id="city" type="text" className="input" placeholder={t("basics.statePlaceholder")} value={form.city} onChange={(e) => set("city", e.target.value)} />
+              <input id="state" type="text" className="input" placeholder={t("basics.statePlaceholder")} value={form.state} onChange={(e) => set("state", e.target.value)} />
             )}
-            {form.city === "OTHER" && (
+            {form.state === "OTHER" && (
               <input 
                 type="text" 
                 className="input mt-2" 
-                placeholder="TYPE YOUR CITY NAME" 
-                onChange={(e) => set("city", e.target.value)} 
+                placeholder="TYPE YOUR STATE / REGION NAME" 
+                onChange={(e) => set("state", e.target.value)} 
               />
             )}
+          </div>
+          <div>
+            <label className="label" htmlFor="city">CITY (OPTIONAL)</label>
+            <input 
+              id="city" 
+              type="text" 
+              className="input" 
+              placeholder="e.g. Los Angeles, London, Tokyo..." 
+              value={form.city} 
+              onChange={(e) => set("city", e.target.value)} 
+            />
           </div>
         </div>
         <div>
@@ -311,7 +323,6 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
                 onClick={() => {
                   set("genre", g);
                   set("subgenre", "");
-                  setIsCustomSubgenre(false);
                 }}
                 className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"}`}
               >
@@ -321,38 +332,21 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
           </div>
         </div>
 
-        {form.genre && GENRE_MAP[form.genre] && (
+        {form.genre && (
           <div>
             <label className="label" htmlFor="subgenre">{t("genres.subgenre")} *</label>
-            <select
+            <input
               id="subgenre"
-              className="input mb-3"
-              value={isCustomSubgenre ? "Other" : form.subgenre}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "Other") {
-                  setIsCustomSubgenre(true);
-                  set("subgenre", "");
-                } else {
-                  setIsCustomSubgenre(false);
-                  set("subgenre", val);
-                }
-              }}
-            >
-              <option value="">— Select Subgenre —</option>
-              {GENRE_MAP[form.genre].map((sg) => (
-                <option key={sg} value={sg}>{sg}</option>
-              ))}
-            </select>
-            {isCustomSubgenre && (
-              <input 
-                type="text" 
-                className="input animate-fade-in" 
-                placeholder={t("genres.subgenrePlaceholder")} 
-                value={form.subgenre} 
-                onChange={(e) => set("subgenre", e.target.value)} 
-              />
-            )}
+              type="text"
+              className="input"
+              placeholder={t("genres.subgenrePlaceholder")}
+              value={form.subgenre}
+              onChange={(e) => set("subgenre", e.target.value)}
+              autoComplete="off"
+            />
+            <p className="mt-2 font-sans text-[10px] text-white/30 uppercase tracking-widest">
+              e.g. Dark Pop, Bedroom Trap, Nu Metal, Bedroom Pop...
+            </p>
           </div>
         )}
         
@@ -376,7 +370,13 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
         <h2 className="font-sans text-xl font-bold text-cm-text-primary tracking-tight">{t("socials.title")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div><label className="label">{t("socials.spotify")}</label><input type="text" className="input" value={form.spotifyUrl} onChange={(e) => set("spotifyUrl", e.target.value)} /></div>
-          <div><label className="label">{t("socials.instagram")}</label><input type="text" className="input" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} /></div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label mb-0">{t("socials.instagram")}</label>
+              <button type="button" onClick={() => set("instagram", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+            </div>
+            <input type="text" className="input" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} />
+          </div>
           <div>
             <label className="label">{tRegister("instagramFollowers")} *</label>
             <select className="input" value={form.instagramFollowers} onChange={(e) => set("instagramFollowers", e.target.value)}>
@@ -384,10 +384,28 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
               {FOLLOWERS.map((f) => <option key={f} value={f}>{tRegister(`followers.${f}`)}</option>)}
             </select>
           </div>
-          <div><label className="label">{t("socials.tiktok")}</label><input type="text" className="input" value={form.tiktok} onChange={(e) => set("tiktok", e.target.value)} /></div>
-          <div><label className="label">{t("socials.youtube")}</label><input type="text" className="input" value={form.youtube} onChange={(e) => set("youtube", e.target.value)} /></div>
-          <div><label className="label">{t("socials.soundcloud")}</label><input type="text" className="input" value={form.soundcloudUrl} onChange={(e) => set("soundcloudUrl", e.target.value)} /></div>
-          <div><label className="label">{t("socials.website")}</label><input type="text" className="input" value={form.website} onChange={(e) => set("website", e.target.value)} /></div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label mb-0">{t("socials.tiktok")}</label>
+              <button type="button" onClick={() => set("tiktok", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+            </div>
+            <input type="text" className="input" value={form.tiktok} onChange={(e) => set("tiktok", e.target.value)} />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label mb-0">{t("socials.youtube")}</label>
+              <button type="button" onClick={() => set("youtube", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+            </div>
+            <input type="text" className="input" value={form.youtube} onChange={(e) => set("youtube", e.target.value)} />
+          </div>
+          <div><label className="label">Other Link URL</label><input type="text" className="input" value={form.soundcloudUrl} onChange={(e) => set("soundcloudUrl", e.target.value)} /></div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label mb-0">{t("socials.website")}</label>
+              <button type="button" onClick={() => set("website", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
+            </div>
+            <input type="text" className="input" value={form.website} onChange={(e) => set("website", e.target.value)} />
+          </div>
         </div>
       </div>
 
@@ -414,13 +432,7 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
               {LISTENERS.map((l) => <option key={l} value={l}>{tRegister(`listeners.${l}`)}</option>)}
             </select>
           </div>
-          <div>
-            <label className="label">{t("career.distribution")}</label>
-            <select className="input" value={form.distributionMethod} onChange={(e) => set("distributionMethod", e.target.value)}>
-              <option value="">— select —</option>
-              {DISTRIBUTION.map((d) => <option key={d} value={d}>{tRegister(`distribution.${d}`)}</option>)}
-            </select>
-          </div>
+
           <div>
             <p className="label mb-3">{t("career.manager")}</p>
             <div className="flex gap-4">

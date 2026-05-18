@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -14,7 +15,7 @@ export async function GET() {
 
   const retentionThreshold = new Date(Date.now() - THIRTY_DAYS_MS);
 
-  const [purchaseCount, paidSubmissionCount, retentionOfferCount] = await Promise.all([
+  const [purchaseCount, paidSubmissionCount, retentionOfferCount, userRecord] = await Promise.all([
     prisma.creditTransaction.count({
       where: {
         userId: session.user.id,
@@ -34,10 +35,19 @@ export async function GET() {
         createdAt: { gte: retentionThreshold },
       },
     }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { createdAt: true, emailVerified: true },
+    }),
   ]);
+
+  const isEmailGracePeriodExpired = userRecord 
+    ? !userRecord.emailVerified && (Date.now() - userRecord.createdAt.getTime() > THREE_DAYS_MS)
+    : false;
 
   return NextResponse.json({
     hasPaidActivity: purchaseCount > 0 || paidSubmissionCount > 0,
     retentionOfferEligible: retentionOfferCount === 0,
+    isEmailGracePeriodExpired,
   });
 }

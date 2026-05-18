@@ -51,6 +51,7 @@ export default function SubmissionsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [hasPaidActivity, setHasPaidActivity] = useState(false);
+  const [isEmailGracePeriodExpired, setIsEmailGracePeriodExpired] = useState(false);
   const [accessLoading, setAccessLoading] = useState(true);
 
   useEffect(() => {
@@ -58,8 +59,9 @@ export default function SubmissionsPage() {
       try {
         const res = await fetch("/api/user/access");
         if (res.ok) {
-          const data = (await res.json()) as { hasPaidActivity: boolean };
+          const data = (await res.json()) as { hasPaidActivity: boolean; isEmailGracePeriodExpired: boolean };
           setHasPaidActivity(data.hasPaidActivity);
+          setIsEmailGracePeriodExpired(data.isEmailGracePeriodExpired);
         }
       } finally {
         setAccessLoading(false);
@@ -107,7 +109,8 @@ export default function SubmissionsPage() {
 
   const hasSubmissions = submissions.length > 0;
   // CASE 1: Free user, profile incomplete → lock tracker (blur)
-  const shouldLockTracker = isProfileIncomplete && !hasPaidActivity;
+  // CASE 3: Email not verified after 3 days → lock tracker (blur)
+  const shouldLockTracker = (isProfileIncomplete && !hasPaidActivity) || isEmailGracePeriodExpired;
   // CASE 2: Paid user, profile incomplete → show persistent reminder (handled by PortalGating in layout)
   // No need to show additional reminder here — PortalGating banner covers it.
 
@@ -181,13 +184,17 @@ export default function SubmissionsPage() {
                   Track Status Locked
                 </p>
                 <h2 className="font-sans text-3xl font-bold tracking-tight mb-4 text-white">
-                  To view the status of your track, please complete your profile.
+                  {isEmailGracePeriodExpired
+                    ? "Please verify your email to unlock tracking."
+                    : "To view the status of your track, please complete your profile."}
                 </h2>
                 <p className="font-sans text-sm text-white/60 mb-10 leading-relaxed">
-                  We need a bit more information about you to activate tracking for your submissions.
+                  {isEmailGracePeriodExpired
+                    ? "Your 3-day grace period has expired. Please check your inbox for the verification link."
+                    : "We need a bit more information about you to activate tracking for your submissions."}
                 </p>
                 <Link
-                  href={`/${locale}/portal/onboarding`}
+                  href={`/${locale}/portal/${isEmailGracePeriodExpired ? "profile" : "onboarding"}`}
                   className="w-full py-5 bg-[#F5E000] text-black font-bold text-sm hover:bg-white transition-all flex items-center justify-center gap-4"
                 >
                   GO TO PROFILE <ArrowRight size={18} strokeWidth={2} />

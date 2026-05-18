@@ -40,9 +40,6 @@ export default async function PortalDashboard({ params: { locale } }: { params: 
             {session.user.name ? `WELCOME, ${session.user.name}` : "MY TRACKS"}★
           </h1>
         </div>
-        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10">
-          SEC_AUTH_LEVEL_01
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
