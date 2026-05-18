@@ -24,6 +24,32 @@ export async function PATCH(req: NextRequest) {
   if (typeof body.city === "string") update.city = body.city.trim();
   if (typeof body.bio === "string") update.bio = body.bio.trim().slice(0, 500);
   if (typeof body.genre === "string") update.genre = body.genre.trim();
+
+  // Handle artistName with uniqueness check
+  if (typeof body.artistName === "string") {
+    const newArtistName = body.artistName.trim();
+    if (newArtistName) {
+      const existingArtist = await prisma.user.findFirst({
+        where: {
+          artistName: {
+            equals: newArtistName,
+            mode: "insensitive",
+          },
+          accountType: "ARTIST",
+          id: { not: session.user.id },
+        },
+      });
+
+      if (existingArtist) {
+        return NextResponse.json(
+          { error: "This artist name is already registered by another account." },
+          { status: 409 }
+        );
+      }
+      update.artistName = newArtistName;
+      update.name = newArtistName; // Also update the NextAuth name field
+    }
+  }
   if (typeof body.subgenre === "string") update.subgenre = body.subgenre.trim();
   if (typeof body.instagram === "string") update.instagram = body.instagram.trim();
   if (typeof body.tiktok === "string") update.tiktok = body.tiktok.trim();

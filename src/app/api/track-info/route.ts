@@ -124,22 +124,96 @@ async function fetchOpenGraphTags(url: string, platform: string) {
 }
 
 async function fetchFromSpotifyUrl(url: string) {
-  // Validate Spotify URL format (tracks, albums, EPs)
-  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|ep)\/([a-zA-Z0-9]+)/i)) return null;
+  // Validate Spotify URL format (tracks, albums, EPs, artists)
+  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|ep|artist)\/([a-zA-Z0-9]+)/i)) return null;
   return fetchOpenGraphTags(url, "spotify");
 }
 
 async function fetchFromSoundcloudUrl(url: string) {
+  try {
+    const urlObj = new URL(url);
+    const parts = urlObj.pathname.split("/").filter(Boolean);
+    // Ignore landing pages or special pages
+    if (parts.length >= 1 && parts[0] !== "discover" && parts[0] !== "search" && parts[0] !== "pages") {
+      const artistSlug = parts[0];
+      const trackSlug = parts[1]; // May be undefined if it's an artist profile link
+
+      const formatSlug = (str: string) => {
+        if (!str) return "";
+        return str
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      };
+
+      const artist = formatSlug(artistSlug);
+      const title = formatSlug(trackSlug);
+
+      if (!trackSlug) {
+        // It's an artist profile URL!
+        // We can just return the artist name, and empty title.
+        return {
+          title: "",
+          artist,
+          cover: null,
+          platform: "soundcloud" as const,
+          source: "url-parsing-artist",
+        };
+      }
+
+      // Try searching Deezer using "Artist Name Track Name" to fetch accurate metadata and cover art
+      const query = `${artist} ${title}`;
+      const deezerTrack = await fetchDeezerTrack(query);
+      if (deezerTrack) {
+        return {
+          ...deezerTrack,
+          platform: "soundcloud" as const,
+          source: "soundcloud-deezer-search",
+        };
+      }
+
+      // Return URL-parsed values if Deezer search doesn't find it
+      return {
+        title,
+        artist,
+        cover: null,
+        platform: "soundcloud" as const,
+        source: "url-parsing",
+      };
+    }
+  } catch (err) {
+    console.error("SoundCloud URL parsing failed:", err);
+  }
+
+  // Fallback to og:tags if parsing fails for some reason
   return fetchOpenGraphTags(url, "soundcloud");
+}
+
+async function resolveUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    });
+    return res.url || url;
+  } catch (e) {
+    return url;
+  }
 }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const url = searchParams.get("url")?.trim();
+  let url = searchParams.get("url")?.trim();
 
   if (!url) {
     return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
   }
+
+  // Resolve redirect URLs first (like on.soundcloud.com or spotify.link)
+  url = await resolveUrl(url);
 
   const platform = detectPlatform(url);
 

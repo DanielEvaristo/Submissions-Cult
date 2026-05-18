@@ -24,8 +24,8 @@ export default async function PortalLayout({ children, params }: Props) {
     redirect(`/${locale}/industry`);
   }
 
-  // Profile is complete when the user has gone through onboarding (country is the mandatory Step 1 field)
-  const isComplete = !!session.user.country;
+  // Profile is complete when the user has provided all mandatory fields during onboarding
+  const isComplete = !!session.user.country && !!session.user.monthlyListeners && !!session.user.instagramFollowers;
 
   // Server-side paid activity check (avoids client-side flash)
   const [purchaseCount, paidSubmissionCount] = await Promise.all([

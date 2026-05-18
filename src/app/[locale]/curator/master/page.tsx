@@ -61,11 +61,15 @@ interface Submission {
   opportunity: Opportunity;
   status: Status;
   masterCuratorId: string | null;
+  channels: string[];
   genres: string[];
   subgenres: string[];
   autoFilledCover: string | null;
   streamingUrl: string;
   pitch: string | null;
+  fastTrack: boolean;
+  fastTrackDeadline: string | null;
+  reviewRequested: boolean;
   submittedAt: string;
   curatorNotes: string | null;
   curatorRating: number | null;
@@ -82,7 +86,7 @@ const OPP_COLORS: Record<Opportunity, string> = {
 
 export default function MasterCuratorDashboard() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<"inbox" | "queue">("inbox");
+  const [activeTab, setActiveTab] = useState<"priority" | "inbox" | "queue">("priority");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -157,11 +161,36 @@ export default function MasterCuratorDashboard() {
   useEffect(() => {
     setRating(0);
     setNotes("");
-    setSelectedPlacements([]);
+    
+    // Pre-select the placements that the artist paid for
+    const sub = submissions.find((s) => s.id === selectedId);
+    if (sub && sub.channels) {
+      // Map the internal channel IDs back to the UI labels
+      const mapping: Record<string, string> = {
+        "RADAR": "Radar",
+        "INTERNET_WAVE": "Internet Wave",
+        "SPOTIFY_PLAYLIST": "Spotify Playlist",
+        "STORIES": "Instagram Stories"
+      };
+      const requested = sub.channels.map(c => mapping[c]).filter(Boolean);
+      setSelectedPlacements(requested);
+    } else {
+      setSelectedPlacements([]);
+    }
+    
     setError(null);
-  }, [selectedId]);
+  }, [selectedId, submissions]);
 
   const selectedSub = submissions.find((s) => s.id === selectedId);
+
+  const prioritySubs = submissions.filter((s) => s.fastTrack)
+    .sort((a, b) => {
+      if (a.fastTrackDeadline && b.fastTrackDeadline) return new Date(a.fastTrackDeadline).getTime() - new Date(b.fastTrackDeadline).getTime();
+      if (a.fastTrackDeadline) return -1;
+      if (b.fastTrackDeadline) return 1;
+      return 0;
+    });
+  const regularSubs = submissions.filter((s) => !s.fastTrack);
 
   const handleAction = async (action: "accept" | "reject") => {
     if (!selectedSub) return;
@@ -228,12 +257,24 @@ export default function MasterCuratorDashboard() {
         {/* Tabs */}
         <div className="flex border-b-4 border-white/10 shrink-0">
           <button
+            onClick={() => setActiveTab("priority")}
+            className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "priority"
+                ? "bg-[#FF0000] text-white"
+                : prioritySubs.length > 0
+                ? "bg-[#FF0000]/20 text-[#FF0000] hover:bg-[#FF0000]/30"
+                : "bg-black text-white/40 hover:text-white"
+            }`}
+          >
+            PRIORITY ({prioritySubs.length})
+          </button>
+          <button
             onClick={() => setActiveTab("inbox")}
             className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
               activeTab === "inbox" ? "bg-[#F5E000] text-black" : "bg-black text-white/40 hover:text-white"
             }`}
           >
-            INBOX ({submissions.length})
+            INBOX ({regularSubs.length})
           </button>
           <button
             onClick={() => setActiveTab("queue")}
@@ -246,19 +287,42 @@ export default function MasterCuratorDashboard() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {/* ── PRIORITY TAB ── */}
+          {activeTab === "priority" && (
+            loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 size={32} className="animate-spin text-[#FF0000]" strokeWidth={3} />
+              </div>
+            ) : prioritySubs.length === 0 ? (
+              <div className="text-center py-10 text-white/20 px-4">
+                <ShieldCheck size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
+                <p className="font-sans text-[10px] font-black uppercase tracking-widest">NO_PRIORITY_REVIEW.</p>
+              </div>
+            ) : (
+              prioritySubs.map((sub) => (
+                <PriorityItem
+                  key={sub.id}
+                  sub={sub}
+                  selected={selectedId === sub.id}
+                  onClick={() => setSelectedId(sub.id)}
+                />
+              ))
+            )
+          )}
+
           {/* ── INBOX TAB ── */}
           {activeTab === "inbox" && (
             loading ? (
               <div className="flex items-center justify-center py-10">
                 <Loader2 size={32} className="animate-spin text-[#F5E000]" strokeWidth={3} />
               </div>
-            ) : submissions.length === 0 ? (
+            ) : regularSubs.length === 0 ? (
               <div className="text-center py-10 text-white/20 px-4">
                 <ShieldCheck size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
                 <p className="font-sans text-[10px] font-black uppercase tracking-widest">NO_PENDING_REVIEW.</p>
               </div>
             ) : (
-              submissions.map((sub) => (
+              regularSubs.map((sub) => (
                 <SubmissionItem
                   key={sub.id}
                   sub={sub}
@@ -655,7 +719,12 @@ function SubmissionItem({
           <p className="font-sans text-xs font-bold uppercase tracking-widest opacity-60 truncate">
             {sub.artistName}
           </p>
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {sub.reviewRequested && (
+              <span className="text-[8px] font-black uppercase border border-black px-1 py-0.5 bg-white text-black">
+                DETAILED REVIEW
+              </span>
+            )}
             <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 border ${selected ? 'bg-black text-[#F5E000] border-black' : 'bg-[#F5E000] text-black border-black'}`}>
               L1 APPROVED
             </span>
@@ -690,5 +759,114 @@ function LinkRow({ label, url }: { label: string; url: string }) {
       <span>{label}</span>
       <ExternalLink size={12} />
     </a>
+  );
+}
+
+// ─── PriorityItem — Fast Track countdown card ─────────────────────────────────
+
+function useCountdown(deadline: string | null) {
+  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number; expired: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!deadline) return;
+    const tick = () => {
+      const diff = new Date(deadline).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, expired: true });
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      setTimeLeft({
+        hours: Math.floor(totalSeconds / 3600),
+        minutes: Math.floor((totalSeconds % 3600) / 60),
+        seconds: totalSeconds % 60,
+        expired: false,
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [deadline]);
+
+  return timeLeft;
+}
+
+function PriorityItem({
+  sub,
+  selected,
+  onClick,
+}: {
+  sub: Submission;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const countdown = useCountdown(sub.fastTrackDeadline);
+  const hoursLeft = countdown ? countdown.hours : null;
+
+  const countdownColor =
+    countdown?.expired
+      ? "text-[#FF0000] animate-pulse"
+      : hoursLeft !== null && hoursLeft < 4
+      ? "text-[#FF0000] animate-pulse"
+      : hoursLeft !== null && hoursLeft < 12
+      ? "text-[#F5E000]"
+      : "text-green-400";
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-5 transition-all border-l-[6px] relative overflow-hidden ${
+        selected
+          ? "bg-[#FF0000] text-white border-l-white"
+          : "bg-[#FF0000]/10 text-white border-l-[#FF0000] hover:bg-[#FF0000]/20"
+      }`}
+    >
+      <div className="flex gap-4 items-start">
+        {/* Cover */}
+        <div className="w-12 h-12 shrink-0 overflow-hidden bg-black flex items-center justify-center">
+          {sub.autoFilledCover
+            ? <img src={sub.autoFilledCover} alt="" className="w-full h-full object-cover" />
+            : <Music size={18} className="text-[#FF0000]" strokeWidth={3} />}
+        </div>
+
+        {/* Info */}
+        <div className="min-w-0 flex-1">
+          <p className="font-sans text-sm font-black uppercase tracking-tight truncate leading-none mb-0.5">
+            {sub.trackTitle}
+          </p>
+          <p className="font-sans text-[10px] font-bold uppercase tracking-widest opacity-60 truncate mb-2">
+            {sub.artistName}
+          </p>
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {sub.fastTrack && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#FF0000] text-white">
+                ⚡ FAST TRACK 48H
+              </span>
+            )}
+            {sub.reviewRequested && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#F5E000] text-black">
+                ✍ DETAILED REVIEW
+              </span>
+            )}
+          </div>
+
+          {/* Countdown */}
+          {sub.fastTrackDeadline && countdown && (
+            <div className={`font-mono text-xs font-black ${countdownColor}`}>
+              {countdown.expired
+                ? "⛔ EXPIRED"
+                : `⏱ ${String(countdown.hours).padStart(2, "0")}:${String(countdown.minutes).padStart(2, "0")}:${String(countdown.seconds).padStart(2, "0")} LEFT`}
+            </div>
+          )}
+          {sub.reviewRequested && !sub.fastTrackDeadline && (
+            <p className="font-sans text-[9px] font-bold uppercase tracking-widest text-[#F5E000]/60">
+              Written review required
+            </p>
+          )}
+        </div>
+      </div>
+    </button>
   );
 }

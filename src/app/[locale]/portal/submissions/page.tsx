@@ -43,9 +43,9 @@ export default function SubmissionsPage() {
   const tStatus = useTranslations("status");
   const locale = useLocale();
   const { data: session } = useSession();
-  // 'country' is the mandatory Step 1 field of the onboarding flow — the only reliable proxy for profile completion.
-  // 'genre' is set automatically during the anonymous submit flow, so it can't be used as a proxy.
-  const isProfileIncomplete = session?.user?.accountType === "ARTIST" && !session?.user?.country;
+  // Profile is complete when the user has provided all mandatory fields
+  const isProfileIncomplete = session?.user?.accountType === "ARTIST" && 
+    (!session?.user?.country || !session?.user?.monthlyListeners || !session?.user?.instagramFollowers);
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);

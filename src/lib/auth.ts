@@ -29,6 +29,12 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
+        // Bloquear login de cuentas importadas sin reclamar
+        if (user.accountStatus === "PENDING_CLAIM") {
+          console.log("[AUTH] Login blocked: Account is PENDING_CLAIM (legacy import)", credentials.email);
+          return null;
+        }
+
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password
@@ -79,6 +85,9 @@ export const authOptions: AuthOptions = {
             where: { id: userId },
           });
           if (dbUser) {
+            token.name = dbUser.name;
+            token.artistName = dbUser.artistName;
+            token.legalName = dbUser.legalName;
             token.credits = dbUser.credits;
             token.genre = dbUser.genre;
             token.subgenre = dbUser.subgenre;
@@ -118,6 +127,7 @@ export const authOptions: AuthOptions = {
 
     async session({ session, token }) {
       session.user.id = token.id;
+      session.user.name = token.name;
       session.user.accountType = token.accountType;
       session.user.roleType = token.roleType;
       session.user.artistName = token.artistName;

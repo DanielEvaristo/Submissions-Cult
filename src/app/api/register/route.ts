@@ -47,7 +47,17 @@ export async function POST(req: NextRequest) {
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
     });
+    console.log("[REGISTER API] found existing:", existing ? existing.accountStatus : "not found");
     if (existing) {
+      // Si la cuenta fue importada desde legacy, mostrar mensaje especial
+      if (existing.accountStatus === "PENDING_CLAIM") {
+        console.log("[REGISTER API] returning PENDING_CLAIM");
+        return NextResponse.json(
+          { error: "PENDING_CLAIM", code: "PENDING_CLAIM" },
+          { status: 409 }
+        );
+      }
+      console.log("[REGISTER API] returning generic exists");
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
@@ -59,38 +69,14 @@ export async function POST(req: NextRequest) {
 
     // ── Create user based on accountType ────────────────────────
     if (accountType === AccountType.ARTIST) {
-      const { artistName, roleType, country, city } = rest;
-
-      if (!artistName?.trim()) {
-        return NextResponse.json(
-          { error: "Artist name is required" },
-          { status: 400 }
-        );
-      }
-
-      const existingArtist = await prisma.user.findFirst({
-        where: {
-          artistName: {
-            equals: artistName.trim(),
-            mode: "insensitive",
-          },
-          accountType: AccountType.ARTIST,
-        },
-      });
-
-      if (existingArtist) {
-        return NextResponse.json(
-          { error: "An artist with this name is already registered" },
-          { status: 409 }
-        );
-      }
+      const { roleType, country, city } = rest;
 
       const user = await prisma.user.create({
         data: {
           email: email.toLowerCase().trim(),
           password: hashedPassword,
-          name: artistName.trim(),
-          artistName: artistName.trim(),
+          name: email.split("@")[0], // Fallback name until they fill onboarding
+          artistName: null, // Will be filled in onboarding
           accountType: AccountType.ARTIST,
           roleType: (roleType as RoleType) ?? RoleType.ARTIST,
           country: country ?? null,

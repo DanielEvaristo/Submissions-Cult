@@ -17,7 +17,7 @@ export default async function CuratorLayout({
     redirect(`/${locale}/login`);
   }
 
-  if (!session.user.isCurator) {
+  if (!session.user.isCurator && !session.user.isMasterCurator) {
     redirect(`/${locale}/portal`);
   }
 

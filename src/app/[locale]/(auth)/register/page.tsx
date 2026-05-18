@@ -31,7 +31,6 @@ function RegisterPageContent() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Artist fields
-  const [artistName, setArtistName] = useState("");
   const [roleType, setRoleType] = useState("ARTIST");
 
   // Industry fields
@@ -43,6 +42,8 @@ function RegisterPageContent() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isPendingClaim, setIsPendingClaim] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const selectType = (type: AccountType) => {
     setAccountType(type);
@@ -62,7 +63,7 @@ function RegisterPageContent() {
 
     const payload =
       accountType === AccountType.ARTIST
-        ? { accountType, email, password, artistName, roleType }
+        ? { accountType, email, password, roleType }
         : { accountType, email, password, legalName, roleType: industryRole, websiteUrl, labelInstagram, description };
 
     const res = await fetch("/api/register", {
@@ -75,6 +76,12 @@ function RegisterPageContent() {
     setLoading(false);
 
     if (!res.ok) {
+      const data_err = data;
+      if (data_err?.code === "PENDING_CLAIM" || data_err?.error === "PENDING_CLAIM") {
+        setIsPendingClaim(true);
+        setLoading(false);
+        return;
+      }
       setError(data.error ?? t("errors.generic"));
       return;
     }
@@ -205,11 +212,7 @@ function RegisterPageContent() {
               
               <div className="grid grid-cols-1 gap-10">
                 {accountType === AccountType.ARTIST ? (
-                  <div>
-                    <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block" htmlFor="artistName">{t("register.artistName")} ★</label>
-                    <input id="artistName" type="text" className="w-full bg-[#F5F5F5] border-2 border-black p-6 font-sans text-lg font-black tracking-tight text-black placeholder:text-black/30 focus:bg-[#F5E000] transition-all outline-none" placeholder={t('aestheticLabels.egMidnightEcho')}
-                      value={artistName} onChange={(e) => setArtistName(e.target.value)} required />
-                  </div>
+                  null
                 ) : (
                   <div className="space-y-10">
                     <div>
@@ -245,6 +248,29 @@ function RegisterPageContent() {
                 </div>
               </div>
             </section>
+
+            {isPendingClaim && (
+              <div className="p-8 border-4 border-[#F5E000] bg-black space-y-4">
+                <p className="font-black uppercase text-sm tracking-widest text-[#F5E000]">⚠ CUENTA EXISTENTE DETECTADA</p>
+                <p className="font-bold text-sm text-white leading-relaxed">
+                  Este correo ya tiene submissions previas en Cult Machine. Tu historial ha sido preservado.
+                </p>
+                <p className="font-bold text-sm text-white/60 leading-relaxed">
+                  Para activar tu cuenta y acceder a tu historial, contacta a soporte:
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText("support@cult-machine.com");
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="inline-block px-6 py-4 bg-[#F5E000] text-black font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-all text-left"
+                >
+                  {copied ? "¡CORREO COPIADO!" : "COPIAR CORREO DE SOPORTE"}
+                </button>
+              </div>
+            )}
 
             {error && (
               <div className="p-6 border-4 border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000] font-black uppercase text-[10px] tracking-[0.2em]">

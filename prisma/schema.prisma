@@ -63,6 +63,12 @@ enum Theme {
   LIGHT
 }
 
+enum AccountStatus {
+  ACTIVE          // cuenta completamente activa
+  PENDING_CLAIM   // importada desde legacy — sin contraseña, esperando reclamación
+  SUSPENDED       // suspendida por el admin
+}
+
 enum UILanguage {
   EN
   ES
@@ -210,6 +216,9 @@ model User {
   theme    Theme      @default(DARK)
   language UILanguage @default(EN)
 
+  // Account status (ACTIVE by default, PENDING_CLAIM for legacy imports)
+  accountStatus AccountStatus @default(ACTIVE)
+
   // Phase 2 — credits (schema-ready, no logic in MVP)
   credits      Int     @default(0)
   firstSubUsed Boolean @default(false)
@@ -276,13 +285,15 @@ model Submission {
   subgenres String[]
   pitch     String? // max 1000 chars
   pressKitUrl String?
+  senderName  String? // nombre del contacto (para importaciones legacy)
 
   opportunity Opportunity?
 
   // ── NEW FLOW FIELDS ──
   channels        String[] // e.g. ["RADAR", "INTERNET_WAVE", "SPOTIFY_PLAYLIST", "STORIES"]
-  fastTrack       Boolean  @default(false)
-  reviewRequested Boolean  @default(false)
+  fastTrack         Boolean   @default(false)
+  fastTrackDeadline DateTime? // Set to submittedAt + 48h when fastTrack = true
+  reviewRequested   Boolean   @default(false)
   premiumServices String[] // e.g. ["INTERVIEW", "ARTICLE"]
   totalCostUsd    Int      @default(0) // cost in cents if paid via Stripe
 

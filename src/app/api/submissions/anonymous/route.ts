@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -41,10 +42,10 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("[DEBUG] Checking if user exists:", email);
-    const existing = await prisma.user.findUnique({ 
-      where: { email: email.toLowerCase().trim() } 
+    const existing = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
     });
-    
+
     if (existing) {
       return NextResponse.json({ error: "Email already registered. Please login first." }, { status: 400 });
     }
@@ -65,38 +66,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-
-    // 2. Find curators and manually count their active workload
-    const curators = await prisma.user.findMany({
-      where: { isCurator: true, isMasterCurator: false },
-      select: { id: true, assignedGenres: true }
-    });
-
-    let assignedCuratorId = null;
-    if (curators.length > 0) {
-      // Find the workload for each curator
-      const workloads = await prisma.submission.groupBy({
-        by: ["curatorId"],
-        where: { status: { in: ["PENDING", "IN_REVIEW"] }, curatorId: { not: null } },
-        _count: { curatorId: true }
-      });
-
-      const workloadMap: Record<string, number> = {};
-      workloads.forEach(w => { if (w.curatorId) workloadMap[w.curatorId] = w._count.curatorId; });
-
-      let eligible = curators.filter(c => 
-        !c.assignedGenres || c.assignedGenres.length === 0 || c.assignedGenres.includes(genre)
-      );
-      if (eligible.length === 0) eligible = curators;
-
-      // Pick the one with the lowest workload
-      eligible.sort((a, b) => (workloadMap[a.id] || 0) - (workloadMap[b.id] || 0));
-      assignedCuratorId = eligible[0].id;
-    }
+    const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
     // 3. Create user and submission in a transaction
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
@@ -110,7 +84,7 @@ export async function POST(req: NextRequest) {
           subgenre: subgenre || null,
           instagram: instagram || null,
           spotifyUrl: spotifyUrl || null,
-        }
+        },
       });
 
       const platform = streamingPlatform?.toUpperCase();
@@ -122,6 +96,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           channels: channels || [],
           fastTrack: !!fastTrack,
+          fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
           reviewRequested: !!reviewRequested,
           premiumServices: premiumServices || [],
           streamingUrl,
@@ -143,7 +118,7 @@ export async function POST(req: NextRequest) {
           curatorId: assignedCuratorId,
           status: assignedCuratorId ? "IN_REVIEW" : "PENDING",
           opportunity: null,
-        }
+        },
       });
 
       return { user, submission };

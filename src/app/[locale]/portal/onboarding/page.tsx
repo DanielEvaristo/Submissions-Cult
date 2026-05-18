@@ -21,19 +21,7 @@ import {
 
 const TOTAL_STEPS = 7;
 
-const GENRES = [
-  "Rock",
-  "Electronic",
-  "Hip-Hop",
-  "R&B / Soul",
-  "Pop",
-  "Folk / Acoustic",
-  "Latin",
-  "Jazz",
-  "Metal",
-  "Ambient / Experimental",
-  "Other",
-];
+import { GENRES, GENRE_MAP } from "@/lib/genres";
 
 const MUSIC_LANGUAGES = [
   { code: "en", labelKey: "en" },
@@ -61,6 +49,7 @@ interface FormData {
   // Step 1
   country: string;
   city: string;
+  artistName: string;
   bio: string;
   // Step 2
   roleType: "ARTIST" | "BAND";
@@ -90,6 +79,7 @@ interface FormData {
 const INITIAL: FormData = {
   country: "",
   city: "",
+  artistName: "",
   bio: "",
   roleType: "ARTIST",
   ageRange: "",
@@ -125,9 +115,13 @@ export default function OnboardingPage() {
   const { update } = useSession();
 
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [checkingName, setCheckingName] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [form, setForm] = useState<FormData>(INITIAL);
+  const [isCustomSubgenre, setIsCustomSubgenre] = useState(false);
 
   const set = useCallback(
     <K extends keyof FormData>(key: K, value: FormData[K]) =>
@@ -154,9 +148,58 @@ export default function OnboardingPage() {
   };
 
   const canProceed = (): boolean => {
-    if (step === 1) return !!form.country;
-    if (step === 3) return !!form.genre;
+    if (step === 1) return !!form.artistName && !nameError && !!form.country;
+    if (step === 2) return !!form.ageRange;
+    if (step === 3) return !!form.genre && !!form.subgenre;
+    if (step === 4) return form.musicLanguages.length > 0;
+    if (step === 6) return !!form.monthlyListeners && !!form.instagramFollowers;
     return true;
+  };
+
+  const checkArtistName = async (name: string) => {
+    if (!name) {
+      setNameError("");
+      return true;
+    }
+    setCheckingName(true);
+    setNameError("");
+    try {
+      const res = await fetch(`/api/artist/check-name?name=${encodeURIComponent(name)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.exists) {
+          setNameError("This artist name is already registered. If you think this is a mistake, contact support.");
+          return false;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCheckingName(false);
+    }
+    return true;
+  };
+
+  const copySupportEmail = () => {
+    navigator.clipboard.writeText("support@cultmachine.com");
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const autofillNameFromUrl = async (url: string) => {
+    if (!url || form.artistName) return; // Don't overwrite if they already typed something
+    try {
+      const res = await fetch(`/api/track-info?url=${encodeURIComponent(url)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.artist && data.artist !== "Unknown Artist") {
+          set("artistName", data.artist);
+          checkArtistName(data.artist);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleNext = () => {
@@ -173,10 +216,15 @@ export default function OnboardingPage() {
       setError("Please select a genre before finishing.");
       return;
     }
+    if (!form.monthlyListeners || !form.instagramFollowers) {
+      setError("Please provide your Monthly Listeners and Instagram Followers to proceed.");
+      return;
+    }
     setLoading(true);
     setError("");
 
     const payload = {
+      artistName: form.artistName,
       country: form.country,
       city: form.city,
       bio: form.bio,
@@ -211,8 +259,12 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Refresh the session so genre is updated and the redirect check works
-    await update({ genre: form.genre });
+    // Refresh the session so genre and required fields are updated and the redirect check works
+    await update({ 
+      genre: form.genre,
+      monthlyListeners: form.monthlyListeners,
+      instagramFollowers: form.instagramFollowers
+    });
     router.push(`/${locale}/portal`);
   };
 
@@ -250,25 +302,23 @@ export default function OnboardingPage() {
               return (
                 <div
                   key={key}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full flex-1 min-w-0 transition-all duration-200 shadow-sm ${
+                  className={`flex items-center justify-center gap-2 rounded-full min-w-0 transition-all duration-200 shadow-sm ${
                     active
-                      ? "bg-[#F5E000] border border-[#F5E000] text-black"
+                      ? "px-4 py-1.5 bg-[#F5E000] border border-[#F5E000] text-black flex-1"
                       : done
-                      ? "bg-ok/10 border border-ok/40 text-ok"
-                      : "bg-bg-surface border border-border text-cm-text-muted"
+                      ? "w-8 h-8 bg-ok/10 border border-ok/40 text-ok flex-none"
+                      : "w-8 h-8 bg-bg-surface border border-border text-cm-text-muted flex-none"
                   }`}
                 >
                   <Icon
                     size={14}
                     className={`shrink-0 ${active ? "text-black" : done ? "text-ok" : "text-cm-text-muted"}`}
                   />
-                  <span
-                    className={`font-sans text-xs font-bold uppercase tracking-wider truncate ${
-                      active ? "text-black" : done ? "text-ok" : "text-cm-text-muted"
-                    }`}
-                  >
-                    {t(`steps.${key}`)}
-                  </span>
+                  {active && (
+                    <span className="font-sans text-xs font-bold uppercase tracking-wider truncate text-black">
+                      {t(`steps.${key}`)}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -280,10 +330,82 @@ export default function OnboardingPage() {
               <div className="p-4 bg-[#F5E000]/10 border border-[#F5E000]/20 flex items-start gap-3">
                 <Info size={18} className="text-[#F5E000] shrink-0 mt-0.5" />
                 <p className="font-sans text-sm text-cm-text-primary leading-relaxed">
-                  {t("uxMessage")}
+                  Please complete your profile to access your submissions and improve your experience. These metrics help our curators match your music with the right opportunities.
                 </p>
               </div>
               <StepHeader title={t("basics.title")} />
+              
+              <div className="space-y-6">
+                <div className="p-4 bg-bg-surface border border-border">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-4 text-cm-text-muted">
+                    Auto-Fill Profile
+                  </p>
+                  <p className="text-sm text-cm-text-primary mb-4 leading-relaxed">
+                    Paste your Spotify or SoundCloud profile link to automatically fetch your Official Artist Name.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label">Spotify URL</label>
+                      <input 
+                        type="url" 
+                        className="input" 
+                        placeholder="https://open.spotify.com/artist/..." 
+                        value={form.spotifyUrl}
+                        onChange={(e) => set("spotifyUrl", e.target.value)}
+                        onBlur={(e) => autofillNameFromUrl(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">SoundCloud URL</label>
+                      <input 
+                        type="url" 
+                        className="input" 
+                        placeholder="https://soundcloud.com/..." 
+                        value={form.soundcloudUrl}
+                        onChange={(e) => set("soundcloudUrl", e.target.value)}
+                        onBlur={(e) => autofillNameFromUrl(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label" htmlFor="artistName">
+                    Artist Name *
+                  </label>
+                  <input
+                    id="artistName"
+                    type="text"
+                    className={`input ${nameError ? "border-red-500 bg-red-500/5" : ""}`}
+                    placeholder="E.g. MIDNIGHT ECHO"
+                    value={form.artistName}
+                    onChange={(e) => {
+                      set("artistName", e.target.value);
+                      setNameError("");
+                    }}
+                    onBlur={(e) => checkArtistName(e.target.value)}
+                    required
+                  />
+                  {checkingName && <p className="text-xs text-cm-text-muted mt-2 font-bold uppercase tracking-wider">Checking availability...</p>}
+                  {nameError && (
+                    <div className="mt-3 p-3 bg-red-500/10 border border-red-500/50">
+                      <p className="text-sm font-bold text-red-500 mb-2">{nameError}</p>
+                      <button 
+                        type="button"
+                        onClick={copySupportEmail}
+                        className="text-xs font-black uppercase tracking-wider text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 inline-block transition-colors"
+                      >
+                        {copiedEmail ? "COPIED!" : "Contact Support"}
+                      </button>
+                    </div>
+                  )}
+                  {!nameError && (
+                    <p className="text-xs text-cm-text-muted mt-2">
+                      If you didn't use a link above, please write your name EXACTLY as it appears on official sites to match future submissions.
+                    </p>
+                  )}
+                </div>
+              </div>
               <div>
                 <label className="label" htmlFor="country">
                   {t("basics.country")} *
@@ -395,7 +517,7 @@ export default function OnboardingPage() {
               {/* Age range (for both ARTIST and BAND) */}
               <div>
                 <label className="label" htmlFor="ageRange">
-                  {t("project.ageRange")}
+                  {t("project.ageRange")} *
                 </label>
                 <select
                   id="ageRange"
@@ -427,7 +549,11 @@ export default function OnboardingPage() {
                     <button
                       key={g}
                       type="button"
-                      onClick={() => set("genre", g)}
+                      onClick={() => {
+                        set("genre", g);
+                        set("subgenre", "");
+                        setIsCustomSubgenre(false);
+                      }}
                       className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${
                         form.genre === g
                           ? "bg-[#F5E000] text-black border-[#F5E000]"
@@ -439,26 +565,53 @@ export default function OnboardingPage() {
                   ))}
                 </div>
               </div>
-              <div>
-                <label className="label" htmlFor="subgenre">
-                  {t("genres.subgenre")}
-                </label>
-                <input
-                  id="subgenre"
-                  type="text"
-                  className="input"
-                  placeholder={t("genres.subgenrePlaceholder")}
-                  value={form.subgenre}
-                  onChange={(e) => set("subgenre", e.target.value)}
-                />
-              </div>
+              
+              {form.genre && GENRE_MAP[form.genre] && (
+                <div>
+                  <label className="label" htmlFor="subgenre">
+                    {t("genres.subgenre")} *
+                  </label>
+                  <select
+                    id="subgenre"
+                    className="input mb-3"
+                    value={isCustomSubgenre ? "Other" : form.subgenre}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "Other") {
+                        setIsCustomSubgenre(true);
+                        set("subgenre", "");
+                      } else {
+                        setIsCustomSubgenre(false);
+                        set("subgenre", val);
+                      }
+                    }}
+                  >
+                    <option value="">— Select Subgenre —</option>
+                    {GENRE_MAP[form.genre].map((sg) => (
+                      <option key={sg} value={sg}>
+                        {sg}
+                      </option>
+                    ))}
+                  </select>
+
+                  {isCustomSubgenre && (
+                    <input
+                      type="text"
+                      className="input animate-fade-in"
+                      placeholder={t("genres.subgenrePlaceholder")}
+                      value={form.subgenre}
+                      onChange={(e) => set("subgenre", e.target.value)}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {/* ── STEP 4: Languages ── */}
           {step === 4 && (
             <div className="animate-fade-in space-y-6">
-              <StepHeader title={t("languages.title")} hint={t("languages.hint")} />
+              <StepHeader title={`${t("languages.title")} *`} hint={t("languages.hint")} />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {MUSIC_LANGUAGES.map(({ code, labelKey }) => {
                   const selected = form.musicLanguages.includes(code);
@@ -487,11 +640,6 @@ export default function OnboardingPage() {
               <StepHeader title={t("socials.title")} hint={t("socials.hint")} />
 
               <div>
-                <label className="label" htmlFor="spotifyUrl">{t("socials.spotify")}</label>
-                <input id="spotifyUrl" type="text" className="input" placeholder={t("socials.spotifyPlaceholder")}
-                  value={form.spotifyUrl} onChange={(e) => set("spotifyUrl", e.target.value)} />
-              </div>
-              <div>
                 <label className="label" htmlFor="instagram">{t("socials.instagram")}</label>
                 <input id="instagram" type="text" className="input" placeholder={t("socials.instagramPlaceholder")}
                   value={form.instagram} onChange={(e) => set("instagram", e.target.value)} />
@@ -505,11 +653,6 @@ export default function OnboardingPage() {
                 <label className="label" htmlFor="youtube">{t("socials.youtube")}</label>
                 <input id="youtube" type="text" className="input" placeholder={t("socials.youtubePlaceholder")}
                   value={form.youtube} onChange={(e) => set("youtube", e.target.value)} />
-              </div>
-              <div>
-                <label className="label" htmlFor="soundcloudUrl">{t("socials.soundcloud")}</label>
-                <input id="soundcloudUrl" type="text" className="input" placeholder={t("socials.soundcloudPlaceholder")}
-                  value={form.soundcloudUrl} onChange={(e) => set("soundcloudUrl", e.target.value)} />
               </div>
               <div>
                 <label className="label" htmlFor="website">{t("socials.website")}</label>
@@ -540,7 +683,7 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <label className="label" htmlFor="monthlyListeners">
-                  {t("career.listeners")}
+                  {t("career.listeners")} *
                 </label>
                 <select
                   id="monthlyListeners"
@@ -558,7 +701,7 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <label className="label" htmlFor="instagramFollowers">
-                  {tRegister("instagramFollowers")}
+                  {tRegister("instagramFollowers")} *
                 </label>
                 <select
                   id="instagramFollowers"

@@ -20,6 +20,7 @@ export async function GET() {
       },
       orderBy: [
         { fastTrack: "desc" },
+        { fastTrackDeadline: "asc" },
         { submittedAt: "asc" }
       ],
       include: {

@@ -17,6 +17,7 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
+      artistName: true,
       country: true,
       city: true,
       bio: true,
@@ -29,6 +30,7 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
       musicLanguages: true,
       spotifyUrl: true,
       instagram: true,
+      instagramFollowers: true,
       tiktok: true,
       youtube: true,
       soundcloudUrl: true,
@@ -42,6 +44,12 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
 
   if (!user) {
     redirect(`/${locale}/login`);
+  }
+
+  // Redirect to onboarding if profile is incomplete
+  const isComplete = !!user.country && !!user.monthlyListeners && !!user.instagramFollowers;
+  if (!isComplete) {
+    redirect(`/${locale}/portal/onboarding`);
   }
 
   return (

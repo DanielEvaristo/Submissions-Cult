@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rebalanceActiveCuratorAssignments } from "@/lib/curator-assignment";
 import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
@@ -83,9 +84,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    const rebalance = isCurator && !isMasterCurator
+      ? await rebalanceActiveCuratorAssignments(prisma)
+      : null;
+
     return NextResponse.json({
       success: true,
-      id: newUser.id
+      id: newUser.id,
+      rebalance,
     }, { status: 201 });
 
   } catch (err) {

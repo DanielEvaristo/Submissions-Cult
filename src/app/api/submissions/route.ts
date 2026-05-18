@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -23,13 +24,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("[POST /api/submissions] PAYLOAD:", JSON.stringify(body, null, 2));
 
-    const { 
-      streamingUrl, 
+    const {
+      streamingUrl,
       streamingPlatform,
-      trackTitle, 
-      artistName, 
-      releaseType, 
-      genre, 
+      trackTitle,
+      artistName,
+      releaseType,
+      genre,
       subgenre,
       channels,
       fastTrack,
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       autoFillSource,
       managedArtistId,
       useCredits,
-      creditsToDeduct
+      creditsToDeduct,
     } = body;
 
     // Validate required fields
@@ -104,35 +105,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Least-Loaded Auto-Assignment Logic ──
-    const curators = await prisma.user.findMany({
-      where: {
-        isCurator: true,
-        isMasterCurator: false,
-      },
-      include: {
-        curatedSubmissions: {
-          where: {
-            status: { in: ["PENDING", "IN_REVIEW"] }
-          },
-          select: { id: true }
-        }
-      }
-    });
-
-    let eligible = curators.filter(c => 
-      !c.assignedGenres || c.assignedGenres.length === 0 || c.assignedGenres.includes(genre)
-    );
-
-    if (eligible.length === 0 && curators.length > 0) {
-      eligible = curators;
-    }
-
-    let assignedCuratorId = null;
-    if (eligible.length > 0) {
-      eligible.sort((a, b) => a.curatedSubmissions.length - b.curatedSubmissions.length);
-      assignedCuratorId = eligible[0].id;
-    }
+    const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
     // Use a transaction for credit deduction and submission creation
     const submission = await prisma.$transaction(async (tx) => {
@@ -145,7 +118,7 @@ export async function POST(req: NextRequest) {
         // Deduct credits
         await tx.user.update({
           where: { id: session.user.id },
-          data: { credits: { decrement: creditsToDeduct } }
+          data: { credits: { decrement: creditsToDeduct } },
         });
 
         // Log transaction
@@ -155,7 +128,7 @@ export async function POST(req: NextRequest) {
             amount: -creditsToDeduct,
             type: "USAGE",
             credits: creditsToDeduct,
-          }
+          },
         });
       }
 
@@ -164,6 +137,7 @@ export async function POST(req: NextRequest) {
           userId: session.user.id,
           channels: channels || [],
           fastTrack: !!fastTrack,
+          fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
           reviewRequested: !!reviewRequested,
           premiumServices: premiumServices || [],
           streamingUrl,
@@ -210,7 +184,7 @@ export async function GET(req: NextRequest) {
     const statusFilter = searchParams.get("status");
 
     const where: any = { userId: session.user.id };
-    
+
     if (statusFilter) {
       if (statusFilter === "UNDER_REVIEW") {
         where.status = { in: ["PENDING", "IN_REVIEW", "MASTER_REVIEW", "CURATOR_APPROVED"] };
@@ -246,8 +220,8 @@ export async function GET(req: NextRequest) {
         managedArtist: {
           select: {
             artistName: true,
-          }
-        }
+          },
+        },
       },
     });
 

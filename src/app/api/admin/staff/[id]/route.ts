@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rebalanceActiveCuratorAssignments } from "@/lib/curator-assignment";
 
 export async function DELETE(
   req: NextRequest,
@@ -37,16 +38,39 @@ export async function DELETE(
       return NextResponse.json({ error: "User is not a staff member" }, { status: 400 });
     }
 
-    // 1. Unassign any submissions they were reviewing (return them to the pool)
+    // 1. Unassign active submissions they were reviewing (return them to the pool)
     await prisma.submission.updateMany({
-      where: { curatorId: id },
+      where: {
+        curatorId: id,
+        status: { in: ["PENDING", "IN_REVIEW"] }
+      },
       data: { curatorId: null, status: "PENDING" }
+    });
+
+    // Preserve final editorial decisions while clearing the foreign key before delete.
+    await prisma.submission.updateMany({
+      where: {
+        curatorId: id,
+        status: { notIn: ["PENDING", "IN_REVIEW"] }
+      },
+      data: { curatorId: null }
     });
 
     // 2. Unassign any master reviews
     await prisma.submission.updateMany({
-      where: { masterCuratorId: id },
+      where: {
+        masterCuratorId: id,
+        status: "MASTER_REVIEW"
+      },
       data: { masterCuratorId: null, status: "CURATOR_APPROVED" }
+    });
+
+    await prisma.submission.updateMany({
+      where: {
+        masterCuratorId: id,
+        status: { not: "MASTER_REVIEW" }
+      },
+      data: { masterCuratorId: null }
     });
 
     // 3. Delete any test submissions they might have made themselves
@@ -59,7 +83,11 @@ export async function DELETE(
       where: { id }
     });
 
-    return NextResponse.json({ success: true });
+    const rebalance = user.isCurator && !user.isMasterCurator
+      ? await rebalanceActiveCuratorAssignments(prisma)
+      : null;
+
+    return NextResponse.json({ success: true, rebalance });
   } catch (error) {
     console.error("[DELETE /api/admin/staff/[id]]", error);
     return NextResponse.json({ error: "Failed to delete staff member" }, { status: 500 });

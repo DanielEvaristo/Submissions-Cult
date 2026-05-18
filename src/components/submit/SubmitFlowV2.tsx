@@ -65,7 +65,7 @@ const INITIAL: FormData = {
   premiumServices: [],
 };
 
-const GENRES = ["Rock", "Electronic", "Hip-Hop", "R&B / Soul", "Pop", "Indie", "Metal", "Latin", "Folk", "Jazz", "Reggaeton", "Other"];
+import { GENRES, GENRE_MAP } from "@/lib/genres";
 
 interface SubmitFlowV2Props {
   managedArtists?: ManagedArtistRef[];
@@ -84,6 +84,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isCustomSubgenre, setIsCustomSubgenre] = useState(false);
 
   // Donation / Intent Modals
   const [showDonationPrompt, setShowDonationPrompt] = useState(false);
@@ -216,7 +217,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const canNext = () => {
     if (step === 0) return !!form.managedArtistId;
     if (step === 1) {
-      const hasBasicInfo = !!form.streamingUrl && !!form.trackTitle && !!form.artistName && !!form.genre;
+      const hasBasicInfo = !!form.streamingUrl && !!form.trackTitle && !!form.artistName && !!form.genre && !!form.subgenre;
       // Instagram is required for anonymous users, but for logged in users we use session data
       const hasInstagram = !!session?.user?.instagram || !!form.instagram;
       return hasBasicInfo && hasInstagram && (!!session || !!form.email);
@@ -755,7 +756,12 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
               <label className="label">MAIN GENRE</label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {GENRES.map((g) => (
-                  <button key={g} type="button" onClick={() => set("genre", g)}
+                  <button key={g} type="button" 
+                    onClick={() => {
+                      set("genre", g);
+                      set("subgenre", "");
+                      setIsCustomSubgenre(false);
+                    }}
                     className={`py-3 border-2 border-white/10 text-center font-black uppercase text-[10px] transition-all ${
                       form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white hover:bg-white/5"
                     }`}>
@@ -764,10 +770,42 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
                 ))}
               </div>
             </div>
-            <div>
-              <label className="label">SUBGENRE</label>
-              <input type="text" className="input" placeholder="e.g. Melodic Techno, Lo-Fi..." value={form.subgenre} onChange={(e) => set("subgenre", e.target.value)} />
-            </div>
+            {form.genre && GENRE_MAP[form.genre] && (
+              <div>
+                <label className="label">SUBGENRE *</label>
+                <select
+                  className="input mb-3"
+                  value={isCustomSubgenre ? "Other" : form.subgenre}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "Other") {
+                      setIsCustomSubgenre(true);
+                      set("subgenre", "");
+                    } else {
+                      setIsCustomSubgenre(false);
+                      set("subgenre", val);
+                    }
+                  }}
+                >
+                  <option value="">— Select Subgenre —</option>
+                  {GENRE_MAP[form.genre].map((sg) => (
+                    <option key={sg} value={sg}>
+                      {sg.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+
+                {isCustomSubgenre && (
+                  <input
+                    type="text"
+                    className="input animate-fade-in"
+                    placeholder="e.g. Melodic Techno, Lo-Fi..."
+                    value={form.subgenre}
+                    onChange={(e) => set("subgenre", e.target.value)}
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { Loader2, CheckCircle2, AlertCircle, Zap, X } from "lucide-react";
 
-const GENRES = [
-  "Rock", "Electronic", "Hip-Hop", "R&B / Soul", "Pop",
-  "Folk / Acoustic", "Latin", "Jazz", "Metal", "Ambient / Experimental", "Other",
-];
+import { GENRES, GENRE_MAP } from "@/lib/genres";
 
 const MUSIC_LANGUAGES = [
   { code: "en", labelKey: "en" },
@@ -32,8 +30,10 @@ import { Country, State } from "country-state-city";
 export default function ProfileForm({ initialData }: { initialData: any }) {
   const t = useTranslations("onboarding");
   const tRegister = useTranslations("register");
+  const { update } = useSession();
   
   const [form, setForm] = useState({
+    artistName: initialData.artistName || "",
     country: initialData.country || "",
     city: initialData.city || "",
     bio: initialData.bio || "",
@@ -62,11 +62,54 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
   const [showUnlocked, setShowUnlocked] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [checkingName, setCheckingName] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({ type: null, message: "" });
+  const [isCustomSubgenre, setIsCustomSubgenre] = useState(() => {
+    if (initialData.genre && initialData.subgenre) {
+      const predefined = GENRE_MAP[initialData.genre] || [];
+      return !predefined.includes(initialData.subgenre);
+    }
+    return false;
+  });
 
   const set = (key: keyof typeof form, value: any) => {
     setForm(prev => ({ ...prev, [key]: value }));
     setStatus({ type: null, message: "" }); // clear messages on edit
+    if (key === "artistName") {
+      setNameError("");
+    }
+  };
+
+  const checkArtistName = async (name: string) => {
+    if (!name || name === initialData.artistName) {
+      setNameError("");
+      return true;
+    }
+    setCheckingName(true);
+    setNameError("");
+    try {
+      const res = await fetch(`/api/artist/check-name?name=${encodeURIComponent(name)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.exists) {
+          setNameError("This artist name is already registered. If you think this is a mistake, contact support.");
+          return false;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCheckingName(false);
+    }
+    return true;
+  };
+
+  const copySupportEmail = () => {
+    navigator.clipboard.writeText("support@cultmachine.com");
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   const toggleLanguage = (code: string) => {
@@ -81,10 +124,22 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (nameError) return;
+    
     setLoading(true);
     setStatus({ type: null, message: "" });
 
     try {
+      if (!form.monthlyListeners || !form.instagramFollowers) {
+        throw new Error("Monthly Listeners and Instagram Followers are required to access full features.");
+      }
+      if (!form.genre || !form.subgenre) {
+        throw new Error("Please select a Genre and Subgenre.");
+      }
+      if (form.musicLanguages.length === 0) {
+        throw new Error("Please select at least one language you create in.");
+      }
+
       const payload = {
         ...form,
         careerStartYear: form.careerStartYear ? parseInt(form.careerStartYear) : undefined,
@@ -99,6 +154,16 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
       if (res.ok) {
         setStatus({ type: "success", message: "Profile updated successfully!" });
         
+        await update({
+          name: form.artistName,
+          artistName: form.artistName,
+          genre: form.genre,
+          subgenre: form.subgenre,
+          country: form.country,
+          monthlyListeners: form.monthlyListeners,
+          instagramFollowers: form.instagramFollowers,
+        });
+
         // Qualification check for Premium PR
         const isQualified = 
           !["", "UNDER_1K", "FROM_1K_TO_10K"].includes(form.monthlyListeners) && 
@@ -124,6 +189,37 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
       {/* BASICS */}
       <div className="card space-y-6">
         <h2 className="font-sans text-xl font-bold text-cm-text-primary tracking-tight">{t("basics.title")}</h2>
+        
+        <div>
+          <label className="label" htmlFor="artistName">
+            Artist Name *
+          </label>
+          <input
+            id="artistName"
+            type="text"
+            className={`input ${nameError ? "border-red-500 bg-red-500/5" : ""} disabled:opacity-50 disabled:cursor-not-allowed`}
+            placeholder="E.g. MIDNIGHT ECHO"
+            value={form.artistName}
+            onChange={(e) => set("artistName", e.target.value)}
+            onBlur={(e) => checkArtistName(e.target.value)}
+            required
+            disabled={!!initialData.artistName}
+          />
+          {checkingName && <p className="text-xs text-cm-text-muted mt-2 font-bold uppercase tracking-wider">Checking availability...</p>}
+          {nameError && (
+            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/50">
+              <p className="text-sm font-bold text-red-500 mb-2">{nameError}</p>
+              <button 
+                type="button"
+                onClick={copySupportEmail}
+                className="text-xs font-black uppercase tracking-wider text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 inline-block transition-colors"
+              >
+                {copiedEmail ? "COPIED!" : "Contact Support"}
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="label" htmlFor="country">{t("basics.country")}</label>
@@ -182,7 +278,8 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
           {(["ARTIST", "BAND"] as const).map((r) => (
             <button
               key={r} type="button" onClick={() => set("roleType", r)}
-              className={`p-6 border-4 transition-all duration-150 rounded-none text-left flex flex-col justify-between ${form.roleType === r ? "border-[#F5E000] bg-[#F5E000] text-black shadow-[6px_6px_0px_0px_rgba(245,224,0,0.1)]" : "border-white/10 bg-white/5 text-white/40 hover:border-white/20 hover:text-white"}`}
+              disabled={!!initialData.roleType && initialData.roleType !== r}
+              className={`p-6 border-4 transition-all duration-150 rounded-none text-left flex flex-col justify-between disabled:opacity-50 disabled:cursor-not-allowed ${form.roleType === r ? "border-[#F5E000] bg-[#F5E000] text-black shadow-[6px_6px_0px_0px_rgba(245,224,0,0.1)]" : "border-white/10 bg-white/5 text-white/40 hover:border-white/20 hover:text-white"}`}
             >
               <p className="font-sans text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">PROJECT_TYPE</p>
               <p className="font-sans text-2xl font-black uppercase tracking-tighter leading-none">{r === "ARTIST" ? t("project.soloArtist") : t("project.band")}</p>
@@ -193,7 +290,13 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
         {/* Age Range (both ARTIST and BAND) */}
         <div>
           <label className="label" htmlFor="ageRange">{t("project.ageRange")}</label>
-          <select id="ageRange" className="input" value={form.ageRange} onChange={(e) => set("ageRange", e.target.value)}>
+          <select 
+            id="ageRange" 
+            className="input disabled:opacity-50 disabled:cursor-not-allowed" 
+            value={form.ageRange} 
+            onChange={(e) => set("ageRange", e.target.value)}
+            disabled={!!initialData.ageRange}
+          >
             <option value="">— {tRegister("ageRange")} —</option>
             {AGE_RANGES.map((a) => <option key={a} value={a}>{tRegister(`ageRanges.${a}`)}</option>)}
           </select>
@@ -204,7 +307,12 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {GENRES.map((g) => (
               <button
-                key={g} type="button" onClick={() => set("genre", g)}
+                key={g} type="button" 
+                onClick={() => {
+                  set("genre", g);
+                  set("subgenre", "");
+                  setIsCustomSubgenre(false);
+                }}
                 className={`px-4 py-3 border-2 transition-all duration-150 font-sans text-[10px] font-black uppercase tracking-widest ${form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white"}`}
               >
                 {g}
@@ -213,13 +321,43 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
           </div>
         </div>
 
-        <div>
-          <label className="label" htmlFor="subgenre">{t("genres.subgenre")}</label>
-          <input id="subgenre" type="text" className="input" placeholder={t("genres.subgenrePlaceholder")} value={form.subgenre} onChange={(e) => set("subgenre", e.target.value)} />
-        </div>
+        {form.genre && GENRE_MAP[form.genre] && (
+          <div>
+            <label className="label" htmlFor="subgenre">{t("genres.subgenre")} *</label>
+            <select
+              id="subgenre"
+              className="input mb-3"
+              value={isCustomSubgenre ? "Other" : form.subgenre}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "Other") {
+                  setIsCustomSubgenre(true);
+                  set("subgenre", "");
+                } else {
+                  setIsCustomSubgenre(false);
+                  set("subgenre", val);
+                }
+              }}
+            >
+              <option value="">— Select Subgenre —</option>
+              {GENRE_MAP[form.genre].map((sg) => (
+                <option key={sg} value={sg}>{sg}</option>
+              ))}
+            </select>
+            {isCustomSubgenre && (
+              <input 
+                type="text" 
+                className="input animate-fade-in" 
+                placeholder={t("genres.subgenrePlaceholder")} 
+                value={form.subgenre} 
+                onChange={(e) => set("subgenre", e.target.value)} 
+              />
+            )}
+          </div>
+        )}
         
         <div>
-          <label className="label">{t("languages.title")}</label>
+          <label className="label">{t("languages.title")} *</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {MUSIC_LANGUAGES.map(({ code, labelKey }) => (
               <button
@@ -240,7 +378,7 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
           <div><label className="label">{t("socials.spotify")}</label><input type="text" className="input" value={form.spotifyUrl} onChange={(e) => set("spotifyUrl", e.target.value)} /></div>
           <div><label className="label">{t("socials.instagram")}</label><input type="text" className="input" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} /></div>
           <div>
-            <label className="label">{tRegister("instagramFollowers")}</label>
+            <label className="label">{tRegister("instagramFollowers")} *</label>
             <select className="input" value={form.instagramFollowers} onChange={(e) => set("instagramFollowers", e.target.value)}>
               <option value="">— select —</option>
               {FOLLOWERS.map((f) => <option key={f} value={f}>{tRegister(`followers.${f}`)}</option>)}
@@ -259,10 +397,18 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="label">{t("career.startYear")}</label>
-            <input type="number" className="input" min={1950} max={new Date().getFullYear()} value={form.careerStartYear} onChange={(e) => set("careerStartYear", e.target.value)} />
+            <input 
+              type="number" 
+              className="input disabled:opacity-50 disabled:cursor-not-allowed" 
+              min={1950} 
+              max={new Date().getFullYear()} 
+              value={form.careerStartYear} 
+              onChange={(e) => set("careerStartYear", e.target.value)} 
+              disabled={!!initialData.careerStartYear}
+            />
           </div>
           <div>
-            <label className="label">{t("career.listeners")}</label>
+            <label className="label">{t("career.listeners")} *</label>
             <select className="input" value={form.monthlyListeners} onChange={(e) => set("monthlyListeners", e.target.value)}>
               <option value="">— select —</option>
               {LISTENERS.map((l) => <option key={l} value={l}>{tRegister(`listeners.${l}`)}</option>)}
