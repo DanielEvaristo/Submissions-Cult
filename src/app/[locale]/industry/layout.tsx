@@ -23,13 +23,13 @@ export default async function IndustryLayout({ children, params }: Props) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-black">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-black">
       <IndustryNav locale={locale} />
       
-      <div className="flex-1 flex flex-col min-w-0 pt-16 md:pt-0">
+      <div className="flex-1 flex flex-col min-w-0 pt-14 lg:pt-0">
         <PortalHeader locale={locale} />
         
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
           {children}
         </main>
       </div>

@@ -106,6 +106,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── GUARD 4: Track already has an active submission ─────────────────────
+    const activeStatuses = ["PENDING", "IN_REVIEW", "CURATOR_APPROVED", "MASTER_REVIEW"];
+    const activeSubmission = await prisma.submission.findFirst({
+      where: {
+        userId: session.user.id,
+        streamingUrl: streamingUrl.trim(),
+        status: { in: activeStatuses },
+      },
+    });
+    if (activeSubmission) {
+      return NextResponse.json(
+        { error: "TRACK_ALREADY_ACTIVE", details: "This track already has an active submission in progress. Please wait for the current review to be completed before resubmitting." },
+        { status: 409 }
+      );
+    }
+
     const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
     // Use a transaction for credit deduction and submission creation

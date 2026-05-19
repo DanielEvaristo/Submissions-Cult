@@ -5,7 +5,7 @@
  *
  * Usage: npx prisma db seed
  *
- * All passwords are: Password1
+ * All passwords are: 123
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -23,7 +23,7 @@ const HOURS = (h: number) => new Date(NOW.getTime() + h * 3_600_000);
 const DAYS_AGO = (d: number) => new Date(NOW.getTime() - d * 86_400_000);
 
 async function main() {
-  const HASH = await bcrypt.hash("Password1", 10);
+  const HASH = await bcrypt.hash("123", 10);
   console.log("🌱 Seeding Cult Machine database...\n");
 
   // ─────────────────────────────────────────────────────────────
@@ -596,7 +596,7 @@ async function main() {
   console.log(`\n🎉 Seed complete!`);
   console.log(`   Users created: 8`);
   console.log(`   Submissions created: ${submissionCount}`);
-  console.log(`\n📋 LOGIN CREDENTIALS (password: Password1)`);
+  console.log(`\n📋 LOGIN CREDENTIALS (password: 123)`);
   console.log(`   admin@cultmachine.com       → Admin + Curator + Master`);
   console.log(`   master@cultmachine.com      → Master Curator`);
   console.log(`   curator1@cultmachine.com    → Curator (Electronic, Pop, Hip-Hop)`);

@@ -99,6 +99,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
 
   // Submission-guard state
   const [showRejectedConfirm, setShowRejectedConfirm] = useState(false);
+  const [showActiveBlockModal, setShowActiveBlockModal] = useState(false);
   const [forceResubmit, setForceResubmit] = useState(false);
 
   const handleAutoFill = async () => {
@@ -489,6 +490,11 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         if (data.error === "TRACK_PREVIOUSLY_REJECTED") {
           setLoading(false);
           setShowRejectedConfirm(true);
+          return;
+        }
+        if (data.error === "TRACK_ALREADY_ACTIVE") {
+          setLoading(false);
+          setShowActiveBlockModal(true);
           return;
         }
         setError(data.error ?? "Failed to create submission");
@@ -1146,6 +1152,41 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
                 className="w-full p-4 border-2 border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all text-white/40"
               >
                 CONTINUE FOR FREE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ACTIVE TRACK BLOCK MODAL ── */}
+      {showActiveBlockModal && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-black border-4 border-[#F5E000] p-8 max-w-lg w-full shadow-[16px_16px_0px_0px_rgba(245,224,0,0.12)]">
+            <div className="w-16 h-16 bg-[#F5E000] flex items-center justify-center mb-6">
+              <Zap size={32} className="text-black" strokeWidth={3} />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#F5E000] mb-4">Submission Active</p>
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">
+              This track is already under review.
+            </h2>
+            <p className="text-sm font-bold uppercase tracking-[0.08em] text-white/60 leading-relaxed mb-8">
+              You already have an active submission for this track. You can't submit it again until the current review process is complete. Check your submissions to see its current status.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  setShowActiveBlockModal(false);
+                  router.push(`/${locale}/portal/submissions`);
+                }}
+                className="w-full p-4 bg-[#F5E000] text-black text-xs font-black uppercase tracking-[0.25em] hover:bg-white transition-all"
+              >
+                View My Submissions
+              </button>
+              <button
+                onClick={() => setShowActiveBlockModal(false)}
+                className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.25em] hover:text-white hover:border-white/30 transition-all"
+              >
+                Go Back
               </button>
             </div>
           </div>
