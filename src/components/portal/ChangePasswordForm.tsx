@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { signOut } from "next-auth/react";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function ChangePasswordForm() {
   const t = useTranslations("changePassword");
+  const locale = useLocale();
   
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -44,10 +46,15 @@ export default function ChangePasswordForm() {
       if (!res.ok) {
         setError(data.error || "Failed to update password");
       } else {
-        setSuccess(t("success"));
+        setSuccess(t("success") + " Redirecting...");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+
+        // Sign out to force re-authentication for security
+        setTimeout(() => {
+          signOut({ callbackUrl: `/${locale}/login` });
+        }, 1500);
       }
     } catch (err) {
       setError("An unexpected error occurred");

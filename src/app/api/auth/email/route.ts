@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { sanitizeInput } from "@/lib/security";
+import { sendVerificationEmail } from "@/lib/emails";
+import crypto from "crypto";
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -66,6 +68,15 @@ export async function PATCH(req: NextRequest) {
         emailVerified: null, // Reset verification on email change
       },
     });
+
+    // Generate verification token for the new email
+    const token = crypto.randomUUID();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.verificationToken.create({
+      data: { identifier: cleanEmail, token, expires },
+    });
+    sendVerificationEmail(cleanEmail, token);
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[PATCH /api/auth/email]", err);

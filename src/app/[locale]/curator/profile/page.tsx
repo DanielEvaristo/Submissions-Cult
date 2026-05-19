@@ -33,7 +33,7 @@ export default function CuratorProfilePage() {
     if (session?.user) {
       setForm({
         name: session.user.name || "",
-        bio: session.user.bio || "",
+        bio: (session.user as any).bio || "",
         country: session.user.country || "",
       });
       setFetching(false);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { sendCreditPurchaseEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
@@ -61,6 +62,12 @@ export async function POST(req: Request) {
           },
         }),
       ]);
+
+      // Send purchase receipt email (non-blocking)
+      const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+      if (buyer?.email) {
+        sendCreditPurchaseEmail(buyer.email, buyer.name ?? "User", creditsToAdd, session.amount_total || 0);
+      }
     } else if (type === "submission" && submissionId) {
       const submission = await prisma.submission.update({
         where: { id: submissionId },

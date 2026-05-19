@@ -26,7 +26,7 @@ export async function DELETE(
   }
 
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.admin.findUnique({
       where: { id }
     });
 
@@ -34,9 +34,8 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.isCurator && !user.isMasterCurator) {
-      return NextResponse.json({ error: "User is not a staff member" }, { status: 400 });
-    }
+    const isCurator = user.role === "CURATOR" || user.role === "SUPER_ADMIN" || user.role === "MASTER_CURATOR";
+    const isMasterCurator = user.role === "MASTER_CURATOR" || user.role === "SUPER_ADMIN";
 
     // 1. Unassign active submissions they were reviewing (return them to the pool)
     await prisma.submission.updateMany({
@@ -78,12 +77,12 @@ export async function DELETE(
       where: { userId: id }
     });
 
-    // 4. Finally, delete the user
-    await prisma.user.delete({
+    // 4. Finally, delete the admin
+    await prisma.admin.delete({
       where: { id }
     });
 
-    const rebalance = user.isCurator && !user.isMasterCurator
+    const rebalance = isCurator && !isMasterCurator
       ? await rebalanceActiveCuratorAssignments(prisma)
       : null;
 

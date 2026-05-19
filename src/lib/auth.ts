@@ -14,50 +14,80 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         console.log("[AUTH] Authorize called for:", credentials?.email);
         if (!credentials?.email || !credentials?.password) return null;
+        
+        const email = credentials.email.toLowerCase().trim();
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+        // 1. Check Admin Table
+        const admin = await prisma.admin.findUnique({
+          where: { email },
         });
 
-        if (!user) {
-          console.log("[AUTH] Login failed: User not found in database", credentials.email);
+        if (admin) {
+          const isValid = await bcrypt.compare(credentials.password, admin.password);
+          if (!isValid) {
+            console.log("[AUTH] Admin login failed: Password mismatch for", email);
+            return null;
+          }
+          console.log("[AUTH] Login successful for ADMIN:", admin.id, admin.email);
+          return {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            userType: "ADMIN",
+            accountType: "ARTIST", // Stub for types
+            roleType: "ARTIST",    // Stub for types
+            isAdmin: admin.role === "SUPER_ADMIN",
+            isCurator: admin.role === "CURATOR" || admin.role === "SUPER_ADMIN" || admin.role === "MASTER_CURATOR",
+            isMasterCurator: admin.role === "MASTER_CURATOR" || admin.role === "SUPER_ADMIN",
+            isVerifiedLabel: false,
+            labelStatus: "APPROVED",
+            emailVerified: admin.createdAt,
+            credits: 0,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any;
+        }
+
+        // 2. Check User Table
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!user || !user.password) {
+          console.log("[AUTH] Login failed: User not found or has no password", email);
           return null;
         }
 
-        if (!user.password) {
-          console.log("[AUTH] Login failed: User has no password set (OAuth user?)", credentials.email);
-          return null;
-        }
-
-        // Bloquear login de cuentas importadas sin reclamar
         if (user.accountStatus === "PENDING_CLAIM") {
-          console.log("[AUTH] Login blocked: Account is PENDING_CLAIM (legacy import)", credentials.email);
+          console.log("[AUTH] Login blocked: Account is PENDING_CLAIM (legacy import)", email);
           return null;
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
-          console.log("[AUTH] Login failed: Password mismatch for", credentials.email);
+          console.log("[AUTH] Login failed: Password mismatch for", email);
           return null;
         }
 
-        console.log("[AUTH] Login successful for user:", user.id, user.email);
+        if (!user.emailVerified) {
+          console.log("[AUTH] Login blocked: Email not verified for", email);
+          throw new Error("EMAIL_NOT_VERIFIED:" + user.email);
+        }
+
+        console.log("[AUTH] Login successful for USER:", user.id, user.email);
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           image: user.image,
+          userType: "USER",
           accountType: user.accountType,
           roleType: user.roleType,
           artistName: user.artistName,
           legalName: user.legalName,
-          isAdmin: user.isAdmin,
-          isCurator: user.isCurator,
-          isMasterCurator: user.isMasterCurator,
+          isAdmin: false,
+          isCurator: false,
+          isMasterCurator: false,
           isVerifiedLabel: user.isVerifiedLabel,
           labelStatus: user.labelStatus,
           emailVerified: user.emailVerified,
@@ -69,7 +99,8 @@ export const authOptions: AuthOptions = {
           monthlyListeners: user.monthlyListeners,
           instagramFollowers: user.instagramFollowers,
           credits: user.credits,
-        };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
       },
     }),
   ],
@@ -81,28 +112,34 @@ export const authOptions: AuthOptions = {
       if (trigger === "update") {
         const userId = (token.id || token.sub) as string;
         if (userId) {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: userId },
-          });
-          if (dbUser) {
-            token.name = dbUser.name;
-            token.artistName = dbUser.artistName;
-            token.legalName = dbUser.legalName;
-            token.credits = dbUser.credits;
-            token.genre = dbUser.genre;
-            token.subgenre = dbUser.subgenre;
-            token.country = dbUser.country;
-            token.instagram = dbUser.instagram;
-            token.spotifyUrl = dbUser.spotifyUrl;
-            token.emailVerified = dbUser.emailVerified;
-            token.monthlyListeners = dbUser.monthlyListeners;
-            token.instagramFollowers = dbUser.instagramFollowers;
+          if (token.userType === "ADMIN") {
+            const admin = await prisma.admin.findUnique({ where: { id: userId } });
+            if (admin) {
+              token.name = admin.name;
+            }
+          } else {
+            const dbUser = await prisma.user.findUnique({ where: { id: userId } });
+            if (dbUser) {
+              token.name = dbUser.name;
+              token.artistName = dbUser.artistName;
+              token.legalName = dbUser.legalName;
+              token.credits = dbUser.credits;
+              token.genre = dbUser.genre;
+              token.subgenre = dbUser.subgenre;
+              token.country = dbUser.country;
+              token.instagram = dbUser.instagram;
+              token.spotifyUrl = dbUser.spotifyUrl;
+              token.emailVerified = dbUser.emailVerified;
+              token.monthlyListeners = dbUser.monthlyListeners;
+              token.instagramFollowers = dbUser.instagramFollowers;
+            }
           }
         }
       }
 
       if (user) {
         token.id = user.id;
+        token.userType = user.userType as "USER" | "ADMIN";
         token.accountType = user.accountType;
         token.roleType = user.roleType;
         token.artistName = user.artistName;
@@ -127,6 +164,7 @@ export const authOptions: AuthOptions = {
 
     async session({ session, token }) {
       session.user.id = token.id;
+      session.user.userType = token.userType;
       session.user.name = token.name;
       session.user.accountType = token.accountType;
       session.user.roleType = token.roleType;

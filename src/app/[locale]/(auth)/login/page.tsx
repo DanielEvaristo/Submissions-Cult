@@ -53,6 +53,12 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
+      // NextAuth passes thrown errors as URL-encoded strings in result.error
+      if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+        const encodedEmail = encodeURIComponent(email.toLowerCase().trim());
+        window.location.href = `/${locale}/verify-email?email=${encodedEmail}`;
+        return;
+      }
       setError(t("auth.invalidCredentials"));
       return;
     }

@@ -30,71 +30,53 @@ async function main() {
   // 1. STAFF — Admin, Master Curator, Curators
   // ─────────────────────────────────────────────────────────────
 
-  const admin = await prisma.user.upsert({
+  const admin = await prisma.admin.upsert({
     where: { email: "admin@cultmachine.com" },
     update: {},
     create: {
       email: "admin@cultmachine.com",
       name: "Admin",
       password: HASH,
-      accountType: "ARTIST",
-      isAdmin: true,
-      isCurator: true,
-      isMasterCurator: true,
-      emailVerified: NOW,
-      labelStatus: "APPROVED",
-      genre: "Electronic",
+      role: "SUPER_ADMIN",
       assignedGenres: ["Electronic", "Hip-Hop", "Rock", "Pop", "Latin"],
     },
   });
   console.log("✅ Admin:", admin.email);
 
-  const masterCurator = await prisma.user.upsert({
+  const masterCurator = await prisma.admin.upsert({
     where: { email: "master@cultmachine.com" },
     update: {},
     create: {
       email: "master@cultmachine.com",
       name: "Master Curator",
       password: HASH,
-      accountType: "ARTIST",
-      isMasterCurator: true,
-      emailVerified: NOW,
-      labelStatus: "APPROVED",
-      genre: "Electronic",
+      role: "MASTER_CURATOR",
       assignedGenres: ["Electronic", "Hip-Hop", "Rock", "Pop", "Latin"],
     },
   });
   console.log("✅ Master Curator:", masterCurator.email);
 
-  const curator1 = await prisma.user.upsert({
+  const curator1 = await prisma.admin.upsert({
     where: { email: "curator1@cultmachine.com" },
     update: {},
     create: {
       email: "curator1@cultmachine.com",
       name: "Curator One",
       password: HASH,
-      accountType: "ARTIST",
-      isCurator: true,
-      emailVerified: NOW,
-      labelStatus: "APPROVED",
-      genre: "Electronic",
+      role: "CURATOR",
       assignedGenres: ["Electronic", "Pop", "Hip-Hop"],
     },
   });
   console.log("✅ Curator 1:", curator1.email);
 
-  const curator2 = await prisma.user.upsert({
+  const curator2 = await prisma.admin.upsert({
     where: { email: "curator2@cultmachine.com" },
     update: {},
     create: {
       email: "curator2@cultmachine.com",
       name: "Curator Two",
       password: HASH,
-      accountType: "ARTIST",
-      isCurator: true,
-      emailVerified: NOW,
-      labelStatus: "APPROVED",
-      genre: "Rock",
+      role: "CURATOR",
       assignedGenres: ["Rock", "Metal", "Folk / Acoustic"],
     },
   });
@@ -127,7 +109,6 @@ async function main() {
       instagram: "@midnightecho",
       monthlyListeners: "FROM_10K_TO_50K",
       instagramFollowers: "FROM_10K_TO_50K",
-      distributionMethod: "DISTROKID",
       hasManager: false,
       careerStartYear: 2019,
       credits: 5,
@@ -157,7 +138,6 @@ async function main() {
       instagram: "@loscultos",
       monthlyListeners: "FROM_1K_TO_10K",
       instagramFollowers: "FROM_1K_TO_10K",
-      distributionMethod: "CD_BABY",
       hasManager: true,
       careerStartYear: 2021,
       credits: 2,
@@ -187,7 +167,6 @@ async function main() {
       instagram: "@nanapancha",
       monthlyListeners: "FROM_50K_TO_100K",
       instagramFollowers: "FROM_50K_TO_100K",
-      distributionMethod: "TUNECORE",
       hasManager: false,
       careerStartYear: 2017,
       credits: 10,

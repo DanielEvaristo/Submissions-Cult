@@ -46,6 +46,7 @@ const STATUS_COLORS: Record<Status, string> = {
   MASTER_REVIEW: "badge-review",
   ACCEPTED: "badge-selected",
   REJECTED: "badge-rejected",
+  PUBLISHED: "badge-selected",
 };
 
 const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;

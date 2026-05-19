@@ -41,6 +41,7 @@ interface ArtistData {
   youtube: string | null;
   soundcloudUrl: string | null;
   website: string | null;
+  instagramFollowers: string | null;
 }
 
 interface Submission {

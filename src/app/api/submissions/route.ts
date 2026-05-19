@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
+import { sendSubmissionConfirmationEmail } from "@/lib/emails";
 
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -164,6 +165,11 @@ export async function POST(req: NextRequest) {
         },
       });
     });
+
+    // Send confirmation email (non-blocking)
+    if (session.user.email) {
+      sendSubmissionConfirmationEmail(session.user.email, submission.trackTitle, submission.artistName);
+    }
 
     return NextResponse.json({ id: submission.id }, { status: 201 });
   } catch (err: any) {

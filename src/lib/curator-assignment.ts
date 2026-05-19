@@ -2,7 +2,8 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 
 const ACTIVE_QUEUE_STATUSES = ["PENDING", "IN_REVIEW"] as const;
 
-type PrismaExecutor = PrismaClient | Prisma.TransactionClient;
+// Using any to bypass TS inference issues with TransactionClient after schema updates
+type PrismaExecutor = any;
 
 type CuratorCandidate = {
   id: string;
@@ -46,10 +47,9 @@ export async function findLeastLoadedCuratorId(
   prisma: PrismaExecutor,
   genres: string[]
 ) {
-  const curators = await prisma.user.findMany({
+  const curators = await prisma.admin.findMany({
     where: {
-      isCurator: true,
-      isMasterCurator: false,
+      role: "CURATOR",
     },
     select: {
       id: true,
@@ -72,7 +72,7 @@ export async function findLeastLoadedCuratorId(
   });
 
   const workloadMap = new Map<string, number>();
-  workloads.forEach((workload) => {
+  workloads.forEach((workload: { curatorId: string | null; _count: { curatorId: number } }) => {
     if (workload.curatorId) {
       workloadMap.set(workload.curatorId, workload._count.curatorId);
     }
@@ -83,10 +83,9 @@ export async function findLeastLoadedCuratorId(
 }
 
 export async function rebalanceActiveCuratorAssignments(prisma: PrismaExecutor) {
-  const curators = await prisma.user.findMany({
+  const curators = await prisma.admin.findMany({
     where: {
-      isCurator: true,
-      isMasterCurator: false,
+      role: "CURATOR",
     },
     select: {
       id: true,
@@ -121,7 +120,7 @@ export async function rebalanceActiveCuratorAssignments(prisma: PrismaExecutor) 
   });
 
   const workloadMap = new Map<string, number>();
-  curators.forEach((curator) => workloadMap.set(curator.id, 0));
+  curators.forEach((curator: { id: string }) => workloadMap.set(curator.id, 0));
 
   let reassigned = 0;
 

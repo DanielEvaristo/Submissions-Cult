@@ -22,6 +22,12 @@ enum LabelStatus {
   REJECTED
 }
 
+enum AdminRole {
+  SUPER_ADMIN
+  CURATOR
+  MASTER_CURATOR
+}
+
 enum RoleType {
   ARTIST
   BAND
@@ -104,6 +110,13 @@ enum Status {
   PUBLISHED          // master published → link provided
 }
 
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
 // ─── NextAuth Tables ────────────────────────────────────────────────────────
 
 model Account {
@@ -133,6 +146,21 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  link      String?          // optional link to redirect when clicked
+  isRead    Boolean          @default(false)
+  
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -142,6 +170,26 @@ model VerificationToken {
 }
 
 // ─── Core Tables ────────────────────────────────────────────────────────────
+
+model Admin {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String    // hashed with bcrypt
+  
+  role          AdminRole @default(CURATOR)
+  assignedGenres String[] @default([])
+
+  theme         Theme      @default(DARK)
+  language      UILanguage @default(EN)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations for curation
+  curatedSubmissions       Submission[] @relation("CuratorSubmissions")
+  masterCuratedSubmissions Submission[] @relation("MasterCuratorSubmissions")
+}
 
 model User {
   id            String    @id @default(cuid())
@@ -198,12 +246,6 @@ model User {
   labelStatus     LabelStatus @default(PENDING_VERIFICATION)
   rejectionReason String?
 
-  // ── INTERNAL roles ─────────────────────────────────────────────
-  isAdmin         Boolean  @default(false)
-  isCurator       Boolean  @default(false)
-  isMasterCurator Boolean  @default(false)
-  assignedGenres  String[] @default([])
-
   // UI preferences
   theme    Theme      @default(DARK)
   language UILanguage @default(EN)
@@ -227,10 +269,7 @@ model User {
   donations          Donation[]
   creditTransactions CreditTransaction[]
   managedArtists     ManagedArtist[]
-  
-  // Relations for curation
-  curatedSubmissions Submission[] @relation("CuratorSubmissions")
-  masterCuratedSubmissions Submission[] @relation("MasterCuratorSubmissions")
+  notifications      Notification[]
 }
 
 model ManagedArtist {
@@ -300,14 +339,14 @@ model Submission {
 
   // Level 1 — Curator
   curatorId         String?
-  curator           User?   @relation("CuratorSubmissions", fields: [curatorId], references: [id])
+  curator           Admin?   @relation("CuratorSubmissions", fields: [curatorId], references: [id])
   curatorNotes      String?
   curatorRating     Int? // 1-5 stars
   curatorReviewedAt DateTime?
 
   // Level 2 — Master Curator
   masterCuratorId  String?
-  masterCurator    User?   @relation("MasterCuratorSubmissions", fields: [masterCuratorId], references: [id])
+  masterCurator    Admin?   @relation("MasterCuratorSubmissions", fields: [masterCuratorId], references: [id])
   masterNotes      String?
   masterRating     Int? // 1-5 stars
   placement        String?

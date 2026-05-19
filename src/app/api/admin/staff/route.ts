@@ -16,26 +16,26 @@ export async function GET() {
   }
 
   try {
-    const staff = await prisma.user.findMany({
-      where: {
-        OR: [
-          { isCurator: true },
-          { isMasterCurator: true }
-        ]
-      },
+    const staff = await prisma.admin.findMany({
       select: {
         id: true,
         name: true,
         email: true,
-        isCurator: true,
-        isMasterCurator: true,
+        role: true,
         assignedGenres: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" }
     });
 
-    return NextResponse.json(staff);
+    // Map `role` to the legacy boolean flags the frontend expects
+    const mappedStaff = staff.map(s => ({
+      ...s,
+      isCurator: s.role === "CURATOR" || s.role === "SUPER_ADMIN" || s.role === "MASTER_CURATOR",
+      isMasterCurator: s.role === "MASTER_CURATOR" || s.role === "SUPER_ADMIN",
+    }));
+
+    return NextResponse.json(mappedStaff);
   } catch (err) {
     console.error("[GET /api/admin/staff]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.admin.findUnique({
       where: { email }
     });
 
@@ -71,15 +71,12 @@ export async function POST(req: NextRequest) {
     const isCurator = role === "CURATOR" || role === "MASTER_CURATOR";
     const isMasterCurator = role === "MASTER_CURATOR";
 
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.admin.create({
       data: {
         name: name || "Staff Member",
         email,
         password: hashedPassword,
-        // Since we bypass registration, we'll assign ARTIST generically, but they won't use it
-        accountType: "ARTIST",
-        isCurator,
-        isMasterCurator,
+        role,
         assignedGenres: assignedGenres || [],
       }
     });

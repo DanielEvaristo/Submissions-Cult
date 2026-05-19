@@ -8,6 +8,7 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       image?: string | null;
+      userType: "USER" | "ADMIN";
       accountType: AccountType;
       roleType: RoleType;
       artistName?: string | null;
@@ -31,6 +32,7 @@ declare module "next-auth" {
 
   interface User {
     id: string;
+    userType: "USER" | "ADMIN";
     accountType: AccountType;
     roleType: RoleType;
     artistName?: string | null;
@@ -55,6 +57,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
+    userType: "USER" | "ADMIN";
     accountType: AccountType;
     roleType: RoleType;
     artistName?: string | null;

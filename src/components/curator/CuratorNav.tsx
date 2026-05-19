@@ -11,7 +11,7 @@ export default function CuratorNav({ locale }: { locale: string }) {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
-  const navItems = [];
+  const navItems: any[] = [];
 
   if (!session?.user?.isMasterCurator) {
     navItems.push({

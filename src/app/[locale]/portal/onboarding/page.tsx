@@ -16,11 +16,13 @@ import {
   Loader2,
   Info,
   Mail,
+  Zap,
+  X,
 } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 
 import { GENRES, GENRE_MAP } from "@/lib/genres";
 
@@ -105,7 +107,7 @@ const INITIAL: FormData = {
 
 // ─── Step Labels ──────────────────────────────────────────────────────────────
 
-const STEP_ICONS = [MapPin, Mic2, Music2, Globe2, Globe2, BarChart2, CheckCircle2, Mail];
+const STEP_ICONS = [MapPin, Mic2, Music2, Globe2, Globe2, BarChart2, CheckCircle2];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -118,6 +120,7 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showUnlocked, setShowUnlocked] = useState(false);
   const [error, setError] = useState("");
   const [checkingName, setCheckingName] = useState(false);
   const [nameError, setNameError] = useState("");
@@ -278,11 +281,21 @@ export default function OnboardingPage() {
       console.warn("Error updating session:", e);
     }
     
-    // Redirect to profile instead of submissions
-    router.push(`/${locale}/portal/profile`);
+    // Qualification check for Premium PR
+    const isQualified = 
+      !["", "UNDER_1K", "FROM_1K_TO_10K"].includes(form.monthlyListeners || "") && 
+      !["", "UNDER_1K", "FROM_1K_TO_10K"].includes(form.instagramFollowers || "");
+    
+    if (isQualified) {
+      setShowUnlocked(true);
+      setLoading(false);
+    } else {
+      // Redirect to profile instead of submissions
+      router.push(`/${locale}/portal/profile`);
+    }
   };
 
-  const stepKeys = ["basics", "project", "genres", "languages", "socials", "career", "review", "verify"] as const;
+  const stepKeys = ["basics", "project", "genres", "languages", "socials", "career", "review"] as const;
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -814,19 +827,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── STEP 8: Confirm Email ── */}
-          {step === 8 && (
-            <div className="animate-fade-in space-y-6 text-center py-10">
-              <div className="w-16 h-16 bg-[#00FF00]/10 border-2 border-[#00FF00] rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail size={32} className="text-[#00FF00]" />
-              </div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-2">VERIFICATION EMAIL SENT</h2>
-              <p className="text-sm font-bold text-cm-text-muted mb-8 leading-relaxed">
-                We've sent a verification link to your email address. Don't forget to confirm your email! <br/><br/>
-                Your account is fully functional for the next 3 days, after which submissions will be restricted until verified.
-              </p>
-            </div>
-          )}
 
           {error && (
             <div className="mt-8 px-4 py-3 rounded-md border border-danger/30 bg-danger/10 font-sans text-sm font-medium text-danger shadow-sm text-center">
@@ -872,6 +872,22 @@ export default function OnboardingPage() {
           </div>
         </div>
       </div>
+
+      {showUnlocked && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-reveal">
+          <div className="bg-black border-4 border-[#00FF00] p-10 max-w-xl w-full text-center relative">
+            <button onClick={() => router.push(`/${locale}/portal/profile`)} className="absolute top-4 right-4 text-white/40 hover:text-white"><X size={24}/></button>
+            <div className="w-20 h-20 bg-[#00FF00] mx-auto mb-8 flex items-center justify-center">
+              <Zap size={40} className="text-black" />
+            </div>
+            <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 text-white">PREMIUM PR UNLOCKED</h2>
+            <p className="text-sm font-bold opacity-60 mb-10 leading-relaxed uppercase tracking-widest text-white">
+              Your numbers meet our editorial standards. You can now request Interviews and Articles in your next submission.
+            </p>
+            <button onClick={() => router.push(`/${locale}/portal/profile`)} className="btn-primary w-full bg-[#00FF00] text-black border-[#00FF00]">GOT IT</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -76,7 +76,7 @@ async function fetchOpenGraphTags(url: string, platform: string) {
       // Spotify format variations: 
       // "Track Name - song and lyrics by Artist | Spotify"
       // "Album Name by Artist | Spotify"
-      let cleanTitle = ogTitle.split(" | Spotify")[0] || ogTitle;
+      const cleanTitle = ogTitle.split(" | Spotify")[0] || ogTitle;
       
       if (cleanTitle.includes(" - song and lyrics by ")) {
         const parts = cleanTitle.split(" - song and lyrics by ");

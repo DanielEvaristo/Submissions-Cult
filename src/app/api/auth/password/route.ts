@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { sendPasswordChangedEmail } from "@/lib/emails";
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -42,6 +43,12 @@ export async function PATCH(req: NextRequest) {
       where: { id: session.user.id },
       data: { password: hashedPassword }
     });
+
+    // Send security alert email (non-blocking)
+    const userRecord = await prisma.user.findUnique({ where: { id: session.user.id }, select: { email: true, name: true } });
+    if (userRecord?.email) {
+      sendPasswordChangedEmail(userRecord.email, userRecord.name ?? "User");
+    }
 
     return NextResponse.json({ success: true });
 

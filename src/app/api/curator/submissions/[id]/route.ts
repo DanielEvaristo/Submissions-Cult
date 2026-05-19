@@ -84,6 +84,17 @@ export async function PATCH(
           curatorReviewedAt: new Date()
         }
       });
+
+      // Notify the artist
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          title: "Submission Reviewed",
+          message: `Your track "${updated.trackTitle}" was reviewed but not accepted.`,
+          type: "INFO",
+        }
+      });
+
       return NextResponse.json(updated);
     }
 

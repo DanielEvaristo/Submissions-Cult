@@ -65,7 +65,7 @@ const INITIAL: FormData = {
   premiumServices: [],
 };
 
-import { GENRES, GENRE_MAP } from "@/lib/genres";
+import { GENRES } from "@/lib/genres";
 
 interface SubmitFlowV2Props {
   managedArtists?: ManagedArtistRef[];
@@ -84,7 +84,6 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [isCustomSubgenre, setIsCustomSubgenre] = useState(false);
 
   // Donation / Intent Modals
   const [showDonationPrompt, setShowDonationPrompt] = useState(false);
@@ -183,7 +182,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   };
 
   const creditUsdTotal = getCreditUsdValue(totalCreditsNeeded);
-  const finalTotalUsd = creditUsdTotal + totalUsdNeeded;
+
 
   const draftStorageKey = `submit-flow-draft:${basePath}:${locale}`;
   const discountedCreditUsdTotal = retentionDiscountApplied ? getCreditUsdValue(totalCreditsNeeded) * 0.5 : creditUsdTotal;
@@ -430,10 +429,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     }));
   };
 
-  const handleStayInFlow = () => {
-    setPendingNavigationUrl(null);
-    setShowExitIntent(false);
-  };
+
 
   const handleSubmit = async (forceResubmitOverride = false) => {
     console.log("[SUBMIT] Starting submission process...", { step, isFreeFlow, totalCreditsNeeded });
@@ -441,6 +437,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     setError("");
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         streamingUrl: form.streamingUrl,
         trackTitle: form.trackTitle,
@@ -572,7 +569,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       setRetentionDiscountApplied(false);
       setLoading(false);
       setSubmitted(true);
-    } catch (err) {
+    } catch {
       setError("Network error.");
       setLoading(false);
     }
@@ -769,7 +766,6 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
                     onClick={() => {
                       set("genre", g);
                       set("subgenre", "");
-                      setIsCustomSubgenre(false);
                     }}
                     className={`py-3 border-2 border-white/10 text-center font-black uppercase text-[10px] transition-all ${
                       form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white hover:bg-white/5"

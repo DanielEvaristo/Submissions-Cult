@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { signOut } from "next-auth/react";
 import { Globe, LogOut } from "lucide-react";
+import NotificationsDropdown from "./NotificationsDropdown";
 
 const LOCALES = [
   { code: "en", label: "EN", flag: "🇺🇸" },
@@ -66,6 +67,8 @@ export default function PortalHeader({ locale }: Props) {
             </>
           )}
         </div>
+
+        <NotificationsDropdown />
 
         {/* User Menu / Sign out */}
         <button

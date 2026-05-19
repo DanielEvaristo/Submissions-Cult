@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import bcrypt from "bcryptjs";
+import { sendVerificationEmail, sendSubmissionConfirmationEmail } from "@/lib/emails";
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -123,6 +128,16 @@ export async function POST(req: NextRequest) {
 
       return { user, submission };
     });
+
+    // Generate verification token for the new user
+    const otp = generateOTP();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.verificationToken.create({
+      data: { identifier: result.user.email, token: otp, expires },
+    });
+
+    sendVerificationEmail(result.user.email, otp);
+    sendSubmissionConfirmationEmail(result.user.email, result.submission.trackTitle, result.submission.artistName);
 
     return NextResponse.json({ id: result.submission.id }, { status: 201 });
   } catch (err: any) {

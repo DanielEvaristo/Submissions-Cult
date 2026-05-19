@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  sendSubmissionAcceptedEmail,
+  sendSubmissionRejectedEmail,
+  sendSubmissionPublishedEmail,
+} from "@/lib/emails";
 
 export async function PATCH(
   req: NextRequest,
@@ -52,6 +57,23 @@ export async function PATCH(
           masterReviewedAt: new Date(),
         },
       });
+
+      // Notify the artist (non-blocking)
+      const subUser = await prisma.user.findUnique({ where: { id: updated.userId }, select: { email: true } });
+      
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          title: "Submission Accepted",
+          message: `Your track "${updated.trackTitle}" was accepted for placement!`,
+          type: "SUCCESS",
+        }
+      });
+
+      if (subUser?.email) {
+        sendSubmissionAcceptedEmail(subUser.email, updated.trackTitle, updated.placement);
+      }
+
       return NextResponse.json(updated);
     }
 
@@ -71,6 +93,23 @@ export async function PATCH(
           masterReviewedAt: new Date(),
         },
       });
+
+      // Notify the artist (non-blocking)
+      const subUser = await prisma.user.findUnique({ where: { id: updated.userId }, select: { email: true } });
+      
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          title: "Submission Reviewed",
+          message: `Your track "${updated.trackTitle}" was reviewed but not selected for placement.`,
+          type: "INFO",
+        }
+      });
+
+      if (subUser?.email) {
+        sendSubmissionRejectedEmail(subUser.email, updated.trackTitle, updated.masterNotes);
+      }
+
       return NextResponse.json(updated);
     }
 
@@ -91,6 +130,24 @@ export async function PATCH(
           publishedAt: new Date(),
         },
       });
+
+      // Notify the artist (non-blocking)
+      const subUser = await prisma.user.findUnique({ where: { id: updated.userId }, select: { email: true } });
+      
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          title: "Submission Published",
+          message: `Your track "${updated.trackTitle}" has been published!`,
+          type: "SUCCESS",
+          link: publicationUrl
+        }
+      });
+
+      if (subUser?.email) {
+        sendSubmissionPublishedEmail(subUser.email, updated.trackTitle, publicationUrl);
+      }
+
       return NextResponse.json(updated);
     }
 

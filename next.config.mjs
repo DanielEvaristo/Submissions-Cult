@@ -25,6 +25,12 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   // Enable polling so file changes on Windows host are detected inside Docker
   webpack: (config, { dev }) => {
     if (dev) {

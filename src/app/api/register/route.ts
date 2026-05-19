@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { AccountType, RoleType, LabelStatus } from "@prisma/client";
+import { sendVerificationEmail, sendIndustryWelcomeEmail } from "@/lib/emails";
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -88,8 +93,18 @@ export async function POST(req: NextRequest) {
         select: { id: true, email: true, artistName: true, accountType: true },
       });
 
+      const otp = generateOTP();
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await prisma.verificationToken.create({
+        data: { identifier: user.email, token: otp, expires },
+      });
+
+      // Send OTP email (non-blocking)
+      sendVerificationEmail(user.email, otp);
+
       return NextResponse.json(
-        { success: true, user, redirect: "/login?verified=1" },
+        { success: true, user, redirect: `/verify-email?email=${encodeURIComponent(user.email)}` },
         { status: 201 }
       );
     }
@@ -128,6 +143,10 @@ export async function POST(req: NextRequest) {
         },
         select: { id: true, email: true, legalName: true, accountType: true },
       });
+
+      // Send welcome email to industry account (non-blocking)
+      // Send welcome email to industry account (non-blocking)
+      sendIndustryWelcomeEmail(user.email, legalName.trim());
 
       return NextResponse.json(
         { success: true, user, redirect: "/login?industryCreated=1" },

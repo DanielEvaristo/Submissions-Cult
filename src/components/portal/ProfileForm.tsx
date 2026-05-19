@@ -62,6 +62,9 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
   const [showUnlocked, setShowUnlocked] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [isFollowersLocked, setIsFollowersLocked] = useState(false);
+  const [fetchingFollowers, setFetchingFollowers] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [checkingName, setCheckingName] = useState(false);
   const [nameError, setNameError] = useState("");
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -99,12 +102,52 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.error("Check name error", e);
     } finally {
       setCheckingName(false);
     }
     return true;
   };
+
+  const handleInstagramBlur = async () => {
+    const usernameParam = form.instagram.trim();
+    if (!usernameParam || usernameParam === "N/A" || isFollowersLocked) return;
+
+    let username = usernameParam;
+    if (username.startsWith("@")) username = username.substring(1);
+    if (username.includes("instagram.com/")) {
+      const parts = username.split("instagram.com/");
+      const afterSlash = parts[1].split(/[/?#]/)[0];
+      username = afterSlash;
+    }
+    
+    setFetchingFollowers(true);
+    setFetchError(false);
+    try {
+      const res = await fetch(`/api/instagram/stats?username=${encodeURIComponent(username)}`);
+      // Minimum delay for UX so they see it loading
+      await new Promise(r => setTimeout(r, 1000));
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.range) {
+          set("instagramFollowers", data.range);
+          setIsFollowersLocked(true);
+          setFetchError(false);
+        } else {
+          setFetchError(true);
+        }
+      } else {
+        setFetchError(true);
+      }
+    } catch (e) {
+      console.error("Failed to fetch instagram stats", e);
+      setFetchError(true);
+    } finally {
+      setFetchingFollowers(false);
+    }
+  };
+
 
   const copySupportEmail = () => {
     navigator.clipboard.writeText("support@cultmachine.com");
@@ -375,11 +418,15 @@ export default function ProfileForm({ initialData }: { initialData: any }) {
               <label className="label mb-0">{t("socials.instagram")}</label>
               <button type="button" onClick={() => set("instagram", "N/A")} className="text-[9px] uppercase font-black tracking-widest text-cm-text-muted hover:text-[#F5E000] transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 border border-white/5">I DON'T HAVE THIS</button>
             </div>
-            <input type="text" className="input" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} />
+            <div className="relative">
+              <input type="text" className="input pr-10" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} onBlur={handleInstagramBlur} />
+              {fetchingFollowers && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader2 size={14} className="animate-spin text-white/40" /></div>}
+              {fetchError && !fetchingFollowers && !isFollowersLocked && <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#FF0000]" title="Couldn't auto-fetch. Please select manually."><AlertCircle size={14} /></div>}
+            </div>
           </div>
           <div>
             <label className="label">{tRegister("instagramFollowers")} *</label>
-            <select className="input" value={form.instagramFollowers} onChange={(e) => set("instagramFollowers", e.target.value)}>
+            <select className="input disabled:opacity-50" value={form.instagramFollowers} onChange={(e) => set("instagramFollowers", e.target.value)} disabled={isFollowersLocked}>
               <option value="">— select —</option>
               {FOLLOWERS.map((f) => <option key={f} value={f}>{tRegister(`followers.${f}`)}</option>)}
             </select>

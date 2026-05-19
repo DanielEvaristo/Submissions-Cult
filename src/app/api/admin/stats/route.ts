@@ -183,7 +183,7 @@ export async function GET(req: Request) {
         duplicateSubmissions: duplicatePairs,
       }
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("[GET /api/admin/stats] ERROR:", err);
     return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
   }
