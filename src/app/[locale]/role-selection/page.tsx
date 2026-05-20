@@ -104,7 +104,7 @@ export default function RoleSelectionPage() {
               </div>
               <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-4">CREATIVE</h3>
               <p className="text-sm md:text-base font-bold leading-tight mb-8 opacity-40 uppercase tracking-tight">
-                Not a musician? We are looking for writers, photographers, and fans to join our editorial team.
+                We support interesting proposals from independent creators. We are a community, not a corporation.
               </p>
               <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white/40">
                 <Check size={16} strokeWidth={3} /> JOIN THE CULT
