@@ -932,7 +932,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
               }}
               className="text-xs font-black uppercase tracking-[0.2em] text-white/50 hover:text-white underline decoration-white/30 hover:decoration-white transition-all p-4"
             >
-              NO THANKS, SKIP UPSELLS
+              CONTINUE WITHOUT EXTRAS
             </button>
           </div>
         </div>
