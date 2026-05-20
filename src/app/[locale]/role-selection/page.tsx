@@ -44,8 +44,8 @@ export default function RoleSelectionPage() {
             {t('aestheticLabels.secRoleSelectInit')}
           </p>
         </div>
-        <div className="absolute -right-20 -bottom-20 text-white/5 font-black text-[200px] md:text-[400px] leading-none select-none pointer-events-none">
-          ★
+        <div className="absolute -right-10 -bottom-10 text-white/5 font-black text-[120px] md:text-[200px] leading-none select-none pointer-events-none">
+          ✦
         </div>
       </div>
 
