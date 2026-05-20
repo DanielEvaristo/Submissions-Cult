@@ -117,6 +117,22 @@ enum NotificationType {
   ERROR
 }
 
+enum CreativeType {
+  PHOTOGRAPHER
+  WRITER
+  DESIGNER
+  VIDEOGRAPHER
+  FAN
+  OTHER
+}
+
+enum CreativeRequestStatus {
+  PENDING
+  REVIEWING
+  ACCEPTED
+  REJECTED
+}
+
 // ─── NextAuth Tables ────────────────────────────────────────────────────────
 
 model Account {
@@ -412,4 +428,27 @@ model FunnelEvent {
   locale      String?
 
   createdAt DateTime @default(now())
+}
+
+// ─── Creative Collaboration Requests ─────────────────────────────────────────
+
+model CreativeRequest {
+  id   String @id @default(cuid())
+
+  // Submitter info (no auth required — public form)
+  name  String
+  email String
+
+  creativeType  CreativeType
+  portfolioUrl  String?
+  message       String       @db.Text
+
+  status        CreativeRequestStatus @default(PENDING)
+
+  // Internal review fields
+  adminNotes    String?      @db.Text
+  reviewedById  String?      // Admin.id who reviewed it (not a FK to avoid coupling)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

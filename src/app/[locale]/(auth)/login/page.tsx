@@ -206,7 +206,32 @@ export default function LoginPage() {
                 {t("auth.signUp")}
               </Link>
             </p>
+
+            {/* ── Creative CTA ── */}
+            <div className="mt-8 flex items-center gap-4">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">OR</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+            <Link
+              href={`/${locale}/creative`}
+              className="mt-6 w-full flex items-center justify-between px-6 py-5 border-4 border-white/10 text-white/60 hover:border-[#F5E000] hover:text-white hover:bg-[#F5E000]/5 transition-all group"
+            >
+              <div>
+                <p className="font-black text-[10px] uppercase tracking-[0.3em] text-white/30 group-hover:text-[#F5E000] mb-0.5">
+                  NOT A MUSICIAN?
+                </p>
+                <p className="font-black text-sm uppercase tracking-tight text-white group-hover:text-white">
+                  ✦ I'M A CREATIVE
+                </p>
+                <p className="font-bold text-[9px] uppercase tracking-widest text-white/20 mt-0.5">
+                  WRITER · PHOTOGRAPHER · DESIGNER · FAN · ETC
+                </p>
+              </div>
+              <span className="text-[#F5E000] opacity-0 group-hover:opacity-100 transition-opacity font-black text-lg">→</span>
+            </Link>
           </div>
+
         </div>
       </div>
     </div>

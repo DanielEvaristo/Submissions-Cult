@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Inbox, User, ShieldCheck, Menu, X } from "lucide-react";
+import { Inbox, User, ShieldCheck, Palette, Menu, X } from "lucide-react";
 
 export default function CuratorNav({ locale }: { locale: string }) {
   const pathname = usePathname();
@@ -37,6 +37,16 @@ export default function CuratorNav({ locale }: { locale: string }) {
     icon: User,
     exact: false,
   });
+
+  // Creatives visible to master curators and admins
+  if (session?.user?.isMasterCurator) {
+    navItems.push({
+      name: "Creatives",
+      href: `/${locale}/curator/creative-requests`,
+      icon: Palette,
+      exact: false,
+    });
+  }
 
   const NavContent = () => (
     <>

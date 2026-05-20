@@ -11,6 +11,7 @@ import {
   Music,
   LogOut,
   UserCheck,
+  Palette,
   Menu,
   X
 } from "lucide-react";
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/admin/artists", label: "Artists", icon: Users, exact: false },
   { href: "/admin/submissions", label: "Submissions", icon: Music, exact: false },
   { href: "/admin/staff", label: "Staff", icon: UserCheck, exact: false },
+  { href: "/admin/creative-requests", label: "Creatives", icon: Palette, exact: false },
 ];
 
 const LOCALES = [
