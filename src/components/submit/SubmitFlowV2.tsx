@@ -386,7 +386,9 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   };
 
   const handleBack = () => {
-    if (step === 6 && !isQualifiedForPremium) {
+    if (step === 10) {
+      setStep(6);
+    } else if (step === 6 && !isQualifiedForPremium) {
       setStep(4);
     } else {
       setStep((s) => Math.max(0, s - 1));
