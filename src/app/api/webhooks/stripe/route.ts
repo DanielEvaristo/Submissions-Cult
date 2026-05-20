@@ -105,6 +105,13 @@ export async function POST(req: Request) {
           },
         });
       }
+    } else if (type === "premium-pr" && submissionId) {
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          premiumPrStatus: "PAID",
+        },
+      });
     }
   }
 

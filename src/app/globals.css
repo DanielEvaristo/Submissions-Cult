@@ -104,3 +104,13 @@
     100% { opacity: 1; transform: translateY(0); }
   }
 }
+
+/* Force Ko-Fi widget to not overlap mobile bottom nav */
+@media (max-width: 1024px) {
+  .floatingchat-container-mobi,
+  .floatingchat-container-wrap-mobi,
+  div[id^="kofi-widget-overlay"],
+  iframe[src*="ko-fi"] {
+    bottom: 100px !important;
+  }
+}

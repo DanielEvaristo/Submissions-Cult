@@ -153,7 +153,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   
   const interviewCost = form.premiumServices.includes("INTERVIEW") ? 30 : 0;
   const articleCost = form.premiumServices.includes("ARTICLE") ? 25 : 0;
-  const totalUsdNeeded = interviewCost + articleCost;
+  const totalUsdNeeded = 0; // Premium Services are now paid post-approval
   const [dbCredits, setDbCredits] = useState<number | null>(null);
   
   useEffect(() => {
@@ -941,9 +941,14 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       {/* ── STEP 5: Premium Services ── */}
       {step === 5 && (
         <div className="space-y-8 animate-reveal">
-          <div className="p-4 bg-white/5 border border-white/10 mb-8 flex items-center gap-4">
-            <CheckCircle2 className="text-[#00FF00]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-white/60">YOUR TRACK IS ELIGIBLE FOR PREMIUM PR</span>
+          <div className="p-4 bg-white/5 border border-white/10 mb-8 flex flex-col gap-2">
+            <div className="flex items-center gap-4">
+              <CheckCircle2 className="text-[#00FF00]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-white/60">YOUR TRACK IS ELIGIBLE FOR PREMIUM PR</span>
+            </div>
+            <p className="text-[10px] text-white/40 mt-2 font-bold uppercase tracking-widest">
+              Note: This is a request. Cult Machine does not charge payola. The cost covers the labor time to write, edit, and publish the piece. You will only pay if your request is approved.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -959,7 +964,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
               <Mic size={32} className="mb-4" />
               <p className="text-2xl font-black uppercase tracking-tighter">EXCLUSIVE INTERVIEW</p>
               <p className="text-xs font-bold opacity-60 mt-2">Full Q&A published on Cult Machine.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$30 USD</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">REQUEST ($30 USD LATER)</p>
             </button>
 
             <button onClick={() => {
@@ -974,7 +979,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
               <FileText size={32} className="mb-4" />
               <p className="text-2xl font-black uppercase tracking-tighter">DEDICATED ARTICLE</p>
               <p className="text-xs font-bold opacity-60 mt-2">Professional editorial review.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$25 USD</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">REQUEST ($25 USD LATER)</p>
             </button>
           </div>
         </div>
@@ -1013,7 +1018,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
             {form.premiumServices.map(s => (
               <div key={s} className="flex justify-between items-center border-b border-white/5 pb-4">
                 <span className="font-bold text-sm uppercase opacity-70">{s} SERVICE</span>
-                <span className="font-black text-cult-yellow">${s === 'INTERVIEW' ? 30 : 25} USD</span>
+                <span className="font-black text-cult-yellow text-xs">REQUESTED (PAY IF APPROVED)</span>
               </div>
             ))}
           </div>
@@ -1025,9 +1030,13 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#F5E000] mb-2">EXIT OFFER APPLIED: 50% OFF CREDITS</p>
               )}
               <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-white">
-                {totalCreditsNeeded > 0 && `${totalCreditsNeeded} CRD`}
-                {totalCreditsNeeded > 0 && totalUsdNeeded > 0 && " + "}
-                {totalUsdNeeded > 0 && `$${totalUsdNeeded} USD`}
+                {totalCreditsNeeded === 0 && totalUsdNeeded === 0 ? "FREE" : (
+                  <>
+                    {totalCreditsNeeded > 0 && `${totalCreditsNeeded} CRD`}
+                    {totalCreditsNeeded > 0 && totalUsdNeeded > 0 && " + "}
+                    {totalUsdNeeded > 0 && `$${totalUsdNeeded} USD`}
+                  </>
+                )}
               </h3>
             </div>
             <div className="text-right">

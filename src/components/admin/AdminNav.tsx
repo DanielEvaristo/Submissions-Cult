@@ -12,8 +12,10 @@ import {
   LogOut,
   UserCheck,
   Palette,
+  Bug,
   Menu,
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
 
 interface Props {
@@ -27,6 +29,7 @@ const NAV = [
   { href: "/admin/submissions", label: "Submissions", icon: Music, exact: false },
   { href: "/admin/staff", label: "Staff", icon: UserCheck, exact: false },
   { href: "/admin/creative-requests", label: "Creatives", icon: Palette, exact: false },
+  { href: "/admin/bugs", label: "Bug Reports", icon: Bug, exact: false },
 ];
 
 const LOCALES = [
@@ -115,8 +118,18 @@ export default function AdminNav({ locale }: Props) {
         </div>
       </nav>
 
-      {/* Sign out */}
-      <div className="px-0 py-0 border-t-4 border-white/10 mt-auto shrink-0">
+      {/* Footer */}
+      <div className="px-0 py-0 border-t-4 border-white/10 mt-auto shrink-0 flex flex-col">
+        <button
+          onClick={() => {
+            window.dispatchEvent(new Event("open-bug-report"));
+            setIsOpen(false);
+          }}
+          className="w-full flex items-center gap-4 px-6 py-4 font-sans text-sm font-black uppercase tracking-widest text-white/40 hover:bg-red-500 hover:text-white transition-all duration-150 border-b-2 border-white/5"
+        >
+          <AlertTriangle size={18} className="shrink-0" strokeWidth={3} />
+          Report a Bug
+        </button>
         <button
           id="admin-signout-btn"
           onClick={() => signOut({ callbackUrl: `/${locale}/login` })}

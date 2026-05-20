@@ -122,13 +122,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const isIndustry = dbUser?.accountType === "INDUSTRY";
+    const unqualifiedRanges = ["UNDER_1K", "FROM_1K_TO_10K"];
+    const qualifiesForPremium = isIndustry || (
+      dbUser && 
+      dbUser.monthlyListeners && !unqualifiedRanges.includes(dbUser.monthlyListeners) &&
+      dbUser.instagramFollowers && !unqualifiedRanges.includes(dbUser.instagramFollowers)
+    );
+
+    let finalPremiumServices = premiumServices || [];
+    let premiumPrStatus = "NONE";
+    if (finalPremiumServices.length > 0) {
+      if (qualifiesForPremium) {
+        premiumPrStatus = "REQUESTED";
+      } else {
+        finalPremiumServices = [];
+      }
+    }
+
     const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
     // Use a transaction for credit deduction and submission creation
     const submission = await prisma.$transaction(async (tx) => {
       if (useCredits && creditsToDeduct > 0) {
-        const user = await tx.user.findUnique({ where: { id: session.user.id } });
-        if (!user || user.credits < creditsToDeduct) {
+        if (!dbUser || dbUser.credits < creditsToDeduct) {
           throw new Error("Insufficient credits in wallet");
         }
 
@@ -156,7 +174,8 @@ export async function POST(req: NextRequest) {
           fastTrack: !!fastTrack,
           fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
           reviewRequested: !!reviewRequested,
-          premiumServices: premiumServices || [],
+          premiumServices: finalPremiumServices,
+          premiumPrStatus: premiumPrStatus as any,
           streamingUrl,
           streamingPlatform: streamingPlatform ? (streamingPlatform.toUpperCase() as any) : null,
           artistName,

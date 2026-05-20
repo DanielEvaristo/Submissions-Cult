@@ -91,6 +91,25 @@ export default function SubmissionsPage() {
     fetchSubmissions();
   }, [filter]);
 
+  const handlePremiumPayment = async (submissionId: string) => {
+    try {
+      const res = await fetch("/api/checkout/premium-pr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+      } else {
+        alert("Payment failed to initialize");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error initializing payment");
+    }
+  };
+
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale === "es" ? "es-MX" : locale === "fr" ? "fr-FR" : "en-US", {
       day: "2-digit",
@@ -250,11 +269,36 @@ export default function SubmissionsPage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-4 flex-wrap">
-                    {(sub.status === "ACCEPTED" || sub.status === "PUBLISHED") && sub.placement && (
-                      <span className="font-sans text-[9px] font-black uppercase tracking-widest text-[#F5E000] border border-[#F5E000]/30 px-2 py-1">
-                        {sub.placement}
-                      </span>
-                    )}
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                      {(sub.status === "ACCEPTED" || sub.status === "PUBLISHED") && sub.placement && (
+                        <span className="font-sans text-[9px] font-black uppercase tracking-widest text-[#F5E000] border border-[#F5E000]/30 px-2 py-1 text-center">
+                          {sub.placement}
+                        </span>
+                      )}
+                      
+                      {/* Premium PR Status UI */}
+                      {sub.premiumPrStatus && sub.premiumPrStatus !== "NONE" && (
+                        <div className="flex flex-col items-end gap-1 mt-2">
+                          <span className="font-sans text-[9px] font-black uppercase tracking-widest text-white/50">
+                            PR REQUEST: <span className={
+                              sub.premiumPrStatus === "APPROVED" ? "text-[#F5E000]" :
+                              sub.premiumPrStatus === "PAID" ? "text-[#00CC66]" :
+                              sub.premiumPrStatus === "REJECTED" ? "text-red-500" :
+                              "text-white"
+                            }>{sub.premiumPrStatus}</span>
+                          </span>
+                          
+                          {sub.premiumPrStatus === "APPROVED" && (
+                            <button
+                              onClick={() => handlePremiumPayment(sub.id)}
+                              className="px-4 py-2 bg-[#F5E000] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all w-full mt-1 border-2 border-transparent"
+                            >
+                              PAY PREMIUM PR
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     {sub.status === "PUBLISHED" && sub.publicationUrl && (
                       <a
                         href={sub.publicationUrl}

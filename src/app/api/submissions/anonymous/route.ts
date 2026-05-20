@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
           fastTrack: !!fastTrack,
           fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
           reviewRequested: !!reviewRequested,
-          premiumServices: premiumServices || [],
+          premiumServices: [], // Stripped for anonymous submissions
+          premiumPrStatus: "NONE",
           streamingUrl,
           streamingPlatform: streamingPlatform ? (finalPlatform as any) : null,
           artistName,

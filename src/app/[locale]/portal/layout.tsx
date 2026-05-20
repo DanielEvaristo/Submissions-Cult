@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import PortalNav from "@/components/portal/PortalNav";
 import PortalHeader from "@/components/portal/PortalHeader";
 import PortalGating from "@/components/portal/PortalGating";
+import BugReportModal from "@/components/shared/BugReportModal";
 
 interface Props {
   children: React.ReactNode;
@@ -51,6 +52,8 @@ export default async function PortalLayout({ children, params }: Props) {
           </PortalGating>
         </main>
       </div>
+      
+      <BugReportModal />
     </div>
   );
 }

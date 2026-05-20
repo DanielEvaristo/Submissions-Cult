@@ -175,31 +175,8 @@ export async function POST(req: Request) {
       });
     }
 
-    if (submission.premiumServices.includes("INTERVIEW")) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "EXCLUSIVE INTERVIEW",
-          },
-          unit_amount: 3000,
-        },
-        quantity: 1,
-      });
-    }
-
-    if (submission.premiumServices.includes("ARTICLE")) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "DEDICATED ARTICLE",
-          },
-          unit_amount: 2500,
-        },
-        quantity: 1,
-      });
-    }
+    // Note: Premium Services (INTERVIEW, ARTICLE) are no longer charged upfront.
+    // They are requested here, approved by an admin, and then paid via a separate link.
 
     if (body.donation) {
       lineItems.push({

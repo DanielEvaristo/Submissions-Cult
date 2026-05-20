@@ -133,6 +133,21 @@ enum CreativeRequestStatus {
   REJECTED
 }
 
+enum PremiumPrStatus {
+  NONE
+  REQUESTED
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum BugReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 // ─── NextAuth Tables ────────────────────────────────────────────────────────
 
 model Account {
@@ -286,6 +301,7 @@ model User {
   creditTransactions CreditTransaction[]
   managedArtists     ManagedArtist[]
   notifications      Notification[]
+  bugReports         BugReport[]
 }
 
 model ManagedArtist {
@@ -342,6 +358,8 @@ model Submission {
   fastTrackDeadline DateTime? // Set to submittedAt + 48h when fastTrack = true
   reviewRequested   Boolean   @default(false)
   premiumServices String[] // e.g. ["INTERVIEW", "ARTICLE"]
+  premiumPrStatus PremiumPrStatus @default(NONE)
+  premiumPaymentLink String?
   totalCostUsd    Int      @default(0) // cost in cents if paid via Stripe
 
   // Auto-fill metadata from streaming URL (populated server-side after URL parse)
@@ -451,4 +469,17 @@ model CreativeRequest {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ─── Bug Reports ─────────────────────────────────────────────────────────────
+
+model BugReport {
+  id          String          @id @default(cuid())
+  userId      String?
+  user        User?           @relation(fields: [userId], references: [id])
+  description String          @db.Text
+  url         String?         // The URL where the bug occurred
+  status      BugReportStatus @default(OPEN)
+  createdAt   DateTime        @default(now())
+  adminNotes  String?         @db.Text
 }

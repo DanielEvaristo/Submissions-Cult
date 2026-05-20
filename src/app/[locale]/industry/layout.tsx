@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import IndustryNav from "@/components/industry/IndustryNav";
 import PortalHeader from "@/components/portal/PortalHeader"; // Reuse the same header for Language / Logout
+import BugReportModal from "@/components/shared/BugReportModal";
 
 interface Props {
   children: React.ReactNode;
@@ -33,6 +34,8 @@ export default async function IndustryLayout({ children, params }: Props) {
           {children}
         </main>
       </div>
+
+      <BugReportModal />
     </div>
   );
 }

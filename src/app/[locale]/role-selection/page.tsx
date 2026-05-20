@@ -45,7 +45,7 @@ export default function RoleSelectionPage() {
           </p>
         </div>
         <div className="absolute -right-10 -bottom-10 text-white/5 font-black text-[120px] md:text-[200px] leading-none select-none pointer-events-none">
-          ✦
+          ★
         </div>
       </div>
 

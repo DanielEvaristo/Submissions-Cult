@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
@@ -68,18 +68,9 @@ export default function LoginPage() {
       return;
     }
 
-    const session = await getSession();
-    if (session?.user) {
-      const u = session.user as any;
-      if (u.isAdmin) window.location.href = `/${locale}/admin`;
-      else if (u.isMasterCurator) window.location.href = `/${locale}/curator/master`;
-      else if (u.isCurator) window.location.href = `/${locale}/curator`;
-      else if (u.accountType === "INDUSTRY") window.location.href = `/${locale}/industry`;
-      else if (u.genre) window.location.href = `/${locale}/portal`;
-      else window.location.href = `/${locale}/portal/onboarding`;
-    } else {
-      window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
-    }
+    // Always use server-side redirect — getSession() right after signIn() is
+    // unreliable because the JWT cookie may not be available yet on the client.
+    window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
   };
 
   const currentLang = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
@@ -109,7 +100,7 @@ export default function LoginPage() {
 
         {/* Decorative elements */}
         <div className="absolute -right-10 -bottom-10 text-white/5 font-black text-[120px] md:text-[200px] leading-none select-none pointer-events-none">
-          ✦
+          ★
         </div>
       </div>
 

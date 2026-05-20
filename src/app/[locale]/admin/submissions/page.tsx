@@ -27,6 +27,8 @@ interface Submission {
   autoFilledCover: string | null;
   streamingUrl: string;
   submittedAt: string;
+  premiumPrStatus: string;
+  premiumServices: string[];
   user: { id: string; name: string | null; email: string };
 }
 
@@ -113,6 +115,24 @@ export default function AdminSubmissionsPage() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(p));
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleUpdatePremiumPrStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/admin/premium-pr/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        fetchSubmissions();
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
   };
 
   const formatDate = (iso: string) =>
@@ -239,8 +259,39 @@ export default function AdminSubmissionsPage() {
                 </div>
 
                 {/* Status */}
-                <div className={`shrink-0 ${STATUS_COLORS[sub.status]}`}>
-                  {sub.status.replace(/_/g, " ")}
+                <div className="flex flex-col gap-2 shrink-0">
+                  <div className={`${STATUS_COLORS[sub.status]}`}>
+                    {sub.status.replace(/_/g, " ")}
+                  </div>
+                  
+                  {sub.premiumPrStatus && sub.premiumPrStatus !== "NONE" && (
+                    <div className="flex flex-col gap-1 mt-1 border-t border-border pt-2">
+                      <span className="font-sans text-[10px] font-bold text-cm-text-secondary uppercase">
+                        PR: <span className={
+                          sub.premiumPrStatus === "APPROVED" ? "text-accent-red" :
+                          sub.premiumPrStatus === "PAID" ? "text-ok" :
+                          "text-cm-text-primary"
+                        }>{sub.premiumPrStatus}</span>
+                      </span>
+                      
+                      {sub.premiumPrStatus === "REQUESTED" && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleUpdatePremiumPrStatus(sub.id, "APPROVED")}
+                            className="px-2 py-1 bg-accent-red text-white text-[10px] font-bold rounded hover:opacity-80"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleUpdatePremiumPrStatus(sub.id, "REJECTED")}
+                            className="px-2 py-1 bg-bg-elevated border border-border text-cm-text-secondary text-[10px] font-bold rounded hover:bg-bg-surface"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Submitted by */}

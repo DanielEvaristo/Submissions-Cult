@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Send, ListMusic, User, LayoutDashboard, Menu, X, Coins, LogOut } from "lucide-react";
+import { Send, ListMusic, User, LayoutDashboard, Menu, X, Coins, LogOut, AlertTriangle } from "lucide-react";
 
 interface Props {
   locale: string;
@@ -110,6 +110,16 @@ export default function PortalNav({ locale }: Props) {
 
       {/* Footer */}
       <div className="p-6 border-t-4 border-white/10 mt-auto shrink-0 space-y-4">
+        <button
+          onClick={() => {
+            window.dispatchEvent(new Event("open-bug-report"));
+            setIsOpen(false);
+          }}
+          className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/10 text-white/40 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-sans text-[10px] font-black uppercase tracking-widest"
+        >
+          <AlertTriangle size={14} strokeWidth={3} />
+          Report a Bug
+        </button>
         <button
           onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
           className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/10 text-white/40 hover:bg-[#F5E000] hover:text-black hover:border-[#F5E000] transition-all font-sans text-[10px] font-black uppercase tracking-widest"

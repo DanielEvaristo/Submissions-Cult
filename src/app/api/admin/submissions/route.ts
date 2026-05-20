@@ -40,6 +40,8 @@ export async function GET(req: NextRequest) {
         autoFilledCover: true,
         streamingUrl: true,
         submittedAt: true,
+        premiumPrStatus: true,
+        premiumServices: true,
         user: { select: { id: true, name: true, email: true } },
       },
     }),

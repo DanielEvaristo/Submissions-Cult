@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Inbox, User, ShieldCheck, Palette, Menu, X } from "lucide-react";
+import { Inbox, User, ShieldCheck, Palette, Menu, X, AlertTriangle } from "lucide-react";
 
 export default function CuratorNav({ locale }: { locale: string }) {
   const pathname = usePathname();
@@ -96,7 +96,17 @@ export default function CuratorNav({ locale }: { locale: string }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-6 border-t-4 border-black mt-auto shrink-0">
+      <div className="p-6 border-t-4 border-black mt-auto shrink-0 space-y-4">
+        <button
+          onClick={() => {
+            window.dispatchEvent(new Event("open-bug-report"));
+            setIsOpen(false);
+          }}
+          className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/10 text-white/40 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-sans text-[10px] font-black uppercase tracking-widest"
+        >
+          <AlertTriangle size={14} strokeWidth={3} />
+          Report a Bug
+        </button>
         <p className="text-[10px] font-black text-black uppercase tracking-[0.2em] italic opacity-40 mb-4">
           "FOR FANS, BY FANS."
         </p>
