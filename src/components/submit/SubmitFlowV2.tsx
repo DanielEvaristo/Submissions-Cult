@@ -386,7 +386,9 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   };
 
   const handleBack = () => {
-    if (step === 10) {
+    if (step === (hasManagedArtists ? 0 : 1)) {
+      router.back();
+    } else if (step === 10) {
       setStep(6);
     } else if (step === 6 && !isQualifiedForPremium) {
       setStep(4);
@@ -1072,7 +1074,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       {/* ── NAVIGATION ── */}
       {!submitted && (
         <div className="flex justify-between mt-12 pt-8 border-t-4 border-white/10">
-          <button onClick={handleBack} disabled={step === (hasManagedArtists ? 0 : 1)} className="btn-secondary w-1/3">
+          <button onClick={handleBack} className="btn-secondary w-1/3">
             BACK
           </button>
           <button onClick={handleNext} disabled={!canNext() || loading} className="btn-primary w-1/3 flex justify-center items-center gap-2">
