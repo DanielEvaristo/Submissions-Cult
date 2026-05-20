@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { Mic2, Building2, Check } from "lucide-react";
+import { Mic2, Building2, Palette, Check } from "lucide-react";
 
 export default function RoleSelectionPage() {
   const t = useTranslations();
@@ -18,6 +18,11 @@ export default function RoleSelectionPage() {
   const handleSelectIndustry = () => {
     // Si es industry, ir a registrarse con type=INDUSTRY
     router.push(`/${locale}/register?type=INDUSTRY`);
+  };
+
+  const handleSelectCreative = () => {
+    // Si es creative, ir al formulario público
+    router.push(`/${locale}/creative`);
   };
 
   return (
@@ -51,7 +56,7 @@ export default function RoleSelectionPage() {
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">{t("accountType.title")}</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {/* Artist Card */}
             <button
               onClick={handleSelectArtist}
@@ -85,6 +90,24 @@ export default function RoleSelectionPage() {
               </p>
               <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white/40">
                 <Check size={16} strokeWidth={3} /> {t('aestheticLabels.createAgencyAccount')}
+              </div>
+            </button>
+
+            {/* Creative Card */}
+            <button
+              onClick={handleSelectCreative}
+              className="group border-4 border-black p-8 md:p-12 text-left transition-all bg-white hover:bg-black hover:text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2"
+            >
+              <div className="w-12 h-12 md:w-16 h-16 bg-black flex items-center justify-center text-[#F5E000] mb-8 md:mb-10 group-hover:bg-[#F5E000] group-hover:text-black transition-colors">
+                <Palette size={24} className="md:hidden" strokeWidth={3} />
+                <Palette size={32} className="hidden md:block" strokeWidth={3} />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-4">CREATIVE</h3>
+              <p className="text-sm md:text-base font-bold leading-tight mb-8 opacity-40 uppercase tracking-tight">
+                Not a musician? We are looking for writers, photographers, and fans to join our editorial team.
+              </p>
+              <div className="flex items-center gap-3 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-black group-hover:text-white/40">
+                <Check size={16} strokeWidth={3} /> JOIN THE CULT
               </div>
             </button>
           </div>
