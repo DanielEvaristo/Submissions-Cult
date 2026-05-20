@@ -313,7 +313,9 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   }, [shouldWarnOnExit]);
 
   useEffect(() => {
-    window.history.pushState({ submitGuard: true }, "", window.location.href);
+    if (!window.history.state?.submitGuard) {
+      window.history.pushState({ submitGuard: true }, "", window.location.href);
+    }
 
     const handlePopState = () => {
       if (allowImmediateNavigationRef.current) {
@@ -327,6 +329,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         return;
       }
 
+      // If we blocked it, push the state back so we can block again
       window.history.pushState({ submitGuard: true }, "", window.location.href);
       setPendingNavigationUrl("__BACK__");
       setShowExitIntent(true);
