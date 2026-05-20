@@ -675,6 +675,17 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       {/* ── STEP 1: Details ── */}
       {step === 1 && (
         <div className="space-y-8 animate-reveal">
+          {/* AI Warning */}
+          <div className="p-4 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-4 shadow-[4px_4px_0px_0px_rgba(255,0,0,0.2)]">
+            <AlertCircle size={24} className="text-[#FF0000] shrink-0 mt-1" strokeWidth={3} />
+            <div>
+              <p className="text-sm font-black uppercase tracking-widest text-[#FF0000] mb-1">NO AI MUSIC</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/80 leading-relaxed">
+                WE DO NOT SUPPORT AI-GENERATED ART. ANY TRACK WITH AI PRODUCTION OR AI COVER ART WILL BE IMMEDIATELY REJECTED.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-8">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
