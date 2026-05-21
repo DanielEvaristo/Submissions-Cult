@@ -25,7 +25,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { action, notes, rating, placements, publicationUrl } = body;
+    const { action, notes, rating, placements, publicationUrl, assignedPremiumServices } = body;
 
     if (!["accept", "reject", "publish"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -54,6 +54,7 @@ export async function PATCH(
           masterNotes: notes,
           masterRating: rating,
           placement: placements.join(", "),
+          assignedPremiumServices: assignedPremiumServices || [],
           masterReviewedAt: new Date(),
         },
       });
@@ -115,30 +116,42 @@ export async function PATCH(
 
     // ── Publish ──────────────────────────────────────────────────────────────
     if (action === "publish") {
-      if (submission.status !== "ACCEPTED") {
+      if (submission.status !== "ACCEPTED" && submission.status !== "PUBLISHED") {
         return NextResponse.json({ error: "Submission must be ACCEPTED before publishing" }, { status: 400 });
       }
       if (!publicationUrl) {
         return NextResponse.json({ error: "Publication URL is required" }, { status: 400 });
       }
 
+      const publishType = body.publishType || "regular"; // "regular", "interview", "article"
+      
+      const updateData: any = {
+        status: "PUBLISHED",
+      };
+
+      if (publishType === "interview") {
+        updateData.interviewUrl = publicationUrl;
+      } else if (publishType === "article") {
+        updateData.articleUrl = publicationUrl;
+      } else {
+        updateData.publicationUrl = publicationUrl;
+        updateData.publishedAt = new Date();
+      }
+
       const updated = await prisma.submission.update({
         where: { id },
-        data: {
-          status: "PUBLISHED",
-          publicationUrl,
-          publishedAt: new Date(),
-        },
+        data: updateData,
       });
 
       // Notify the artist (non-blocking)
       const subUser = await prisma.user.findUnique({ where: { id: updated.userId }, select: { email: true } });
       
+      const titleType = publishType === "interview" ? "Interview" : publishType === "article" ? "Article" : "Submission";
       await prisma.notification.create({
         data: {
           userId: updated.userId,
-          title: "Submission Published",
-          message: `Your track "${updated.trackTitle}" has been published!`,
+          title: `${titleType} Published`,
+          message: `Your track "${updated.trackTitle}" has a new ${titleType.toLowerCase()} published!`,
           type: "SUCCESS",
           link: publicationUrl
         }

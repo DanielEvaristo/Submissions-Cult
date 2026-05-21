@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   MessageSquare,
   Send,
-  Link2
+  Link2,
+  Lock
 } from "lucide-react";
 
 type Opportunity = "WEEKLY" | "SPOTIFY" | "WEBRADIO" | "ALBUM_STORY";
@@ -31,7 +32,12 @@ interface QueueItem {
   opportunity: string;
   autoFilledCover: string | null;
   placement: string | null;
+  publicationUrl: string | null;
+  interviewUrl: string | null;
+  articleUrl: string | null;
   masterReviewedAt: string | null;
+  assignedPremiumServices: string[];
+  premiumServicesPaid: boolean;
   user: { name: string | null; email: string | null };
 }
 
@@ -62,6 +68,7 @@ interface Submission {
   status: Status;
   masterCuratorId: string | null;
   channels: string[];
+  premiumServices: string[];
   genres: string[];
   subgenres: string[];
   autoFilledCover: string | null;
@@ -95,6 +102,7 @@ export default function MasterCuratorDashboard() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [queueLoading, setQueueLoading] = useState(false);
   const [publishModalId, setPublishModalId] = useState<string | null>(null);
+  const [publishModalType, setPublishModalType] = useState<"regular" | "interview" | "article">("regular");
   const [publicationUrl, setPublicationUrl] = useState("");
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -103,6 +111,7 @@ export default function MasterCuratorDashboard() {
   const [rating, setRating] = useState<number>(0);
   const [notes, setNotes] = useState<string>("");
   const [selectedPlacements, setSelectedPlacements] = useState<string[]>([]);
+  const [selectedPremium, setSelectedPremium] = useState<string[]>([]);
   const [actionLoading, setActionLoading] = useState<"accept" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,13 +150,32 @@ export default function MasterCuratorDashboard() {
       const res = await fetch(`/api/master/submissions/${publishModalId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "publish", publicationUrl }),
+        body: JSON.stringify({ action: "publish", publicationUrl, publishType: publishModalType }),
       });
       if (!res.ok) {
         const d = await res.json();
         throw new Error(d.error || "Failed to publish");
       }
-      setQueue(prev => prev.filter(q => q.id !== publishModalId));
+
+      // Update the queue item locally with the new URL instead of removing it
+      setQueue(prev => prev.map(q => {
+        if (q.id !== publishModalId) return q;
+
+        // Apply the new URL to the correct field
+        const updated = { ...q };
+        if (publishModalType === "interview") updated.interviewUrl = publicationUrl;
+        else if (publishModalType === "article") updated.articleUrl = publicationUrl;
+        else updated.publicationUrl = publicationUrl;
+
+        // Check if ALL pending publish actions are now complete
+        const regularDone = !!updated.publicationUrl;
+        const interviewDone = !updated.assignedPremiumServices?.includes("INTERVIEW") || !!updated.interviewUrl;
+        const articleDone = !updated.assignedPremiumServices?.includes("ARTICLE") || !!updated.articleUrl;
+
+        // Return null if all done (we'll filter below), else return updated item
+        return (regularDone && interviewDone && articleDone) ? null : updated;
+      }).filter(Boolean) as QueueItem[]);
+
       setPublishModalId(null);
       setPublicationUrl("");
     } catch (err: any) {
@@ -159,24 +187,13 @@ export default function MasterCuratorDashboard() {
 
   // Reset form when selection changes
   useEffect(() => {
-    setRating(0);
-    setNotes("");
-    
-    // Pre-select the placements that the artist paid for
     const sub = submissions.find((s) => s.id === selectedId);
-    if (sub && sub.channels) {
-      // Map the internal channel IDs back to the UI labels
-      const mapping: Record<string, string> = {
-        "RADAR": "Radar",
-        "INTERNET_WAVE": "Internet Wave",
-        "SPOTIFY_PLAYLIST": "Spotify Playlist",
-        "STORIES": "Instagram Stories"
-      };
-      const requested = sub.channels.map(c => mapping[c]).filter(Boolean);
-      setSelectedPlacements(requested);
-    } else {
-      setSelectedPlacements([]);
-    }
+    setRating(sub?.curatorRating || 0);
+    setNotes(sub?.curatorNotes || "");
+    
+    // Always start deselected when loading the submission so the curator can explicitly select what to accept/assign
+    setSelectedPlacements([]);
+    setSelectedPremium([]);
     
     setError(null);
   }, [selectedId, submissions]);
@@ -200,6 +217,11 @@ export default function MasterCuratorDashboard() {
       return;
     }
 
+    if (selectedSub.reviewRequested && notes.trim().length < 50) {
+      setError("A detailed written review (at least 50 characters) is required for this paid review submission.");
+      return;
+    }
+
     if (action === "accept" && selectedPlacements.length === 0) {
       setError("Please select at least one placement to accept.");
       return;
@@ -217,6 +239,7 @@ export default function MasterCuratorDashboard() {
           notes, 
           rating, 
           placements: selectedPlacements,
+          assignedPremiumServices: selectedPremium,
           status: action === "accept" ? "ACCEPTED" : "REJECTED"
         })
       });
@@ -362,12 +385,58 @@ export default function MasterCuratorDashboard() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => { setPublishModalId(item.id); setPublicationUrl(""); setPublishError(null); }}
-                    className="mt-4 w-full py-3 bg-[#F5E000] text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2"
-                  >
-                    <Send size={12} strokeWidth={3} /> MARK AS PUBLISHED
-                  </button>
+                  <div className="flex flex-col gap-2 mt-4">
+                    {/* Regular Publication */}
+                    {!item.publicationUrl && (
+                      <button
+                        onClick={() => { setPublishModalId(item.id); setPublishModalType("regular"); setPublicationUrl(""); setPublishError(null); }}
+                        className="w-full py-3 bg-[#F5E000] text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <Send size={12} strokeWidth={3} /> PUBLISH REGULAR
+                      </button>
+                    )}
+
+                    {/* Interview */}
+                    {item.assignedPremiumServices?.includes("INTERVIEW") && !item.interviewUrl && (
+                      item.premiumServicesPaid ? (
+                        <button
+                          onClick={() => { setPublishModalId(item.id); setPublishModalType("interview"); setPublicationUrl(""); setPublishError(null); }}
+                          className="w-full py-3 bg-white text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-[#F5E000] transition-all flex items-center justify-center gap-2"
+                        >
+                          <Send size={12} strokeWidth={3} /> PUBLISH INTERVIEW
+                        </button>
+                      ) : (
+                        <div className="w-full py-3 bg-[#FF0000]/10 text-[#FF0000] border border-[#FF0000]/20 font-sans font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                          <Lock size={12} strokeWidth={3} /> INTERVIEW PENDING PAYMENT
+                        </div>
+                      )
+                    )}
+
+                    {/* Article */}
+                    {item.assignedPremiumServices?.includes("ARTICLE") && !item.articleUrl && (
+                      item.premiumServicesPaid ? (
+                        <button
+                          onClick={() => { setPublishModalId(item.id); setPublishModalType("article"); setPublicationUrl(""); setPublishError(null); }}
+                          className="w-full py-3 bg-white text-black font-sans font-black text-[10px] uppercase tracking-widest hover:bg-[#F5E000] transition-all flex items-center justify-center gap-2"
+                        >
+                          <Send size={12} strokeWidth={3} /> PUBLISH ARTICLE
+                        </button>
+                      ) : (
+                        <div className="w-full py-3 bg-[#FF0000]/10 text-[#FF0000] border border-[#FF0000]/20 font-sans font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                          <Lock size={12} strokeWidth={3} /> ARTICLE PENDING PAYMENT
+                        </div>
+                      )
+                    )}
+
+                    {/* If all published */}
+                    {item.publicationUrl && 
+                     (!item.assignedPremiumServices?.includes("INTERVIEW") || item.interviewUrl) &&
+                     (!item.assignedPremiumServices?.includes("ARTICLE") || item.articleUrl) && (
+                      <div className="w-full py-3 bg-green-400/10 text-green-400 border border-green-400/20 font-sans font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                        <CheckCircle2 size={12} strokeWidth={3} /> ALL PUBLISHED
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))
             )
@@ -536,27 +605,111 @@ export default function MasterCuratorDashboard() {
                     {/* Multi-Placement Selection */}
                     <div>
                       <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-white/60">ASSIGN_PLACEMENTS *</label>
-                      <div className="grid grid-cols-2 gap-4">
-                        {["Radar", "Internet Wave", "Spotify Playlist", "Instagram Stories"].map(p => (
-                          <label key={p} className={`flex items-center gap-3 p-4 border-2 border-white/10 cursor-pointer transition-all ${selectedPlacements.includes(p) ? 'bg-[#F5E000] text-black' : 'bg-black text-white hover:bg-white/5'}`}>
-                            <input 
-                              type="checkbox" 
-                              checked={selectedPlacements.includes(p)}
-                              onChange={(e) => {
-                                if (e.target.checked) setSelectedPlacements(prev => [...prev, p]);
-                                else setSelectedPlacements(prev => prev.filter(x => x !== p));
+                      <div className="grid grid-cols-2 gap-3">
+                        {["Radar", "Internet Wave", "Spotify Playlist", "Instagram Stories"].map(p => {
+                          const CHANNEL_MAP: Record<string, string> = {
+                            "RADAR": "Radar",
+                            "INTERNET_WAVE": "Internet Wave",
+                            "SPOTIFY_PLAYLIST": "Spotify Playlist",
+                            "STORIES": "Instagram Stories"
+                          };
+                          const isRequested = selectedSub?.channels
+                            ? selectedSub.channels.map(c => CHANNEL_MAP[c]).filter(Boolean).includes(p)
+                            : false;
+                          const isChecked = selectedPlacements.includes(p);
+
+                          return (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() => {
+                                if (isChecked) setSelectedPlacements(prev => prev.filter(x => x !== p));
+                                else setSelectedPlacements(prev => [...prev, p]);
                               }}
-                              className="w-5 h-5 border-2 border-white/20 rounded-none appearance-none checked:bg-black"
-                            />
-                            <span className="font-sans text-[10px] font-black uppercase tracking-widest">{p}</span>
-                          </label>
-                        ))}
+                              className={`flex items-center justify-between gap-3 p-4 border-2 transition-all text-left ${
+                                isChecked
+                                  ? 'bg-[#F5E000] text-black border-[#F5E000]'
+                                  : isRequested
+                                  ? 'bg-black text-[#F5E000] border-[#F5E000] border-dashed hover:border-solid hover:border-[#F5E000]'
+                                  : 'bg-black text-white/40 border-white/10 hover:border-white/30'
+                              }`}
+                            >
+                              <span className="font-sans text-[10px] font-black uppercase tracking-widest leading-tight">
+                                {p}
+                                {isRequested && !isChecked && (
+                                  <span className="block text-[8px] mt-0.5 text-[#F5E000]/70">⚠ ARTISTA SOLICITÓ ESTO</span>
+                                )}
+                                {isRequested && isChecked && (
+                                  <span className="block text-[8px] mt-0.5 opacity-50">SOLICITADO ✓</span>
+                                )}
+                              </span>
+                              <CheckCircle2
+                                size={18}
+                                strokeWidth={3}
+                                className={isChecked ? 'text-black shrink-0' : isRequested ? 'text-[#F5E000]/40 shrink-0' : 'text-white/10 shrink-0'}
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Premium PR Selection */}
+                    <div>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-white/60">ASSIGN_PREMIUM_PR (OPTIONAL)</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {["INTERVIEW", "ARTICLE"].map(p => {
+                          const isRequested = selectedSub?.premiumServices
+                            ? selectedSub.premiumServices.includes(p)
+                            : false;
+                          const isChecked = selectedPremium.includes(p);
+                          // Master can only assign what the artist requested
+                          const isDisabled = !isRequested;
+
+                          return (
+                            <button
+                              key={p}
+                              type="button"
+                              disabled={isDisabled}
+                              onClick={() => {
+                                if (isChecked) setSelectedPremium(prev => prev.filter(x => x !== p));
+                                else setSelectedPremium(prev => [...prev, p]);
+                              }}
+                              className={`flex items-center justify-between gap-3 p-4 border-2 transition-all text-left ${
+                                isDisabled
+                                  ? 'bg-black/40 text-white/20 border-white/5 cursor-not-allowed'
+                                  : isChecked
+                                  ? 'bg-[#F5E000] text-black border-[#F5E000]'
+                                  : 'bg-black text-[#F5E000] border-[#F5E000] border-dashed hover:border-solid'
+                              }`}
+                            >
+                              <span className="font-sans text-[10px] font-black uppercase tracking-widest leading-tight">
+                                {p}
+                                {isRequested && isChecked && <span className="block text-[8px] mt-0.5 opacity-50">SOLICITADO ✓</span>}
+                                {isRequested && !isChecked && <span className="block text-[8px] mt-0.5 text-[#F5E000]/70">⚠ ARTISTA SOLICITÓ ESTO</span>}
+                                {isDisabled && <span className="block text-[8px] mt-0.5">NO SOLICITADO</span>}
+                              </span>
+                              <CheckCircle2
+                                size={18}
+                                strokeWidth={3}
+                                className={isChecked ? 'text-black shrink-0' : isDisabled ? 'text-white/10 shrink-0' : 'text-[#F5E000]/40 shrink-0'}
+                              />
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-white/60" htmlFor="masterNotes">Final Editorial Thoughts (Optional)</label>
+                      <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-white/60" htmlFor="masterNotes">
+                        {selectedSub.reviewRequested ? "Final Review (Sent to Artist) *" : "Final Editorial Thoughts (Optional)"}
+                      </label>
+                      {selectedSub.reviewRequested && (
+                        <div className="mb-4 p-4 border border-[#F5E000]/50 bg-[#F5E000]/10 text-[#F5E000] text-[10px] font-sans uppercase tracking-widest font-bold">
+                          REQUIRED: The artist paid for a detailed review. You can edit the L1 Curator's review below or leave it as is. This text will be sent to the artist. (Minimum 50 characters)
+                        </div>
+                      )}
                       <textarea
                         id="masterNotes"
                         className="w-full p-6 bg-white/5 border-2 border-white/10 focus:border-[#F5E000] focus:outline-none font-sans text-sm font-bold uppercase tracking-tight min-h-[120px] transition-all text-white"
@@ -721,8 +874,13 @@ function SubmissionItem({
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-3">
             {sub.reviewRequested && (
-              <span className="text-[8px] font-black uppercase border border-black px-1 py-0.5 bg-white text-black">
-                DETAILED REVIEW
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#F5E000] text-black">
+                ✍ DETAILED REVIEW
+              </span>
+            )}
+            {sub.premiumServices?.length > 0 && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-white text-black">
+                🎙️ PREMIUM PR REQ.
               </span>
             )}
             <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 border ${selected ? 'bg-black text-[#F5E000] border-black' : 'bg-[#F5E000] text-black border-black'}`}>
@@ -848,6 +1006,11 @@ function PriorityItem({
             {sub.reviewRequested && (
               <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#F5E000] text-black">
                 ✍ DETAILED REVIEW
+              </span>
+            )}
+            {sub.premiumServices?.length > 0 && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-white text-black">
+                🎙️ PREMIUM PR REQ.
               </span>
             )}
           </div>

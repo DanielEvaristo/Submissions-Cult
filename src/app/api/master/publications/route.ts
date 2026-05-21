@@ -13,7 +13,21 @@ export async function GET() {
 
   try {
     const queue = await prisma.submission.findMany({
-      where: { status: "ACCEPTED" },
+      where: {
+        OR: [
+          // Accepted but not yet published at all
+          { status: "ACCEPTED" },
+          // Published regular but still needs interview URL
+          {
+            status: "PUBLISHED",
+            assignedPremiumServices: { hasSome: ["INTERVIEW", "ARTICLE"] },
+            OR: [
+              { interviewUrl: null, assignedPremiumServices: { has: "INTERVIEW" } },
+              { articleUrl: null, assignedPremiumServices: { has: "ARTICLE" } },
+            ],
+          },
+        ],
+      },
       orderBy: { masterReviewedAt: "asc" },
       select: {
         id: true,
@@ -26,7 +40,12 @@ export async function GET() {
         streamingUrl: true,
         submittedAt: true,
         placement: true,
+        publicationUrl: true,
+        interviewUrl: true,
+        articleUrl: true,
         masterReviewedAt: true,
+        assignedPremiumServices: true,
+        premiumServicesPaid: true,
         user: {
           select: {
             name: true,

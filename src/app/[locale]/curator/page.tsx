@@ -60,6 +60,7 @@ interface Submission {
   fastTrackDeadline: string | null;
   reviewRequested: boolean;
   isMultiChannel: boolean;
+  premiumServices: string[];
   submittedAt: string;
   curatorNotes: string | null;
   curatorRating: number | null;
@@ -143,6 +144,11 @@ export default function CuratorDashboard() {
     
     if ((action === "approve" || action === "reject") && rating === 0) {
       setError("Please provide a rating from 1 to 5 stars.");
+      return;
+    }
+
+    if ((action === "approve" || action === "reject") && selectedSub.reviewRequested && notes.trim().length < 50) {
+      setError("A detailed written review (at least 50 characters) is required for this paid review submission.");
       return;
     }
 
@@ -449,7 +455,14 @@ export default function CuratorDashboard() {
 
                       {/* Notes */}
                       <div>
-                        <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4" htmlFor="curatorNotes">Internal Editorial Notes</label>
+                        <label className="block font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4" htmlFor="curatorNotes">
+                          {selectedSub.reviewRequested ? "Detailed Review (Required) *" : "Internal Editorial Notes"}
+                        </label>
+                        {selectedSub.reviewRequested && (
+                          <div className="mb-4 p-4 border border-[#F5E000]/50 bg-[#F5E000]/10 text-[#F5E000] text-[10px] font-sans uppercase tracking-widest font-bold">
+                            REQUIRED: The artist paid for a detailed review. Please write constructive feedback, explaining your rating, what you liked, and what could be improved. (Minimum 50 characters)
+                          </div>
+                        )}
                         <textarea
                           id="curatorNotes"
                           className="w-full p-6 bg-[#F5F5F5] border-2 border-black focus:bg-white focus:outline-none font-sans text-sm font-bold uppercase tracking-tight min-h-[160px] transition-all text-black placeholder:text-black/30"
@@ -581,8 +594,13 @@ function SubmissionItem({
           </p>
           <div className="flex items-center gap-2 mt-3">
             {sub.reviewRequested && (
-              <span className="text-[8px] font-black uppercase border border-black px-1 py-0.5 bg-white text-black">
-                REVIEW REQUIRED
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#F5E000] text-black">
+                ✍ DETAILED REVIEW
+              </span>
+            )}
+            {sub.premiumServices?.length > 0 && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-white text-black">
+                🎙️ PREMIUM PR REQ.
               </span>
             )}
             <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 border ${selected ? 'bg-black text-[#F5E000] border-black' : 'bg-[#F5E000] text-black border-black'}`}>
@@ -708,6 +726,11 @@ function PriorityItem({
             {sub.reviewRequested && (
               <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#F5E000] text-black">
                 ✍ DETAILED REVIEW
+              </span>
+            )}
+            {sub.premiumServices?.length > 0 && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-white text-black">
+                🎙️ PREMIUM PR REQ.
               </span>
             )}
           </div>

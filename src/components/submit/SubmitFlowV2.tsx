@@ -15,15 +15,20 @@ import {
   Heart,
 } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
+import { GENRES } from "@/lib/genres";
+import {
+  type PremiumService,
+  type Channel,
+  type SubmissionType,
+  calculateCredits,
+  creditPackPrice,
+  ALL_CHANNELS,
+} from "@/lib/pricing";
 
 export interface ManagedArtistRef {
   id: string;
   artistName: string;
 }
-
-type SubmissionType = "SINGLE" | "EP" | "ALBUM";
-type Channel = "RADAR" | "INTERNET_WAVE" | "SPOTIFY_PLAYLIST" | "STORIES";
-type PremiumService = "INTERVIEW" | "ARTICLE";
 
 interface FormData {
   managedArtistId: string;
@@ -64,9 +69,6 @@ const INITIAL: FormData = {
   reviewRequested: false,
   premiumServices: [],
 };
-
-import { GENRES } from "@/lib/genres";
-
 interface SubmitFlowV2Props {
   managedArtists?: ManagedArtistRef[];
   basePath: string;
@@ -143,19 +145,18 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  // Pricing Logic
-  const baseCredits = form.submissionType === "ALBUM" ? 2 : form.submissionType === "EP" ? 1 : 0;
-  const channelCredits = form.applyAllChannels ? 1 : 0;
-  const fastTrackCredits = form.fastTrack ? 1 : 0;
-  const reviewCredits = form.reviewRequested ? 1 : 0;
-  
-  const totalCreditsNeeded = baseCredits + channelCredits + fastTrackCredits + reviewCredits;
-  
-  const interviewCost = form.premiumServices.includes("INTERVIEW") ? 30 : 0;
-  const articleCost = form.premiumServices.includes("ARTICLE") ? 25 : 0;
-  const totalUsdNeeded = 0; // Premium Services are now paid post-approval
+  // ── Pricing (from shared lib) ────────────────────────────────────────────
+  const credits = calculateCredits(
+    form.submissionType,
+    form.applyAllChannels,
+    form.fastTrack,
+    form.reviewRequested
+  );
+  const totalCreditsNeeded = credits.total;
+  // Premium services (INTERVIEW/ARTICLE) are billed post-acceptance, not now
+  const totalUsdNeeded = 0;
   const [dbCredits, setDbCredits] = useState<number | null>(null);
-  
+
   useEffect(() => {
     fetch("/api/user/balance")
       .then(res => res.json())
@@ -169,26 +170,17 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   }, []);
 
   const currentCredits = dbCredits ?? session?.user?.credits ?? 0;
-  const isFreeFlow = totalCreditsNeeded === 0 && totalUsdNeeded === 0;
+  const isFreeFlow = totalCreditsNeeded === 0;
   const hasEnoughCredits = currentCredits >= totalCreditsNeeded;
   const canPayWithCredits = totalCreditsNeeded > 0 && hasEnoughCredits;
 
-  const getCreditUsdValue = (credits: number) => {
-    if (credits <= 0) return 0;
-    if (credits === 1) return 1;
-    if (credits >= 20) return 12; // 20 credits = $12
-    if (credits >= 10) return 7;  // 10 credits = $7
-    if (credits >= 5) return 4;   // 5 credits = $4
-    return credits; // 2, 3, 4 = $2, $3, $4
-  };
-
-  const creditUsdTotal = getCreditUsdValue(totalCreditsNeeded);
-
-
   const draftStorageKey = `submit-flow-draft:${basePath}:${locale}`;
-  const discountedCreditUsdTotal = retentionDiscountApplied ? getCreditUsdValue(totalCreditsNeeded) * 0.5 : creditUsdTotal;
-  const finalDisplayUsd = discountedCreditUsdTotal + totalUsdNeeded;
-  const hasPricedSelections = totalCreditsNeeded > 0 || totalUsdNeeded > 0 || includeDonation;
+  const baseCreditPrice = creditPackPrice(totalCreditsNeeded);
+  const discountedCreditUsdTotal = retentionDiscountApplied
+    ? baseCreditPrice * 0.5
+    : baseCreditPrice;
+  const hasPricedSelections = totalCreditsNeeded > 0 || includeDonation;
+  const finalDisplayUsd = discountedCreditUsdTotal;
   const hasDraftContent =
     !!form.streamingUrl ||
     !!form.trackTitle ||
@@ -453,7 +445,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         genre: form.genre,
         subgenre: form.subgenre || null,
         releaseType: form.submissionType,
-        channels: form.applyAllChannels ? ["RADAR", "INTERNET_WAVE", "SPOTIFY_PLAYLIST", "STORIES"] : form.channels,
+        channels: form.applyAllChannels ? ALL_CHANNELS : form.channels,
         fastTrack: form.fastTrack,
         reviewRequested: form.reviewRequested,
         premiumServices: form.premiumServices,
@@ -519,13 +511,6 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           name: `${totalCreditsNeeded} SUBMISSION CREDITS`, 
           priceCents: Math.round(discountedCreditUsdTotal * 100) 
         });
-      }
-
-      if (form.premiumServices.includes("INTERVIEW")) {
-        items.push({ name: "EXCLUSIVE INTERVIEW", priceCents: 3000 });
-      }
-      if (form.premiumServices.includes("ARTICLE")) {
-        items.push({ name: "DEDICATED ARTICLE", priceCents: 2500 });
       }
 
       // If it's a donation
@@ -627,8 +612,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
             ) : (
               <div className="flex flex-col">
                 <span className="text-white font-black uppercase text-2xl tracking-tighter leading-none">
-                  {totalCreditsNeeded > 0 && `${totalCreditsNeeded} CREDITS`}
-                  {totalUsdNeeded > 0 && (totalCreditsNeeded > 0 ? ` + $${totalUsdNeeded}` : `$${totalUsdNeeded}`)}
+                  {totalCreditsNeeded} CREDITS
                 </span>
                 <span className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">
                   CURRENT TOTAL
@@ -951,35 +935,48 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
             </p>
           </div>
 
+          <div className="mb-8 p-6 border-2 border-[#F5E000]/50 bg-[#F5E000]/10 text-[#F5E000]">
+            <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Zap size={16}/> NO UPFRONT PAYMENT REQUIRED</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed text-[#F5E000]/80">
+              If you select an Interview or Article, you will not be charged today. If your track is accepted by our Master Curator for these premium features, you will receive a notification and a payment link in your artist portal to proceed.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <button onClick={() => {
-                const arr: PremiumService[] = form.premiumServices.includes("INTERVIEW") 
-                  ? form.premiumServices.filter((s): s is PremiumService => s !== "INTERVIEW") 
-                  : [...form.premiumServices, "INTERVIEW"];
-                set("premiumServices", arr);
+                setForm(prev => {
+                  const has = prev.premiumServices.includes("INTERVIEW");
+                  const arr: PremiumService[] = has
+                    ? (prev.premiumServices.filter((s): s is PremiumService => s !== "INTERVIEW"))
+                    : [...prev.premiumServices, "INTERVIEW"];
+                  return { ...prev, premiumServices: arr };
+                });
               }}
               className={`p-8 border-4 text-left transition-all ${
-                form.premiumServices.includes("INTERVIEW") ? "bg-white text-black border-white" : "bg-black text-white border-white/10"
+                form.premiumServices.includes("INTERVIEW") ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white/40"
               }`}>
               <Mic size={32} className="mb-4" />
               <p className="text-2xl font-black uppercase tracking-tighter">EXCLUSIVE INTERVIEW</p>
               <p className="text-xs font-bold opacity-60 mt-2">Full Q&A published on Cult Machine.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">REQUEST ($30 USD LATER)</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$30 USD (PAY IF ACCEPTED)</p>
             </button>
 
             <button onClick={() => {
-                const arr: PremiumService[] = form.premiumServices.includes("ARTICLE") 
-                  ? form.premiumServices.filter((s): s is PremiumService => s !== "ARTICLE") 
-                  : [...form.premiumServices, "ARTICLE"];
-                set("premiumServices", arr);
+                setForm(prev => {
+                  const has = prev.premiumServices.includes("ARTICLE");
+                  const arr: PremiumService[] = has
+                    ? (prev.premiumServices.filter((s): s is PremiumService => s !== "ARTICLE"))
+                    : [...prev.premiumServices, "ARTICLE"];
+                  return { ...prev, premiumServices: arr };
+                });
               }}
               className={`p-8 border-4 text-left transition-all ${
-                form.premiumServices.includes("ARTICLE") ? "bg-white text-black border-white" : "bg-black text-white border-white/10"
+                form.premiumServices.includes("ARTICLE") ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white/40"
               }`}>
               <FileText size={32} className="mb-4" />
               <p className="text-2xl font-black uppercase tracking-tighter">DEDICATED ARTICLE</p>
               <p className="text-xs font-bold opacity-60 mt-2">Professional editorial review.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">REQUEST ($25 USD LATER)</p>
+              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$25 USD (PAY IF ACCEPTED)</p>
             </button>
           </div>
         </div>
@@ -993,12 +990,12 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           <div className="space-y-4 mb-8">
             <div className="flex justify-between items-center border-b border-white/5 pb-4">
               <span className="font-bold text-sm uppercase opacity-70">TRACK TYPE ({form.submissionType})</span>
-              <span className="font-black">{baseCredits > 0 ? `${baseCredits} CRD` : 'FREE'}</span>
+              <span className="font-black">{credits.base > 0 ? `${credits.base} CRD` : 'FREE'}</span>
             </div>
             
             <div className="flex justify-between items-center border-b border-white/5 pb-4">
               <span className="font-bold text-sm uppercase opacity-70">CHANNELS ({form.applyAllChannels ? 'ALL' : 'SINGLE'})</span>
-              <span className="font-black">{channelCredits > 0 ? `+${channelCredits} CRD` : 'FREE'}</span>
+              <span className="font-black">{credits.channels > 0 ? `+${credits.channels} CRD` : 'FREE'}</span>
             </div>
 
             {form.fastTrack && (
@@ -1018,33 +1015,22 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
             {form.premiumServices.map(s => (
               <div key={s} className="flex justify-between items-center border-b border-white/5 pb-4">
                 <span className="font-bold text-sm uppercase opacity-70">{s} SERVICE</span>
-                <span className="font-black text-cult-yellow text-xs">REQUESTED (PAY IF APPROVED)</span>
+                <span className="font-black text-[#F5E000]">PAY IF ACCEPTED</span>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-between items-center p-6 bg-white/5 border-2 border-white/10 mb-8">
+          <div className="flex items-center p-6 bg-white/5 border-2 border-white/10 mb-8">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">FINAL TOTAL</p>
               {retentionDiscountApplied && totalCreditsNeeded > 0 && (
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#F5E000] mb-2">EXIT OFFER APPLIED: 50% OFF CREDITS</p>
               )}
               <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-white">
-                {totalCreditsNeeded === 0 && totalUsdNeeded === 0 ? "FREE" : (
-                  <>
-                    {totalCreditsNeeded > 0 && `${totalCreditsNeeded} CRD`}
-                    {totalCreditsNeeded > 0 && totalUsdNeeded > 0 && " + "}
-                    {totalUsdNeeded > 0 && `$${totalUsdNeeded} USD`}
-                  </>
-                )}
+                {totalCreditsNeeded > 0 ? `${totalCreditsNeeded} CRD` : 'FREE'}
               </h3>
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#00FF00] mb-1">EQUIVALENT</p>
-              <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-[#00FF00]">
-                ${finalDisplayUsd} USD
-              </h3>
-            </div>
+
           </div>
 
           <div className="p-6 border-4 border-dashed border-white/10 bg-black/20">

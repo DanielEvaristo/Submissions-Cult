@@ -360,6 +360,9 @@ model Submission {
   premiumServices String[] // e.g. ["INTERVIEW", "ARTICLE"]
   premiumPrStatus PremiumPrStatus @default(NONE)
   premiumPaymentLink String?
+  assignedPremiumServices String[] @default([]) // e.g. ["INTERVIEW", "ARTICLE"]
+  premiumServicesPaid     Boolean  @default(false)
+  premiumPaymentIntentId  String?
   totalCostUsd    Int      @default(0) // cost in cents if paid via Stripe
 
   // Auto-fill metadata from streaming URL (populated server-side after URL parse)
@@ -385,6 +388,8 @@ model Submission {
   masterRating     Int? // 1-5 stars
   placement        String?
   publicationUrl   String?  // link to the published placement (Instagram, etc.)
+  interviewUrl     String?  // link to the published interview
+  articleUrl       String?  // link to the published article
   publishedAt      DateTime?
   masterReviewedAt DateTime?
 

@@ -112,6 +112,15 @@ export async function POST(req: Request) {
           premiumPrStatus: "PAID",
         },
       });
+    } else if (type === "premium_service" && submissionId) {
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          premiumServicesPaid: true,
+          premiumPaymentIntentId: session.payment_intent as string,
+        },
+      });
+      console.log("[STRIPE WEBHOOK] Premium services paid for submission:", submissionId);
     }
   }
 

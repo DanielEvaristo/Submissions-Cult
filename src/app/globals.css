@@ -105,12 +105,24 @@
   }
 }
 
-/* Force Ko-Fi widget to not overlap mobile bottom nav */
+/* Move Ko-Fi widget to the bottom-right on all viewports to avoid overlapping left-aligned nav elements */
+.floatingchat-container-wrap,
+.floatingchat-container-wrap-mobi,
+.floating-chat-kofi-popup-iframe,
+.floating-chat-kofi-popup-iframe-mobi,
+div[id^="kofi-widget-overlay"],
+iframe[src*="ko-fi"] {
+  left: unset !important;
+  right: 24px !important;
+}
+
+/* Force Ko-Fi widget to not overlap mobile bottom nav on small viewports */
 @media (max-width: 1024px) {
   .floatingchat-container-mobi,
   .floatingchat-container-wrap-mobi,
   div[id^="kofi-widget-overlay"],
   iframe[src*="ko-fi"] {
     bottom: 100px !important;
+    right: 16px !important;
   }
 }

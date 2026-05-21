@@ -29,10 +29,15 @@ interface Submission {
   submittedAt: string;
   placement: string | null;
   publicationUrl: string | null;
+  interviewUrl: string | null;
+  articleUrl: string | null;
   publishedAt: string | null;
   masterNotes: string | null;
+  masterRating: number | null;
   curatorNotes: string | null;
   curatorRating: number | null;
+  assignedPremiumServices: string[];
+  premiumServicesPaid: boolean;
 }
 
 const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;
@@ -53,6 +58,29 @@ export default function SubmissionsPage() {
   const [hasPaidActivity, setHasPaidActivity] = useState(false);
   const [isEmailGracePeriodExpired, setIsEmailGracePeriodExpired] = useState(false);
   const [accessLoading, setAccessLoading] = useState(true);
+  const [payLoading, setPayLoading] = useState<string | null>(null);
+
+  const handlePayPremium = async (submissionId: string) => {
+    setPayLoading(submissionId);
+    try {
+      const res = await fetch("/api/checkout/premium", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        alert(data.error);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to initiate payment");
+    } finally {
+      setPayLoading(null);
+    }
+  };
 
   useEffect(() => {
     const fetchAccess = async () => {
@@ -299,7 +327,8 @@ export default function SubmissionsPage() {
                         </div>
                       )}
                     </div>
-                    {sub.status === "PUBLISHED" && sub.publicationUrl && (
+                    {/* Publication link - only when URL is present */}
+                    {sub.publicationUrl && (
                       <a
                         href={sub.publicationUrl}
                         target="_blank"
@@ -307,6 +336,28 @@ export default function SubmissionsPage() {
                         className="px-4 py-2 bg-[#00CC66] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"
                       >
                         <ExternalLink size={12} strokeWidth={3} /> VER PUBLICACIÓN
+                      </a>
+                    )}
+                    {/* Interview link - only when published */}
+                    {sub.interviewUrl && (
+                      <a
+                        href={sub.interviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-[#00CC66] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"
+                      >
+                        <ExternalLink size={12} strokeWidth={3} /> VER ENTREVISTA
+                      </a>
+                    )}
+                    {/* Article link - only when published */}
+                    {sub.articleUrl && (
+                      <a
+                        href={sub.articleUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-[#00CC66] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"
+                      >
+                        <ExternalLink size={12} strokeWidth={3} /> VER ARTÍCULO
                       </a>
                     )}
                     <span className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
@@ -322,6 +373,61 @@ export default function SubmissionsPage() {
                       <ExternalLink size={18} strokeWidth={3} />
                     </a>
                   </div>
+
+                  {/* Premium Services Payment Section */}
+                  {(sub.status === "ACCEPTED" || sub.status === "PUBLISHED") && sub.assignedPremiumServices?.length > 0 && (
+                    <div className="col-span-1 sm:col-span-4 mt-4 p-6 border-l-4 border-[#00CC66] bg-[#00CC66]/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div>
+                        <p className="font-sans text-[10px] font-black uppercase tracking-widest text-[#00CC66] mb-1">
+                          PREMIUM PR ACCEPTED
+                        </p>
+                        <p className="font-sans text-xs font-bold text-white/80">
+                          Your track was accepted for {sub.assignedPremiumServices.join(" and ")}.
+                        </p>
+                      </div>
+                      {sub.premiumServicesPaid ? (
+                        <span className="px-6 py-3 bg-[#00CC66] text-black font-black uppercase text-[10px] tracking-widest">
+                          PAID & ACTIVE
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handlePayPremium(sub.id)}
+                          disabled={payLoading === sub.id}
+                          className="px-6 py-3 bg-[#00CC66] text-black font-black uppercase text-[10px] tracking-widest hover:bg-white transition-all flex items-center gap-2"
+                        >
+                          {payLoading === sub.id ? <Loader2 size={14} className="animate-spin" /> : null}
+                          PAY TO UNLOCK
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Curator Review Section */}
+                  {(() => {
+                    const isTerminal = sub.status === "ACCEPTED" || sub.status === "PUBLISHED" || sub.status === "REJECTED" || sub.status === "CURATOR_REJECTED";
+                    const finalNotes = sub.masterNotes || sub.curatorNotes;
+                    const finalRating = sub.masterRating ?? sub.curatorRating;
+                    
+                    if (!isTerminal || (!finalNotes && !finalRating)) return null;
+
+                    return (
+                      <div className="col-span-1 sm:col-span-4 mt-4 p-6 border-l-4 border-[#F5E000] bg-white/5">
+                        <p className="font-sans text-[10px] font-black uppercase tracking-widest text-[#F5E000] mb-3">FINAL REVIEW</p>
+                        {finalRating && (
+                          <div className="flex gap-1 mb-3">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg key={star} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={finalRating >= star ? "#F5E000" : "none"} stroke={finalRating >= star ? "#F5E000" : "rgba(255,255,255,0.2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                              </svg>
+                            ))}
+                          </div>
+                        )}
+                        {finalNotes && (
+                          <p className="font-sans text-sm font-bold text-white/80 whitespace-pre-wrap leading-relaxed">{finalNotes}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

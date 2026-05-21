@@ -254,10 +254,15 @@ export async function GET(req: NextRequest) {
         submittedAt: true,
         placement: true,
         publicationUrl: true,
+        interviewUrl: true,
+        articleUrl: true,
         publishedAt: true,
         masterNotes: true,
+        masterRating: true,
         curatorNotes: true,
         curatorRating: true,
+        assignedPremiumServices: true,
+        premiumServicesPaid: true,
         managedArtist: {
           select: {
             artistName: true,
