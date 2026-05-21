@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { assertVerifiedIndustry } from "@/lib/industry-access";
 
 // ─── GET /api/industry/artists ───
 export async function GET(req: NextRequest) {
@@ -13,6 +14,11 @@ export async function GET(req: NextRequest) {
 
   if (session.user.accountType !== "INDUSTRY") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const industryBlock = assertVerifiedIndustry(session.user);
+  if (industryBlock) {
+    return NextResponse.json({ error: industryBlock }, { status: 403 });
   }
 
   try {
@@ -38,6 +44,11 @@ export async function POST(req: NextRequest) {
 
   if (session.user.accountType !== "INDUSTRY") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const industryBlock = assertVerifiedIndustry(session.user);
+  if (industryBlock) {
+    return NextResponse.json({ error: industryBlock }, { status: 403 });
   }
 
   try {

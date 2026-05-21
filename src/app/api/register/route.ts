@@ -3,10 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { AccountType, RoleType, LabelStatus } from "@prisma/client";
 import { sendVerificationEmail, sendIndustryWelcomeEmail } from "@/lib/emails";
-
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { generateOTP } from "@/lib/otp";
 
 export async function POST(req: NextRequest) {
   try {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import { sendSubmissionConfirmationEmail } from "@/lib/emails";
 import { ALL_CHANNELS, calculateCredits } from "@/lib/pricing";
+import { assertVerifiedIndustry } from "@/lib/industry-access";
 
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -122,8 +123,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        accountType: true,
+        isVerifiedLabel: true,
+        credits: true,
+        monthlyListeners: true,
+        instagramFollowers: true,
+      },
+    });
+
     const isIndustry = dbUser?.accountType === "INDUSTRY";
+    if (isIndustry) {
+      const industryBlock = assertVerifiedIndustry(dbUser);
+      if (industryBlock) {
+        return NextResponse.json({ error: industryBlock }, { status: 403 });
+      }
+    }
     const unqualifiedRanges = ["UNDER_1K", "FROM_1K_TO_10K"];
     const qualifiesForPremium = isIndustry || (
       dbUser && 
@@ -163,6 +180,21 @@ export async function POST(req: NextRequest) {
     }
 
     const creditsToDeduct = useCredits ? expectedCredits : 0;
+
+    let resolvedManagedArtistId: string | null = null;
+    if (session.user.accountType === "INDUSTRY" && managedArtistId) {
+      const ownedArtist = await prisma.managedArtist.findFirst({
+        where: {
+          id: managedArtistId,
+          industryUserId: session.user.id,
+        },
+        select: { id: true },
+      });
+      if (!ownedArtist) {
+        return NextResponse.json({ error: "Invalid managed artist" }, { status: 403 });
+      }
+      resolvedManagedArtistId = ownedArtist.id;
+    }
 
     // Use a transaction for credit deduction and submission creation
     const submission = await prisma.$transaction(async (tx) => {
@@ -211,7 +243,7 @@ export async function POST(req: NextRequest) {
           autoFilledArtist: autoFilledArtist ?? null,
           autoFilledCover: autoFilledCover ?? null,
           autoFillSource: autoFillSource ?? null,
-          managedArtistId: session.user.accountType === "INDUSTRY" ? (managedArtistId || null) : null,
+          managedArtistId: resolvedManagedArtistId,
           isFree: !useCredits,
           creditsUsed: useCredits ? creditsToDeduct : 0,
           curatorId: assignedCuratorId,

@@ -114,25 +114,47 @@ export const authOptions: AuthOptions = {
         if (userId) {
           if (token.userType === "ADMIN") {
             const admin = await prisma.admin.findUnique({ where: { id: userId } });
-            if (admin) {
-              token.name = admin.name;
+            if (!admin) {
+              token.isAdmin = false;
+              token.isCurator = false;
+              token.isMasterCurator = false;
+              return token;
             }
+            token.name = admin.name;
+            token.isAdmin = admin.role === "SUPER_ADMIN";
+            token.isCurator =
+              admin.role === "CURATOR" ||
+              admin.role === "SUPER_ADMIN" ||
+              admin.role === "MASTER_CURATOR";
+            token.isMasterCurator =
+              admin.role === "MASTER_CURATOR" || admin.role === "SUPER_ADMIN";
           } else {
             const dbUser = await prisma.user.findUnique({ where: { id: userId } });
-            if (dbUser) {
-              token.name = dbUser.name;
-              token.artistName = dbUser.artistName;
-              token.legalName = dbUser.legalName;
-              token.credits = dbUser.credits;
-              token.genre = dbUser.genre;
-              token.subgenre = dbUser.subgenre;
-              token.country = dbUser.country;
-              token.instagram = dbUser.instagram;
-              token.spotifyUrl = dbUser.spotifyUrl;
-              token.emailVerified = dbUser.emailVerified;
-              token.monthlyListeners = dbUser.monthlyListeners;
-              token.instagramFollowers = dbUser.instagramFollowers;
+            if (!dbUser) {
+              token.isAdmin = false;
+              token.isCurator = false;
+              token.isMasterCurator = false;
+              return token;
             }
+            token.name = dbUser.name;
+            token.artistName = dbUser.artistName;
+            token.legalName = dbUser.legalName;
+            token.accountType = dbUser.accountType;
+            token.roleType = dbUser.roleType;
+            token.credits = dbUser.credits;
+            token.genre = dbUser.genre;
+            token.subgenre = dbUser.subgenre;
+            token.country = dbUser.country;
+            token.instagram = dbUser.instagram;
+            token.spotifyUrl = dbUser.spotifyUrl;
+            token.emailVerified = dbUser.emailVerified;
+            token.monthlyListeners = dbUser.monthlyListeners;
+            token.instagramFollowers = dbUser.instagramFollowers;
+            token.isVerifiedLabel = dbUser.isVerifiedLabel;
+            token.labelStatus = dbUser.labelStatus;
+            token.isAdmin = false;
+            token.isCurator = false;
+            token.isMasterCurator = false;
           }
         }
       }

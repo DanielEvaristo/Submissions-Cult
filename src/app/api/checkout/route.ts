@@ -126,13 +126,26 @@ export async function POST(req: Request) {
     }
 
     const session = await getServerSession(authOptions);
-    const normalizedEmail = body.email?.toLowerCase().trim();
-    const isOwner =
-      (session?.user?.id && submission.userId === session.user.id) ||
-      (!!normalizedEmail && submission.user.email.toLowerCase() === normalizedEmail);
+    const ANONYMOUS_CHECKOUT_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours after submit
 
-    if (!isOwner) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (session?.user?.id) {
+      if (submission.userId !== session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    } else {
+      const normalizedEmail = body.email?.toLowerCase().trim();
+      const emailMatches =
+        !!normalizedEmail &&
+        submission.user.email.toLowerCase() === normalizedEmail;
+      const isRecent =
+        Date.now() - submission.submittedAt.getTime() <= ANONYMOUS_CHECKOUT_WINDOW_MS;
+
+      if (!emailMatches || !isRecent) {
+        return NextResponse.json(
+          { error: "Please log in to complete payment for this submission." },
+          { status: 401 }
+        );
+      }
     }
 
     const creditCost = submission.creditsUsed > 0
@@ -197,7 +210,8 @@ export async function POST(req: Request) {
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      customer_email: normalizedEmail || submission.user.email,
+      customer_email:
+        session?.user?.email || body.email?.toLowerCase().trim() || submission.user.email,
       line_items: lineItems,
       success_url:
         body.successUrl ||

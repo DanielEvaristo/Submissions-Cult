@@ -3,10 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/emails";
-
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { generateOTP } from "@/lib/otp";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/resend-verification
@@ -17,6 +15,15 @@ function generateOTP(): string {
  * Also accepts body: { email } for unauthenticated calls (right after register)
  */
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const limited = rateLimit(`resend-verification:${ip}`, 5, 60 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+    );
+  }
+
   let targetEmail: string | null = null;
 
   // Try to get email from session first

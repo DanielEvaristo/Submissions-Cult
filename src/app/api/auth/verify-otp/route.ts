@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/verify-otp
@@ -18,6 +19,15 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanCode = code.trim();
+
+    const ip = getClientIp(req);
+    const limited = rateLimit(`verify-otp:${cleanEmail}:${ip}`, 10, 15 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+      );
+    }
 
     // Find the verification token
     const record = await prisma.verificationToken.findFirst({

@@ -23,6 +23,10 @@ export default async function IndustryLayout({ children, params }: Props) {
     redirect(`/${locale}/portal`);
   }
 
+  if (session.user.labelStatus === "PENDING_VERIFICATION") {
+    redirect(`/${locale}/pending`);
+  }
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-black">
       <IndustryNav locale={locale} />

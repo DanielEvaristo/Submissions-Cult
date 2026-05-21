@@ -3,10 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail, sendSubmissionConfirmationEmail } from "@/lib/emails";
-
-function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { generateOTP } from "@/lib/otp";
 
 export async function POST(req: NextRequest) {
   try {

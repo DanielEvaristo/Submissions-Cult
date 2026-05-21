@@ -39,6 +39,13 @@ export async function PATCH(
         return NextResponse.json({ error: "Submission is no longer pending" }, { status: 400 });
       }
 
+      if (submission.curatorId && submission.curatorId !== session.user.id) {
+        return NextResponse.json(
+          { error: "Submission is assigned to another curator" },
+          { status: 403 }
+        );
+      }
+
       const updated = await prisma.submission.update({
         where: { id },
         data: {
