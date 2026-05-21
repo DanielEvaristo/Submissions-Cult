@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { 
   Loader2, 
@@ -75,6 +76,7 @@ const OPP_COLORS: Record<Opportunity, string> = {
 };
 
 export default function CuratorDashboard() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"priority" | "inbox" | "history">("priority");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -167,12 +169,13 @@ export default function CuratorDashboard() {
         throw new Error(data.error || "Failed to process action");
       }
 
-      // Success
       if (action === "approve" || action === "reject") {
-        // Remove from list
-        setSubmissions(prev => prev.filter(s => s.id !== selectedSub.id));
+        setSubmissions((prev) => prev.filter((s) => s.id !== selectedSub.id));
         setSelectedId(null);
+      } else if (action === "claim") {
+        await fetchSubmissions();
       }
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {

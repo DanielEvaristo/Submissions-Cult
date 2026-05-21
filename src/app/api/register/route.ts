@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AccountType, RoleType, LabelStatus } from "@prisma/client";
 import { sendVerificationEmail, sendIndustryWelcomeEmail } from "@/lib/emails";
 import { generateOTP } from "@/lib/otp";
+import { devLog } from "@/lib/dev-log";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,17 +50,17 @@ export async function POST(req: NextRequest) {
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
     });
-    console.log("[REGISTER API] found existing:", existing ? existing.accountStatus : "not found");
+    devLog("[REGISTER API] found existing:", existing ? existing.accountStatus : "not found");
     if (existing) {
       // Si la cuenta fue importada desde legacy, mostrar mensaje especial
       if (existing.accountStatus === "PENDING_CLAIM") {
-        console.log("[REGISTER API] returning PENDING_CLAIM");
+        devLog("[REGISTER API] returning PENDING_CLAIM");
         return NextResponse.json(
           { error: "PENDING_CLAIM", code: "PENDING_CLAIM" },
           { status: 409 }
         );
       }
-      console.log("[REGISTER API] returning generic exists");
+      devLog("[REGISTER API] returning generic exists");
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/analytics/funnel
@@ -11,6 +12,12 @@ import { prisma } from "@/lib/prisma";
  * events per "session" without requiring authentication.
  */
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const limited = rateLimit(`funnel:${ip}`, 120, 60 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { sessionId, step, completed = false, opportunity = null, locale = null } = body;

@@ -4,8 +4,18 @@ import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail, sendSubmissionConfirmationEmail } from "@/lib/emails";
 import { generateOTP } from "@/lib/otp";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const limited = rateLimit(`anonymous-submit:${ip}`, 5, 60 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many submissions from this network. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const {

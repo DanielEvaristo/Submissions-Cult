@@ -5,3 +5,6 @@ node_modules
 .env.local
 *.log
 npm-debug.log*
+get_users.js
+test-prisma.js
+scratch/

@@ -7,6 +7,7 @@ import {
   sendSubmissionRejectedEmail,
   sendSubmissionPublishedEmail,
 } from "@/lib/emails";
+import { revalidateMasterViews } from "@/lib/revalidate-dashboards";
 
 export async function PATCH(
   req: NextRequest,
@@ -75,6 +76,7 @@ export async function PATCH(
         sendSubmissionAcceptedEmail(subUser.email, updated.trackTitle, updated.placement);
       }
 
+      revalidateMasterViews();
       return NextResponse.json(updated);
     }
 
@@ -111,6 +113,7 @@ export async function PATCH(
         sendSubmissionRejectedEmail(subUser.email, updated.trackTitle, updated.masterNotes);
       }
 
+      revalidateMasterViews();
       return NextResponse.json(updated);
     }
 
@@ -161,6 +164,7 @@ export async function PATCH(
         sendSubmissionPublishedEmail(subUser.email, updated.trackTitle, publicationUrl);
       }
 
+      revalidateMasterViews();
       return NextResponse.json(updated);
     }
 

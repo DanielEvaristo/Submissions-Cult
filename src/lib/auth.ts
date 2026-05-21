@@ -2,6 +2,7 @@ import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { devLog } from "./dev-log";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -12,7 +13,7 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("[AUTH] Authorize called for:", credentials?.email);
+        devLog("[AUTH] Authorize called for:", credentials?.email);
         if (!credentials?.email || !credentials?.password) return null;
         
         const email = credentials.email.toLowerCase().trim();
@@ -25,10 +26,10 @@ export const authOptions: AuthOptions = {
         if (admin) {
           const isValid = await bcrypt.compare(credentials.password, admin.password);
           if (!isValid) {
-            console.log("[AUTH] Admin login failed: Password mismatch for", email);
+            devLog("[AUTH] Admin login failed: Password mismatch for", email);
             return null;
           }
-          console.log("[AUTH] Login successful for ADMIN:", admin.id, admin.email);
+          devLog("[AUTH] Login successful for ADMIN:", admin.id, admin.email);
           return {
             id: admin.id,
             email: admin.email,
@@ -53,28 +54,28 @@ export const authOptions: AuthOptions = {
         });
 
         if (!user || !user.password) {
-          console.log("[AUTH] Login failed: User not found or has no password", email);
+          devLog("[AUTH] Login failed: User not found or has no password", email);
           return null;
         }
 
         if (user.accountStatus === "PENDING_CLAIM") {
-          console.log("[AUTH] Login blocked: Account is PENDING_CLAIM (legacy import)", email);
+          devLog("[AUTH] Login blocked: Account is PENDING_CLAIM (legacy import)", email);
           return null;
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
-          console.log("[AUTH] Login failed: Password mismatch for", email);
+          devLog("[AUTH] Login failed: Password mismatch for", email);
           return null;
         }
 
         if (!user.emailVerified) {
-          console.log("[AUTH] Login blocked: Email not verified for", email);
+          devLog("[AUTH] Login blocked: Email not verified for", email);
           throw new Error("EMAIL_NOT_VERIFIED:" + user.email);
         }
 
-        console.log("[AUTH] Login successful for USER:", user.id, user.email);
+        devLog("[AUTH] Login successful for USER:", user.id, user.email);
         return {
           id: user.id,
           email: user.email,

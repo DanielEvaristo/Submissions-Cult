@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Submission, QueueItem } from "./MasterShared";
 
 export function useMasterDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"priority" | "inbox" | "queue">("priority");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +104,7 @@ export function useMasterDashboard() {
 
       setPublishModalId(null);
       setPublicationUrl("");
+      router.refresh();
     } catch (err: any) {
       setPublishError(err.message);
     } finally {
@@ -152,6 +155,7 @@ export function useMasterDashboard() {
 
       setSubmissions((prev) => prev.filter((s) => s.id !== selectedSub.id));
       setSelectedId(null);
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {

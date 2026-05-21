@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { sendCreditPurchaseEmail } from "@/lib/emails";
+import { revalidateSubmissionViews } from "@/lib/revalidate-dashboards";
+import { devLog } from "@/lib/dev-log";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
@@ -41,9 +43,21 @@ export async function POST(req: Request) {
     const donationCents = parseInt(session.metadata?.donationCents || "0", 10);
     const retentionDiscountApplied = session.metadata?.retentionDiscountApplied === "true";
 
-    console.log("[STRIPE WEBHOOK] Checkout completed:", { type, userId, submissionId, packId, donationCents, retentionDiscountApplied });
+    devLog("[STRIPE WEBHOOK] Checkout completed:", {
+      type,
+      userId,
+      submissionId,
+      packId,
+    });
 
     if (type === "credits" && userId && packId && CREDIT_PACKS[packId]) {
+      const existing = await prisma.creditTransaction.findUnique({
+        where: { stripeSessionId: session.id },
+      });
+      if (existing) {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+
       const creditsToAdd = CREDIT_PACKS[packId].credits;
 
       await prisma.$transaction([
@@ -63,10 +77,19 @@ export async function POST(req: Request) {
         }),
       ]);
 
-      // Send purchase receipt email (non-blocking)
-      const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+      revalidateSubmissionViews();
+
+      const buyer = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
       if (buyer?.email) {
-        sendCreditPurchaseEmail(buyer.email, buyer.name ?? "User", creditsToAdd, session.amount_total || 0);
+        sendCreditPurchaseEmail(
+          buyer.email,
+          buyer.name ?? "User",
+          creditsToAdd,
+          session.amount_total || 0
+        );
       }
     } else if (type === "submission" && submissionId) {
       const submission = await prisma.submission.update({
@@ -82,29 +105,46 @@ export async function POST(req: Request) {
       });
 
       if (retentionDiscountApplied) {
-        const discountAmount = Math.round(submission.creditsUsed * 100 * 0.5);
-        await prisma.creditTransaction.create({
-          data: {
+        const existingOffer = await prisma.creditTransaction.findFirst({
+          where: {
             userId: submission.userId,
             type: "RETENTION_OFFER",
-            credits: submission.creditsUsed,
-            amount: -discountAmount,
-            currency: "usd",
+            stripeSessionId: session.id,
           },
         });
+
+        if (!existingOffer) {
+          const discountAmount = Math.round(submission.creditsUsed * 100 * 0.5);
+          await prisma.creditTransaction.create({
+            data: {
+              userId: submission.userId,
+              type: "RETENTION_OFFER",
+              credits: submission.creditsUsed,
+              amount: -discountAmount,
+              currency: "usd",
+              stripeSessionId: session.id,
+            },
+          });
+        }
       }
 
       if (donationCents > 0 && session.payment_intent) {
-        await prisma.donation.create({
-          data: {
-            amount: donationCents,
-            currency: "usd",
-            stripePaymentIntentId: session.payment_intent as string,
-            status: "succeeded",
-            donorEmail: session.customer_email || undefined,
-          },
-        });
+        try {
+          await prisma.donation.create({
+            data: {
+              amount: donationCents,
+              currency: "usd",
+              stripePaymentIntentId: session.payment_intent as string,
+              status: "succeeded",
+              donorEmail: session.customer_email || undefined,
+            },
+          });
+        } catch {
+          // Idempotent: payment_intent is unique
+        }
       }
+
+      revalidateSubmissionViews();
     } else if (type === "premium-pr" && submissionId) {
       await prisma.submission.update({
         where: { id: submissionId },
@@ -112,6 +152,7 @@ export async function POST(req: Request) {
           premiumPrStatus: "PAID",
         },
       });
+      revalidateSubmissionViews();
     } else if (type === "premium_service" && submissionId) {
       await prisma.submission.update({
         where: { id: submissionId },
@@ -120,7 +161,8 @@ export async function POST(req: Request) {
           premiumPaymentIntentId: session.payment_intent as string,
         },
       });
-      console.log("[STRIPE WEBHOOK] Premium services paid for submission:", submissionId);
+      revalidateSubmissionViews();
+      devLog("[STRIPE WEBHOOK] Premium services paid for submission:", submissionId);
     }
   }
 

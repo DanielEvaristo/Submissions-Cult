@@ -6,6 +6,8 @@ import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import { sendSubmissionConfirmationEmail } from "@/lib/emails";
 import { ALL_CHANNELS, calculateCredits } from "@/lib/pricing";
 import { assertVerifiedIndustry } from "@/lib/industry-access";
+import { revalidateSubmissionViews } from "@/lib/revalidate-dashboards";
+import { devLog } from "@/lib/dev-log";
 
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    console.log("[POST /api/submissions] PAYLOAD:", JSON.stringify(body, null, 2));
+    devLog("[POST /api/submissions] new submission for user:", session.user.id);
 
     const {
       streamingUrl,
@@ -257,6 +259,7 @@ export async function POST(req: NextRequest) {
       sendSubmissionConfirmationEmail(session.user.email, submission.trackTitle, submission.artistName);
     }
 
+    revalidateSubmissionViews();
     return NextResponse.json({ id: submission.id }, { status: 201 });
   } catch (err: any) {
     console.error("[POST /api/submissions] ERROR:", err);

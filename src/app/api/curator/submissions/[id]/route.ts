@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateCuratorViews } from "@/lib/revalidate-dashboards";
 
 export async function PATCH(
   req: NextRequest,
@@ -53,6 +54,7 @@ export async function PATCH(
           curatorId: session.user.id
         }
       });
+      revalidateCuratorViews();
       return NextResponse.json(updated);
     }
 
@@ -77,7 +79,8 @@ export async function PATCH(
         where: { id },
         data: { status: "MASTER_REVIEW" }
       });
-      
+
+      revalidateCuratorViews();
       return NextResponse.json(moved);
     }
 
@@ -102,6 +105,7 @@ export async function PATCH(
         }
       });
 
+      revalidateCuratorViews();
       return NextResponse.json(updated);
     }
 
