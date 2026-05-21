@@ -5,17 +5,10 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import {
   Loader2,
-  Music,
-  CheckCircle2,
   AlertCircle,
-  Zap,
-  Edit3,
-  Mic,
-  FileText,
-  Heart,
+  CheckCircle2,
 } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
-import { GENRES } from "@/lib/genres";
 import {
   type PremiumService,
   type Channel,
@@ -25,12 +18,23 @@ import {
   ALL_CHANNELS,
 } from "@/lib/pricing";
 
+// Subcomponents
+import SelectArtistStep from "./subcomponents/SelectArtistStep";
+import DetailsStep from "./subcomponents/DetailsStep";
+import ReleaseTypeStep from "./subcomponents/ReleaseTypeStep";
+import ChannelsStep from "./subcomponents/ChannelsStep";
+import UpsellsStep from "./subcomponents/UpsellsStep";
+import PremiumServicesStep from "./subcomponents/PremiumServicesStep";
+import CheckoutSummaryStep from "./subcomponents/CheckoutSummaryStep";
+import RegistrationStep from "./subcomponents/RegistrationStep";
+import SubmitFlowModals from "./subcomponents/SubmitFlowModals";
+
 export interface ManagedArtistRef {
   id: string;
   artistName: string;
 }
 
-interface FormData {
+export interface FormData {
   managedArtistId: string;
   streamingUrl: string;
   trackTitle: string;
@@ -639,427 +643,74 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
 
       {/* ── STEP 0: Select Artist ── */}
       {step === 0 && hasManagedArtists && managedArtists && (
-        <div className="space-y-8 animate-reveal">
-          <div className="border-4 border-white/10 p-8 bg-black text-white">
-            <label className="label" htmlFor="managedArtistId">SELECT ARTIST FROM ROSTER</label>
-            <select
-              id="managedArtistId"
-              className="input text-lg font-bold mt-2"
-              value={form.managedArtistId}
-              onChange={(e) => {
-                set("managedArtistId", e.target.value);
-                const selected = managedArtists.find(a => a.id === e.target.value);
-                if (selected) set("artistName", selected.artistName);
-              }}
-            >
-              <option value="">— CHOOSE ARTIST —</option>
-              {managedArtists.map(artist => (
-                <option key={artist.id} value={artist.id}>{artist.artistName.toUpperCase()}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <SelectArtistStep
+          form={form}
+          set={set}
+          managedArtists={managedArtists}
+        />
       )}
 
       {/* ── STEP 1: Details ── */}
       {step === 1 && (
-        <div className="space-y-8 animate-reveal">
-          {/* AI Warning */}
-          <div className="p-4 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-4 shadow-[4px_4px_0px_0px_rgba(255,0,0,0.2)]">
-            <AlertCircle size={24} className="text-[#FF0000] shrink-0 mt-1" strokeWidth={3} />
-            <div>
-              <p className="text-sm font-black uppercase tracking-widest text-[#FF0000] mb-1">NO AI MUSIC</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/80 leading-relaxed">
-                WE DO NOT SUPPORT AI-GENERATED ART. ANY TRACK WITH AI PRODUCTION OR AI COVER ART WILL BE IMMEDIATELY REJECTED.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <label className="label">STREAMING URL (SPOTIFY/SC)</label>
-                <input type="url" className="input" placeholder="Paste track or album link..." 
-                  value={form.streamingUrl} 
-                  onChange={(e) => {
-                    const url = e.target.value;
-                    set("streamingUrl", url);
-                                    
-                    // Simple URL based auto-detection (refined by API onBlur)
-                    if (url.includes("/album/") || url.includes("/sets/")) {
-                      set("submissionType", "ALBUM");
-                    } else if (url.includes("/track/")) {
-                      set("submissionType", "SINGLE");
-                    }
-                  }} 
-                  onBlur={handleAutoFill}
-                />
-                {fetchingInfo && <p className="text-[10px] font-bold text-cult-yellow animate-pulse mt-2 uppercase tracking-widest text-right">FETCHING METADATA...</p>}
-                
-                {(form.submissionType === "ALBUM" || form.submissionType === "EP") && (
-                  <div className="mt-4 p-4 border-2 border-cult-yellow/20 bg-cult-yellow/5 animate-reveal">
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs font-black text-cult-yellow uppercase tracking-tight">
-                        {form.submissionType} DETECTED (+{form.submissionType === 'ALBUM' ? 2 : 1} CREDITS)
-                      </p>
-                      <button 
-                        onClick={() => {
-                          set("streamingUrl", "");
-                          set("trackTitle", "");
-                          set("artistName", "");
-                          set("submissionType", "SINGLE");
-                        }}
-                        className="text-[10px] font-black text-[#00FF00] underline uppercase tracking-widest hover:text-white transition-colors"
-                      >
-                        I want to keep it free, send one song instead
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {form.autoFilledCover && (
-              <div className="flex items-center gap-6 p-6 border-4 border-black bg-black text-white">
-                <img src={form.autoFilledCover} alt="cover" className="w-24 h-24 object-cover border-2 border-white" />
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-cult-yellow mb-1">FOUND METADATA</p>
-                  <p className="text-2xl font-black uppercase tracking-tighter leading-none">{form.autoFilledTitle}</p>
-                  <p className="text-sm font-light text-[#999999] mt-2 italic">{form.autoFilledArtist}</p>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {!session && (
-                <div>
-                  <label className="label">YOUR EMAIL</label>
-                  <input type="email" className="input" placeholder="To receive updates..." value={form.email} onChange={(e) => set("email", e.target.value)} />
-                </div>
-              )}
-              <div>
-                <label className="label">TRACK TITLE</label>
-                <input type="text" className="input" value={form.trackTitle} onChange={(e) => set("trackTitle", e.target.value)} />
-              </div>
-              <div>
-                <label className="label">ARTIST NAME</label>
-                <input type="text" className="input" value={form.artistName} onChange={(e) => set("artistName", e.target.value)} />
-                {session?.user?.accountType === "ARTIST" &&
-                  session.user.artistName &&
-                  form.artistName &&
-                  form.artistName.trim().toLowerCase() !== (session.user.artistName || "").trim().toLowerCase() && (
-                  <div className="mt-3 p-3 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-3 animate-reveal">
-                    <AlertCircle size={16} className="text-[#FF0000] shrink-0 mt-0.5" strokeWidth={3} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF0000] leading-relaxed">
-                      Your account is registered as <span className="text-white">&quot;{session.user.artistName}&quot;</span>. You can only submit under your registered name.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {(!session || !session.user?.instagram) && (
-                <div>
-                  <label className="label">INSTAGRAM USERNAME</label>
-                  <input type="text" className="input" placeholder="@yourhandle" value={form.instagram} onChange={(e) => set("instagram", e.target.value)} />
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="label">MAIN GENRE</label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {GENRES.map((g) => (
-                  <button key={g} type="button" 
-                    onClick={() => {
-                      set("genre", g);
-                      set("subgenre", "");
-                    }}
-                    className={`py-3 border-2 border-white/10 text-center font-black uppercase text-[10px] transition-all ${
-                      form.genre === g ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white hover:bg-white/5"
-                    }`}>
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {form.genre && (
-              <div>
-                <label className="label">SUBGENRE *</label>
-                <input
-                  type="text"
-                  className="input animate-fade-in"
-                  placeholder="e.g. Melodic Techno, Lo-Fi..."
-                  value={form.subgenre}
-                  onChange={(e) => set("subgenre", e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+        <DetailsStep
+          form={form}
+          set={set}
+          session={session}
+          fetchingInfo={fetchingInfo}
+          handleAutoFill={handleAutoFill}
+        />
       )}
 
       {/* ── STEP 2: Submission Type ── */}
       {step === 2 && (
-        <div className="space-y-8 animate-reveal">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              { type: "SINGLE", credits: 0, desc: "1 Track" },
-              { type: "EP", credits: 1, desc: "2-6 Tracks" },
-              { type: "ALBUM", credits: 2, desc: "7+ Tracks" }
-            ].map((rt) => (
-              <button 
-                key={rt.type} type="button" 
-                onClick={() => set("submissionType", rt.type as SubmissionType)}
-                disabled={form.submissionType !== rt.type && form.autoFilledTitle !== ""}
-                className={`p-8 border-4 transition-all flex flex-col items-center justify-center gap-4 ${
-                  form.submissionType === rt.type ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white/40"
-                } ${form.submissionType !== rt.type && form.autoFilledTitle !== "" ? "opacity-20 cursor-not-allowed" : ""}`}>
-                <Music size={40} className={form.submissionType === rt.type ? "text-black" : "text-white/40"} />
-                <div className="text-center">
-                  <p className="text-2xl font-black uppercase tracking-tighter">{rt.type}</p>
-                  <p className="text-xs font-bold opacity-60 uppercase">{rt.desc}</p>
-                  <p className="mt-4 font-sans text-xs font-black px-3 py-1 bg-black/10 inline-block uppercase">
-                    {rt.credits === 0 ? "FREE" : `+${rt.credits} CREDIT${rt.credits > 1 ? 'S' : ''}`}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {(form.submissionType === "ALBUM" || form.submissionType === "EP") && (
-            <div className="text-center pt-4">
-              <button 
-                onClick={() => {
-                  set("submissionType", "SINGLE");
-                  set("streamingUrl", "");
-                }}
-                className="text-white/40 hover:text-cult-yellow text-[10px] font-black uppercase tracking-[0.2em] underline decoration-2 underline-offset-4 transition-all"
-              >
-                Send only one song instead
-              </button>
-            </div>
-          )}
-        </div>
+        <ReleaseTypeStep
+          form={form}
+          set={set}
+        />
       )}
 
       {/* ── STEP 3: Channels ── */}
       {step === 3 && (
-        <div className="space-y-8 animate-reveal">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[
-              { id: "RADAR", label: "CULT RADAR" },
-              { id: "INTERNET_WAVE", label: "INTERNET WAVE" },
-              { id: "SPOTIFY_PLAYLIST", label: "SPOTIFY PLAYLISTS" },
-              { id: "STORIES", label: "IG/TIKTOK STORIES" }
-            ].map((c) => {
-              const isActive = form.channels.includes(c.id as Channel) || form.applyAllChannels;
-              return (
-                <button key={c.id} type="button" 
-                  onClick={() => {
-                    if (form.applyAllChannels) return;
-                    // If free, toggle one.
-                    set("channels", form.channels.includes(c.id as Channel) ? [] : [c.id as Channel]);
-                  }}
-                  className={`p-6 border-4 flex justify-between items-center transition-all ${
-                    isActive ? "bg-white text-black border-white" : "bg-black text-white border-white/10 hover:border-white/30"
-                  }`}>
-                  <span className="text-lg font-black uppercase tracking-widest">{c.label}</span>
-                  {isActive && <CheckCircle2 size={24} />}
-                </button>
-              )
-            })}
-          </div>
-
-          <button onClick={() => set("applyAllChannels", !form.applyAllChannels)}
-            className={`w-full p-6 border-4 font-black uppercase tracking-[0.2em] transition-all flex items-center justify-between ${
-              form.applyAllChannels ? "bg-[#00FF00] text-black border-[#00FF00]" : "bg-black text-white border-white/10 hover:border-white"
-            }`}>
-            <span>APPLY TO ALL CHANNELS</span>
-            <span className="bg-black/20 px-4 py-2 text-xs">+1 CREDIT</span>
-          </button>
-        </div>
+        <ChannelsStep
+          form={form}
+          set={set}
+        />
       )}
 
       {/* ── STEP 4: Upsells ── */}
       {step === 4 && (
-        <div className="space-y-8 animate-reveal">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <button onClick={() => set("fastTrack", !form.fastTrack)}
-              className={`p-8 border-4 text-left transition-all ${
-                form.fastTrack ? "bg-[#FF0000] text-white border-[#FF0000]" : "bg-black text-white border-white/10"
-              }`}>
-              <Zap size={32} className="mb-4" />
-              <p className="text-2xl font-black uppercase tracking-tighter">FAST TRACK 48H</p>
-              <p className="text-xs font-bold opacity-60 mt-2">Skip the queue. Guaranteed response.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-white/20 inline-block uppercase">+1 CREDIT</p>
-            </button>
-
-            <button onClick={() => set("reviewRequested", !form.reviewRequested)}
-              className={`p-8 border-4 text-left transition-all ${
-                form.reviewRequested ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10"
-              }`}>
-              <Edit3 size={32} className="mb-4" />
-              <p className="text-2xl font-black uppercase tracking-tighter">DETAILED REVIEW</p>
-              <p className="text-xs font-bold opacity-60 mt-2">Get written feedback from our A&R.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/20 inline-block uppercase">+1 CREDIT</p>
-            </button>
-          </div>
-
-          <div className="flex justify-center mt-6">
-            <button 
-              type="button"
-              onClick={() => {
-                set("fastTrack", false);
-                set("reviewRequested", false);
-                handleNext();
-              }}
-              className="text-xs font-black uppercase tracking-[0.2em] text-white/50 hover:text-white underline decoration-white/30 hover:decoration-white transition-all p-4"
-            >
-              CONTINUE WITHOUT EXTRAS
-            </button>
-          </div>
-        </div>
+        <UpsellsStep
+          form={form}
+          set={set}
+          handleNext={handleNext}
+        />
       )}
 
       {/* ── STEP 5: Premium Services ── */}
       {step === 5 && (
-        <div className="space-y-8 animate-reveal">
-          <div className="p-4 bg-white/5 border border-white/10 mb-8 flex flex-col gap-2">
-            <div className="flex items-center gap-4">
-              <CheckCircle2 className="text-[#00FF00]" />
-              <span className="text-xs font-bold uppercase tracking-widest text-white/60">YOUR TRACK IS ELIGIBLE FOR PREMIUM PR</span>
-            </div>
-            <p className="text-[10px] text-white/40 mt-2 font-bold uppercase tracking-widest">
-              Note: This is a request. Cult Machine does not charge payola. The cost covers the labor time to write, edit, and publish the piece. You will only pay if your request is approved.
-            </p>
-          </div>
-
-          <div className="mb-8 p-6 border-2 border-[#F5E000]/50 bg-[#F5E000]/10 text-[#F5E000]">
-            <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Zap size={16}/> NO UPFRONT PAYMENT REQUIRED</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest mt-2 leading-relaxed text-[#F5E000]/80">
-              If you select an Interview or Article, you will not be charged today. If your track is accepted by our Master Curator for these premium features, you will receive a notification and a payment link in your artist portal to proceed.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <button onClick={() => {
-                setForm(prev => {
-                  const has = prev.premiumServices.includes("INTERVIEW");
-                  const arr: PremiumService[] = has
-                    ? (prev.premiumServices.filter((s): s is PremiumService => s !== "INTERVIEW"))
-                    : [...prev.premiumServices, "INTERVIEW"];
-                  return { ...prev, premiumServices: arr };
-                });
-              }}
-              className={`p-8 border-4 text-left transition-all ${
-                form.premiumServices.includes("INTERVIEW") ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white/40"
-              }`}>
-              <Mic size={32} className="mb-4" />
-              <p className="text-2xl font-black uppercase tracking-tighter">EXCLUSIVE INTERVIEW</p>
-              <p className="text-xs font-bold opacity-60 mt-2">Full Q&A published on Cult Machine.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$30 USD (PAY IF ACCEPTED)</p>
-            </button>
-
-            <button onClick={() => {
-                setForm(prev => {
-                  const has = prev.premiumServices.includes("ARTICLE");
-                  const arr: PremiumService[] = has
-                    ? (prev.premiumServices.filter((s): s is PremiumService => s !== "ARTICLE"))
-                    : [...prev.premiumServices, "ARTICLE"];
-                  return { ...prev, premiumServices: arr };
-                });
-              }}
-              className={`p-8 border-4 text-left transition-all ${
-                form.premiumServices.includes("ARTICLE") ? "bg-[#F5E000] text-black border-[#F5E000]" : "bg-black text-white border-white/10 hover:border-white/40"
-              }`}>
-              <FileText size={32} className="mb-4" />
-              <p className="text-2xl font-black uppercase tracking-tighter">DEDICATED ARTICLE</p>
-              <p className="text-xs font-bold opacity-60 mt-2">Professional editorial review.</p>
-              <p className="mt-6 font-black text-xs px-3 py-1 bg-black/10 inline-block uppercase">$25 USD (PAY IF ACCEPTED)</p>
-            </button>
-          </div>
-        </div>
+        <PremiumServicesStep
+          form={form}
+          setForm={setForm}
+        />
       )}
 
       {/* ── STEP 6: Checkout Summary ── */}
       {step === 6 && (
-        <div className="animate-reveal border-4 border-white/10 p-8 bg-black/50">
-          <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 border-b-2 border-white/10 pb-4">ORDER SUMMARY</h2>
-          
-          <div className="space-y-4 mb-8">
-            <div className="flex justify-between items-center border-b border-white/5 pb-4">
-              <span className="font-bold text-sm uppercase opacity-70">TRACK TYPE ({form.submissionType})</span>
-              <span className="font-black">{credits.base > 0 ? `${credits.base} CRD` : 'FREE'}</span>
-            </div>
-            
-            <div className="flex justify-between items-center border-b border-white/5 pb-4">
-              <span className="font-bold text-sm uppercase opacity-70">CHANNELS ({form.applyAllChannels ? 'ALL' : 'SINGLE'})</span>
-              <span className="font-black">{credits.channels > 0 ? `+${credits.channels} CRD` : 'FREE'}</span>
-            </div>
-
-            {form.fastTrack && (
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                <span className="font-bold text-sm uppercase opacity-70">FAST TRACK</span>
-                <span className="font-black">+1 CRD</span>
-              </div>
-            )}
-
-            {form.reviewRequested && (
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                <span className="font-bold text-sm uppercase opacity-70">A&R REVIEW</span>
-                <span className="font-black">+1 CRD</span>
-              </div>
-            )}
-            
-            {form.premiumServices.map(s => (
-              <div key={s} className="flex justify-between items-center border-b border-white/5 pb-4">
-                <span className="font-bold text-sm uppercase opacity-70">{s} SERVICE</span>
-                <span className="font-black text-[#F5E000]">PAY IF ACCEPTED</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center p-6 bg-white/5 border-2 border-white/10 mb-8">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">FINAL TOTAL</p>
-              {retentionDiscountApplied && totalCreditsNeeded > 0 && (
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#F5E000] mb-2">EXIT OFFER APPLIED: 50% OFF CREDITS</p>
-              )}
-              <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter text-white">
-                {totalCreditsNeeded > 0 ? `${totalCreditsNeeded} CRD` : 'FREE'}
-              </h3>
-            </div>
-
-          </div>
-
-          <div className="p-6 border-4 border-dashed border-white/10 bg-black/20">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-4">PAYMENT METHOD</p>
-            <div className="flex items-center gap-4">
-              <div className="px-3 py-1 bg-white/10 text-white text-[8px] font-black rounded tracking-widest">VISA</div>
-              <div className="px-3 py-1 bg-white/10 text-white text-[8px] font-black rounded tracking-widest">MASTERCARD</div>
-              <div className="px-3 py-1 bg-white/10 text-white text-[8px] font-black rounded tracking-widest">AMEX</div>
-              <div className="ml-auto text-[10px] font-bold text-white/20 uppercase tracking-widest">SECURE BY STRIPE</div>
-            </div>
-          </div>
-        </div>
+        <CheckoutSummaryStep
+          form={form}
+          credits={credits}
+          retentionDiscountApplied={retentionDiscountApplied}
+          totalCreditsNeeded={totalCreditsNeeded}
+        />
       )}
 
       {/* ── STEP 10: Registration ── */}
       {step === 10 && !session && (
-        <div className="max-w-md mx-auto space-y-6 animate-reveal">
-          <p className="text-xs font-bold uppercase tracking-widest text-center mb-8 opacity-60">Create an account to track your submission.</p>
-          <div>
-            <label className="label">EMAIL (CONFIRM)</label>
-            <input type="email" className="input" value={form.email} onChange={(e) => set("email", e.target.value)} />
-          </div>
-          <div>
-            <label className="label">CREATE PASSWORD</label>
-            <input type="password" className="input" value={form.password || ""} onChange={(e) => set("password", e.target.value)} />
-          </div>
-        </div>
+        <RegistrationStep
+          form={form}
+          set={set}
+        />
       )}
-
 
       {/* ── ERROR DISPLAY ── */}
       {error && (
@@ -1089,157 +740,25 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
       )}
 
       {/* ── MODALS ── */}
-      {showExitIntent && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-black border-4 border-[#F5E000] p-8 max-w-xl w-full shadow-[16px_16px_0px_0px_rgba(245,224,0,0.12)]">
-            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#F5E000] mb-4">Exit Offer</p>
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">
-              Before you leave, keep these credits at 50% off.
-            </h2>
-            <p className="text-sm font-bold uppercase tracking-[0.08em] text-white/70 leading-relaxed mb-8">
-              Before leaving, we can keep the credits you are using for this submission at a 50% discount. Or switch this flow to one free song and keep moving.
-            </p>
-            <div className="grid grid-cols-1 gap-4">
-              {canShowRetentionOffer ? (
-                <button
-                  onClick={handleApplyRetentionDiscount}
-                  className="w-full p-4 bg-[#F5E000] text-black text-xs font-black uppercase tracking-[0.25em] hover:bg-white transition-all"
-                >
-                  Apply 50% Discount
-                </button>
-              ) : (
-                <div className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.2em] text-center">
-                  50% discount already used in the last 30 days.
-                </div>
-              )}
-              <button
-                onClick={handleSwitchToFreeSong}
-                className="w-full p-4 border-2 border-[#F5E000] text-[#F5E000] text-xs font-black uppercase tracking-[0.25em] hover:bg-[#F5E000] hover:text-black transition-all"
-              >
-                Send One Song For Free
-              </button>
-              <button
-                onClick={handleConfirmedExit}
-                className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.25em] hover:text-white hover:border-white/30 transition-all"
-              >
-                Leave Anyway
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showDonationPrompt && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-black border-4 border-white/10 p-8 max-w-lg w-full">
-            <Heart size={48} className="text-[#FF0000] mb-6" />
-            <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">SUPPORT THE CULT</h2>
-            <p className="text-sm font-bold opacity-60 mb-8 leading-relaxed">
-              We process hundreds of submissions for free. If you appreciate the platform, consider dropping a small tip so we can keep the lights on.
-            </p>
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setShowDonationPrompt(false);
-                  setIncludeDonation(true);
-                  if (session) {
-                    void handleSubmit();
-                  } else {
-                    setStep(10);
-                  }
-                }}
-                className="w-full btn-primary bg-[#00FF00] text-black border-[#00FF00]"
-              >
-                DONATE $5
-              </button>
-              <button
-                onClick={() => {
-                  setShowDonationPrompt(false);
-                  setIncludeDonation(false);
-                  if (session) {
-                    void handleSubmit();
-                  } else {
-                    setStep(10);
-                  }
-                }}
-                className="w-full p-4 border-2 border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all text-white/40"
-              >
-                CONTINUE FOR FREE
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── ACTIVE TRACK BLOCK MODAL ── */}
-      {showActiveBlockModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-black border-4 border-[#F5E000] p-8 max-w-lg w-full shadow-[16px_16px_0px_0px_rgba(245,224,0,0.12)]">
-            <div className="w-16 h-16 bg-[#F5E000] flex items-center justify-center mb-6">
-              <Zap size={32} className="text-black" strokeWidth={3} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#F5E000] mb-4">Submission Active</p>
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">
-              This track is already under review.
-            </h2>
-            <p className="text-sm font-bold uppercase tracking-[0.08em] text-white/60 leading-relaxed mb-8">
-              You already have an active submission for this track. You can't submit it again until the current review process is complete. Check your submissions to see its current status.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  setShowActiveBlockModal(false);
-                  router.push(`/${locale}/portal/submissions`);
-                }}
-                className="w-full p-4 bg-[#F5E000] text-black text-xs font-black uppercase tracking-[0.25em] hover:bg-white transition-all"
-              >
-                View My Submissions
-              </button>
-              <button
-                onClick={() => setShowActiveBlockModal(false)}
-                className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.25em] hover:text-white hover:border-white/30 transition-all"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── REJECTED TRACK CONFIRMATION MODAL ── */}
-      {showRejectedConfirm && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-black border-4 border-[#FF0000] p-8 max-w-lg w-full shadow-[16px_16px_0px_0px_rgba(255,0,0,0.12)]">
-            <AlertCircle size={48} className="text-[#FF0000] mb-6" />
-            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#FF0000] mb-4">Previously Rejected</p>
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">
-              This track has been previously rejected.
-            </h2>
-            <p className="text-sm font-bold uppercase tracking-[0.08em] text-white/60 leading-relaxed mb-8">
-              Are you sure you want to submit it again? Our curators will review it with the same criteria as before. Make sure something has changed (mix, master, pitch, etc.) before resubmitting.
-            </p>
-            <div className="grid grid-cols-1 gap-4">
-              <button
-                onClick={() => {
-                  setShowRejectedConfirm(false);
-                  setForceResubmit(true);
-                  // Pass override directly to avoid async state race condition
-                  void handleSubmit(true);
-                }}
-                className="w-full p-4 bg-[#FF0000] text-white text-xs font-black uppercase tracking-[0.25em] hover:bg-white hover:text-black transition-all"
-              >
-                Yes, Submit Anyway
-              </button>
-              <button
-                onClick={() => setShowRejectedConfirm(false)}
-                className="w-full p-4 border-2 border-white/10 text-white/50 text-xs font-black uppercase tracking-[0.25em] hover:text-white hover:border-white/30 transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SubmitFlowModals
+        showExitIntent={showExitIntent}
+        canShowRetentionOffer={canShowRetentionOffer}
+        handleApplyRetentionDiscount={handleApplyRetentionDiscount}
+        handleSwitchToFreeSong={handleSwitchToFreeSong}
+        handleConfirmedExit={handleConfirmedExit}
+        showDonationPrompt={showDonationPrompt}
+        setShowDonationPrompt={setShowDonationPrompt}
+        setIncludeDonation={setIncludeDonation}
+        session={session}
+        setStep={setStep}
+        handleSubmit={handleSubmit}
+        showActiveBlockModal={showActiveBlockModal}
+        setShowActiveBlockModal={setShowActiveBlockModal}
+        locale={locale}
+        showRejectedConfirm={showRejectedConfirm}
+        setShowRejectedConfirm={setShowRejectedConfirm}
+        setForceResubmit={setForceResubmit}
+      />
 
     </div>
   );

@@ -38,6 +38,7 @@ interface Submission {
   curatorRating: number | null;
   assignedPremiumServices: string[];
   premiumServicesPaid: boolean;
+  premiumPrStatus?: string | null;
 }
 
 const FILTER_OPTIONS = ["ALL", "UNDER_REVIEW", "SELECTED", "NOT_SELECTED"] as const;

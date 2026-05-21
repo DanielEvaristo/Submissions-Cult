@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── GUARD 4: Track already has an active submission ─────────────────────
-    const activeStatuses = ["PENDING", "IN_REVIEW", "CURATOR_APPROVED", "MASTER_REVIEW"];
+    const activeStatuses = ["PENDING", "IN_REVIEW", "CURATOR_APPROVED", "MASTER_REVIEW"] as any[];
     const activeSubmission = await prisma.submission.findFirst({
       where: {
         userId: session.user.id,
@@ -263,6 +263,7 @@ export async function GET(req: NextRequest) {
         curatorRating: true,
         assignedPremiumServices: true,
         premiumServicesPaid: true,
+        premiumPrStatus: true,
         managedArtist: {
           select: {
             artistName: true,
