@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 import { sendSubmissionConfirmationEmail } from "@/lib/emails";
+import { ALL_CHANNELS, calculateCredits } from "@/lib/pricing";
 
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
@@ -48,7 +49,6 @@ export async function POST(req: NextRequest) {
       autoFillSource,
       managedArtistId,
       useCredits,
-      creditsToDeduct,
     } = body;
 
     // Validate required fields
@@ -143,6 +143,27 @@ export async function POST(req: NextRequest) {
 
     const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
+    const channelList = Array.isArray(channels) ? channels : [];
+    const applyAllChannels =
+      channelList.length >= ALL_CHANNELS.length ||
+      ALL_CHANNELS.every((channel) => channelList.includes(channel));
+
+    const expectedCredits = calculateCredits(
+      releaseType as "SINGLE" | "EP" | "ALBUM",
+      applyAllChannels,
+      !!fastTrack,
+      !!reviewRequested
+    ).total;
+
+    if (useCredits && expectedCredits <= 0) {
+      return NextResponse.json(
+        { error: "This submission cannot be paid with credits." },
+        { status: 400 }
+      );
+    }
+
+    const creditsToDeduct = useCredits ? expectedCredits : 0;
+
     // Use a transaction for credit deduction and submission creation
     const submission = await prisma.$transaction(async (tx) => {
       if (useCredits && creditsToDeduct > 0) {
@@ -150,13 +171,11 @@ export async function POST(req: NextRequest) {
           throw new Error("Insufficient credits in wallet");
         }
 
-        // Deduct credits
         await tx.user.update({
           where: { id: session.user.id },
           data: { credits: { decrement: creditsToDeduct } },
         });
 
-        // Log transaction
         await tx.creditTransaction.create({
           data: {
             userId: session.user.id,
