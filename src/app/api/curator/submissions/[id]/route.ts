@@ -47,6 +47,24 @@ export async function PATCH(
         );
       }
 
+      // Enforce assignedGenres validation for non-SUPER_ADMIN curators
+      const curatorAdmin = await prisma.admin.findUnique({
+        where: { id: session.user.id },
+        select: { assignedGenres: true, role: true },
+      });
+
+      if (curatorAdmin && curatorAdmin.role !== "SUPER_ADMIN" && curatorAdmin.assignedGenres.length > 0) {
+        const hasMatchingGenre = submission.genres.some((genre) =>
+          curatorAdmin.assignedGenres.some((ag) => ag.toLowerCase() === genre.toLowerCase())
+        );
+        if (!hasMatchingGenre) {
+          return NextResponse.json(
+            { error: "This submission is not in your assigned genres" },
+            { status: 403 }
+          );
+        }
+      }
+
       const updated = await prisma.submission.update({
         where: { id },
         data: {

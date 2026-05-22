@@ -53,6 +53,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
     }
 
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: "Password must be at least 8 characters" },
+        { status: 400 }
+      );
+    }
+    if (!/[A-Z]/.test(password)) {
+      return NextResponse.json(
+        { error: "Password must contain at least one uppercase letter" },
+        { status: 400 }
+      );
+    }
+    if (!/[0-9]/.test(password)) {
+      return NextResponse.json(
+        { error: "Password must contain at least one number" },
+        { status: 400 }
+      );
+    }
+
     console.log("[DEBUG] Checking if user exists:", email);
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
@@ -81,7 +100,7 @@ export async function POST(req: NextRequest) {
     const assignedCuratorId = await findLeastLoadedCuratorId(prisma, [genre]);
 
     // 3. Create user and submission in a transaction
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
