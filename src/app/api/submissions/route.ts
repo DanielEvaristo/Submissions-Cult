@@ -9,6 +9,33 @@ import { assertVerifiedIndustry } from "@/lib/industry-access";
 import { revalidateSubmissionViews } from "@/lib/revalidate-dashboards";
 import { devLog } from "@/lib/dev-log";
 
+function normalizeArtistValue(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(feat|featuring|ft|with)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function registeredArtistMatchesMetadata(registeredArtist: string, metadataArtist: string) {
+  const registered = normalizeArtistValue(registeredArtist);
+  const metadata = normalizeArtistValue(metadataArtist);
+
+  if (!registered || !metadata) return true;
+  if (registered === metadata) return true;
+  if (metadata.includes(registered)) return true;
+
+  const collaborators = metadata
+    .split(/\s*(?:,|&| x | and )\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return collaborators.some((name) => name === registered || name.includes(registered) || registered.includes(name));
+}
+
 // ─── POST /api/submissions — create a new submission ─────────────────────────
 export async function POST(req: NextRequest) {
   try {
@@ -82,10 +109,16 @@ export async function POST(req: NextRequest) {
 
     // ── GUARD 2: Authenticated artist submitting under a different band name ──
     if (session.user.accountType === "ARTIST") {
-      const registeredName = (session.user.artistName || session.user.name || "").trim().toLowerCase();
-      if (registeredName && artistNameNormalized !== registeredName) {
+      const registeredNameRaw = (session.user.artistName || session.user.name || "").trim();
+      const registeredName = registeredNameRaw.toLowerCase();
+      const metadataArtist = typeof autoFilledArtist === "string" ? autoFilledArtist.trim() : "";
+      const artistMatchesAccount = metadataArtist
+        ? registeredArtistMatchesMetadata(registeredNameRaw, metadataArtist)
+        : artistNameNormalized === registeredName;
+
+      if (registeredName && !artistMatchesAccount) {
         return NextResponse.json(
-          { error: "ARTIST_NAME_MISMATCH", details: `Your account is registered as \"${session.user.artistName || session.user.name}\". You can only submit tracks under your registered artist name.` },
+          { error: "ARTIST_NAME_MISMATCH", details: `Your account is registered as "${session.user.artistName || session.user.name}". The submitted streaming link appears to belong to a different artist. Collaborations are allowed only when your registered artist name is part of the credited artists.` },
           { status: 403 }
         );
       }

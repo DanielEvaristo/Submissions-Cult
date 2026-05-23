@@ -30,10 +30,5 @@ export async function GET(req: NextRequest) {
     return redirect(`/${locale}/industry`);
   }
   
-  if (user.genre) {
-    return redirect(`/${locale}/portal`);
-  }
-
-  // Fallback for onboarding
-  return redirect(`/${locale}/portal/onboarding`);
+  return redirect(`/${locale}/portal`);
 }

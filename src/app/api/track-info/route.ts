@@ -10,6 +10,45 @@ function detectPlatform(url: string): "spotify" | "soundcloud" | "deezer" | "oth
   return "other";
 }
 
+function getPathParts(url: string) {
+  try {
+    return new URL(url).pathname.split("/").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function isSupportedSpotifyReleaseUrl(url: string) {
+  return /spotify\.com\/(?:intl-[a-z]+\/)?(track|album)\/([a-zA-Z0-9]+)/i.test(url);
+}
+
+function isSupportedDeezerReleaseUrl(url: string) {
+  return /deezer\.com\/(?:[a-z]{2}\/)?(track|album)\/(\d+)/i.test(url);
+}
+
+function isSupportedSoundcloudReleaseUrl(url: string) {
+  const parts = getPathParts(url);
+  if (parts.length < 2) return false;
+
+  const [artistSlug, secondPart] = parts;
+  const reserved = new Set(["discover", "search", "pages", "charts", "stations", "stream", "you", "upload", "terms-of-use"]);
+
+  if (reserved.has(artistSlug)) return false;
+  if (secondPart === "sets") return parts.length >= 3;
+
+  return true;
+}
+
+function getInvalidReleaseMessage(platform: "spotify" | "soundcloud" | "deezer") {
+  if (platform === "spotify") {
+    return "Use a Spotify track or album link. Artist profile links are not accepted.";
+  }
+  if (platform === "soundcloud") {
+    return "Use a SoundCloud track or release link. Artist profile links are not accepted.";
+  }
+  return "Use a Deezer track or album link. Artist or profile links are not accepted.";
+}
+
 async function fetchDeezerTrack(query: string) {
   const res = await fetch(
     `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=1`,
@@ -25,25 +64,48 @@ async function fetchDeezerTrack(query: string) {
     cover: track.album?.cover_medium ?? track.album?.cover ?? null,
     platform: "deezer" as const,
     source: "deezer",
+    type: "SINGLE" as const,
   };
 }
 
 async function fetchFromDeezerUrl(url: string) {
-  const match = url.match(/deezer\.com\/(?:[a-z]{2}\/)?track\/(\d+)/i);
-  if (!match) return null;
-  const trackId = match[1];
-  const res = await fetch(`https://api.deezer.com/track/${trackId}`, {
+  const trackMatch = url.match(/deezer\.com\/(?:[a-z]{2}\/)?track\/(\d+)/i);
+  if (trackMatch) {
+    const trackId = trackMatch[1];
+    const res = await fetch(`https://api.deezer.com/track/${trackId}`, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) return null;
+    const track = await res.json();
+    if (track.error) return null;
+    return {
+      title: track.title,
+      artist: track.artist?.name ?? "",
+      cover: track.album?.cover_medium ?? track.album?.cover ?? null,
+      platform: "deezer" as const,
+      source: "deezer",
+      type: "SINGLE" as const,
+    };
+  }
+
+  const albumMatch = url.match(/deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i);
+  if (!albumMatch) return null;
+
+  const albumId = albumMatch[1];
+  const res = await fetch(`https://api.deezer.com/album/${albumId}`, {
     next: { revalidate: 0 },
   });
   if (!res.ok) return null;
-  const track = await res.json();
-  if (track.error) return null;
+  const album = await res.json();
+  if (album.error) return null;
+
   return {
-    title: track.title,
-    artist: track.artist?.name ?? "",
-    cover: track.album?.cover_medium ?? track.album?.cover ?? null,
+    title: album.title,
+    artist: album.artist?.name ?? "",
+    cover: album.cover_medium ?? album.cover ?? null,
     platform: "deezer" as const,
     source: "deezer",
+    type: "ALBUM" as const,
   };
 }
 
@@ -109,7 +171,7 @@ async function fetchOpenGraphTags(url: string, platform: string) {
       cover: ogImage,
       platform: platform as "spotify" | "soundcloud" | "deezer",
       source: "opengraph",
-      type: url.includes("/album/") || url.includes("/ep/") ? "ALBUM" : "SINGLE",
+      type: url.includes("/album/") || url.includes("/sets/") ? "ALBUM" : "SINGLE",
     };
   } catch (err) {
     console.error("OG fetch error:", err);
@@ -118,41 +180,40 @@ async function fetchOpenGraphTags(url: string, platform: string) {
 }
 
 async function fetchFromSpotifyUrl(url: string) {
-  if (!url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|ep|artist)\/([a-zA-Z0-9]+)/i)) {
+  if (!isSupportedSpotifyReleaseUrl(url)) {
     return null;
   }
   return fetchOpenGraphTags(url, "spotify");
 }
 
 async function fetchFromSoundcloudUrl(url: string) {
+  if (!isSupportedSoundcloudReleaseUrl(url)) {
+    return null;
+  }
+
   try {
     const urlObj = new URL(url);
     const parts = urlObj.pathname.split("/").filter(Boolean);
-    if (parts.length >= 1 && parts[0] !== "discover" && parts[0] !== "search" && parts[0] !== "pages") {
-      const artistSlug = parts[0];
-      const trackSlug = parts[1];
+    const artistSlug = parts[0];
+    const isSet = parts[1] === "sets";
+    const releaseSlug = isSet ? parts[2] : parts[1];
 
-      const formatSlug = (str: string) => {
-        if (!str) return "";
-        return str
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      };
+    const formatSlug = (str: string) => {
+      if (!str) return "";
+      return str
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
 
-      const artist = formatSlug(artistSlug);
-      const title = formatSlug(trackSlug);
+    const artist = formatSlug(artistSlug);
+    const title = formatSlug(releaseSlug);
 
-      if (!trackSlug) {
-        return {
-          title: "",
-          artist,
-          cover: null,
-          platform: "soundcloud" as const,
-          source: "url-parsing-artist",
-        };
-      }
+    if (!releaseSlug) {
+      return null;
+    }
 
+    if (!isSet) {
       const query = `${artist} ${title}`;
       const deezerTrack = await fetchDeezerTrack(query);
       if (deezerTrack) {
@@ -160,22 +221,32 @@ async function fetchFromSoundcloudUrl(url: string) {
           ...deezerTrack,
           platform: "soundcloud" as const,
           source: "soundcloud-deezer-search",
+          type: "SINGLE" as const,
         };
       }
+    }
 
+    const ogData = await fetchOpenGraphTags(url, "soundcloud");
+    if (ogData) {
       return {
-        title,
-        artist,
-        cover: null,
-        platform: "soundcloud" as const,
-        source: "url-parsing",
+        ...ogData,
+        type: isSet ? "ALBUM" : ogData.type,
       };
     }
+
+    return {
+      title,
+      artist,
+      cover: null,
+      platform: "soundcloud" as const,
+      source: isSet ? "url-parsing-set" : "url-parsing",
+      type: isSet ? "ALBUM" as const : "SINGLE" as const,
+    };
   } catch (err) {
     console.error("SoundCloud URL parsing failed:", err);
   }
 
-  return fetchOpenGraphTags(url, "soundcloud");
+  return null;
 }
 
 export async function GET(req: NextRequest) {
@@ -203,7 +274,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    let url = await resolveAllowedUrl(rawUrl);
+    const url = await resolveAllowedUrl(rawUrl);
     const platform = detectPlatform(url);
 
     if (platform === "other") {
@@ -211,6 +282,18 @@ export async function GET(req: NextRequest) {
         { error: "Unsupported platform. Use Spotify, SoundCloud, or Deezer links." },
         { status: 400 }
       );
+    }
+
+    if (platform === "spotify" && !isSupportedSpotifyReleaseUrl(url)) {
+      return NextResponse.json({ error: getInvalidReleaseMessage(platform) }, { status: 422 });
+    }
+
+    if (platform === "soundcloud" && !isSupportedSoundcloudReleaseUrl(url)) {
+      return NextResponse.json({ error: getInvalidReleaseMessage(platform) }, { status: 422 });
+    }
+
+    if (platform === "deezer" && !isSupportedDeezerReleaseUrl(url)) {
+      return NextResponse.json({ error: getInvalidReleaseMessage(platform) }, { status: 422 });
     }
 
     let result = null;
@@ -223,6 +306,10 @@ export async function GET(req: NextRequest) {
       result = await fetchFromSoundcloudUrl(url);
     }
 
+    if (!result && platform === "soundcloud") {
+      return NextResponse.json({ error: getInvalidReleaseMessage(platform) }, { status: 422 });
+    }
+
     if (!result && platform !== "deezer") {
       const slug = url.split("/").pop()?.replace(/-/g, " ") ?? "";
       if (slug && slug.length > 3) {
@@ -233,7 +320,7 @@ export async function GET(req: NextRequest) {
 
     if (!result) {
       return NextResponse.json(
-        { error: "Could not fetch track info. Please fill manually." },
+        { error: "Could not fetch track info. Use a direct song or album link and fill the rest manually if needed." },
         { status: 422 }
       );
     }

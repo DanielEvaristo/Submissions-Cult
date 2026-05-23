@@ -42,14 +42,14 @@ export function SectionHeader({
             {title}
           </h2>
           {subtitle && (
-            <p className="font-sans text-xs font-bold uppercase tracking-widest text-white/40 mt-1">
+            <p className="font-sans text-xs font-bold uppercase tracking-widest text-white/60 mt-1">
               {subtitle}
             </p>
           )}
         </div>
       </div>
-      <div className="hidden md:block text-[10px] font-black uppercase tracking-[0.4em] text-white/10">
-        CULT MACHINE // ADM_SYS_01
+      <div className="hidden md:block text-[10px] font-black uppercase tracking-[0.4em] text-white/40">
+        CULT MACHINE // ADM SYS 01
       </div>
     </div>
   );
@@ -80,7 +80,7 @@ export function StatCard({
     >
       <div className="relative z-10">
         <div className="flex justify-between items-start mb-2">
-          <span className="block font-sans text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+          <span className="block font-sans text-[12px] font-black uppercase tracking-[0.2em] opacity-80">
             {title}
           </span>
           {growth !== undefined && (
@@ -100,7 +100,7 @@ export function StatCard({
       </div>
       <div className="relative z-10 flex items-end justify-between mt-auto">
         {subtext && (
-          <span className="font-sans text-[10px] font-bold uppercase tracking-widest opacity-60">
+          <span className="font-sans text-[10px] font-bold uppercase tracking-widest opacity-80">
             {subtext}
           </span>
         )}

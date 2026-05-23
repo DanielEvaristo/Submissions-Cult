@@ -16,21 +16,21 @@ export default function OverviewTab({ stats }: Props) {
       <section>
         <SectionHeader
           icon={TrendingUp}
-          title="BUSINESS_HEALTH"
+          title="BUSINESS HEALTH"
           subtitle="Growth and monetisation"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <StatCard title="TOTAL_ARTISTS" value={stats.business.totalArtists} />
+          <StatCard title="TOTAL ARTISTS" value={stats.business.totalArtists} />
           <StatCard
-            title="NEW_THIS_WEEK"
+            title="NEW THIS WEEK"
             value={stats.business.newArtists}
             color="bg-[#00FF00] text-black"
           />
-          <StatCard title="NEW_THIS_MONTH" value={stats.business.totalArtists} />
-          <StatCard title="INDUSTRY_ACCOUNTS" value={stats.business.totalIndustry} />
+          <StatCard title="NEW THIS MONTH" value={stats.business.totalArtists} />
+          <StatCard title="INDUSTRY ACCOUNTS" value={stats.business.totalIndustry} />
 
           <StatCard
-            title="PENDING_VERIFICATION"
+            title="PENDING VERIFICATION"
             value={stats.business?.pendingVerification || 0}
             color={
               (stats.business?.pendingVerification || 0) > 0
@@ -39,20 +39,20 @@ export default function OverviewTab({ stats }: Props) {
             }
           />
           <StatCard
-            title="RETAINED_ARTISTS"
+            title="RETAINED ARTISTS"
             value={stats.business?.retainedArtists || 0}
             subtext="2+ submissions"
             color="bg-[#00FF00] text-black"
           />
           <StatCard
-            title="ARTISTS_W/_CREDITS"
+            title="ARTISTS WITH CREDITS"
             value={stats.business?.artistsWithCredits || 0}
             subtext="at least 1 credit"
           />
         </div>
         <div className="border-4 border-white/10 p-10 bg-black shadow-[12px_12px_0px_0px_rgba(245,224,0,0.1)]">
           <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-            ARTIST_GROWTH_THIS_MONTH
+            ARTIST GROWTH THIS MONTH
           </p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
@@ -83,17 +83,53 @@ export default function OverviewTab({ stats }: Props) {
         </div>
       </section>
 
+      {/* ── Financial Health ── */}
+      <section>
+        <SectionHeader
+          icon={TrendingUp}
+          title="FINANCIAL HEALTH"
+          subtitle="Revenue generated from submissions & PR"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <StatCard
+            title="TOTAL REVENUE"
+            value={`$${(stats.finance.totalRevenueCents / 100).toLocaleString()}`}
+            color="bg-[#00FF00] text-black"
+          />
+          <StatCard
+            title="NORMAL SUBS REVENUE"
+            value={`$${(stats.finance.normalRevenueCents / 100).toLocaleString()}`}
+            subtext={`${stats.finance.normalSubmissionsCount} submissions`}
+          />
+          <StatCard
+            title="PREMIUM PR PAID"
+            value={`$${(stats.finance.premiumRevenueCents / 100).toLocaleString()}`}
+            subtext={`${stats.finance.premiumSubmissionsCount} premium subs`}
+          />
+          <StatCard
+            title="PENDING PR REVENUE"
+            value={`$${(stats.finance.pendingPremiumRevenueCents / 100).toLocaleString()}`}
+            subtext="Awaiting review/payment"
+            color={
+              stats.finance.pendingPremiumRevenueCents > 0
+                ? "bg-[#F5E000] text-black"
+                : "bg-black text-white"
+            }
+          />
+        </div>
+      </section>
+
       {/* ── Submission Funnel ── */}
       <section>
         <SectionHeader
           icon={Layers}
-          title="SUBMISSION_FUNNEL"
+          title="SUBMISSION FUNNEL"
           subtitle="Form abandonment - unique sessions per step"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="border-4 border-white/10 p-10 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-              SESSIONS_PER_STEP
+              SESSIONS PER STEP
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
@@ -125,7 +161,7 @@ export default function OverviewTab({ stats }: Props) {
           </div>
           <div className="border-4 border-white/10 p-10 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-              DROP-OFF_RATES
+              DROP-OFF RATES
             </p>
             <div className="space-y-6">
               {[

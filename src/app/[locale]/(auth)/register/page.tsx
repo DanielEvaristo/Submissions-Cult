@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
@@ -83,6 +84,25 @@ function RegisterPageContent() {
         return;
       }
       setError(data.error ?? t("errors.generic"));
+      return;
+    }
+
+    if (accountType === AccountType.ARTIST) {
+      setLoading(true);
+      const loginResult = await signIn("credentials", {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      });
+      setLoading(false);
+
+      if (loginResult?.ok) {
+        window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
+        return;
+      }
+
+      setError("Account created, but automatic sign-in failed. Please log in manually.");
+      router.push(`/${locale}/login`);
       return;
     }
 

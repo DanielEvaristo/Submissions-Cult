@@ -10,6 +10,7 @@ export default function VerifyEmailPage() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  const from = searchParams.get("from");
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -78,7 +79,9 @@ export default function VerifyEmailPage() {
       return;
     }
 
-    window.location.href = `/${locale}/login?verified=1`;
+    window.location.href = from === "profile"
+      ? `/${locale}/portal/profile?verified=1`
+      : `/${locale}/login?verified=1`;
   };
 
   const handleResend = async () => {

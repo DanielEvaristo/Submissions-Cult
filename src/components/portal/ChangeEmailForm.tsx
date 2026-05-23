@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Loader2, CheckCircle2, AlertCircle, Mail, ShieldCheck, ShieldAlert } from "lucide-react";
 
 interface ChangeEmailFormProps {
@@ -9,9 +11,11 @@ interface ChangeEmailFormProps {
 }
 
 export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeEmailFormProps) {
+  const locale = useLocale();
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -47,7 +51,7 @@ export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeE
       if (!res.ok) {
         setError(data.error || "Failed to update email. Please try again.");
       } else {
-        setSuccess("Email updated successfully. Please log in again to apply the changes.");
+        setSuccess("Email updated successfully. Verify the new email from this profile section.");
         setNewEmail("");
         setPassword("");
         setShowForm(false);
@@ -59,9 +63,33 @@ export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeE
     }
   };
 
+  const handleResend = async () => {
+    setError("");
+    setSuccess("");
+    setResending(true);
+
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Failed to resend verification code.");
+        return;
+      }
+
+      setSuccess("A new verification code was sent to your email.");
+    } catch {
+      setError("Failed to resend verification code.");
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <div className="card space-y-6 mt-8 w-full">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-sans text-xl font-bold text-cm-text-primary tracking-tight">
@@ -71,7 +99,6 @@ export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeE
             Manage your login email and verification status.
           </p>
         </div>
-        {/* Verification badge */}
         <div className={`flex items-center gap-2 px-3 py-1.5 border-2 shrink-0 text-[10px] font-black uppercase tracking-widest ${
           isVerified
             ? "border-[#00FF00]/30 bg-[#00FF00]/10 text-[#00FF00]"
@@ -79,24 +106,40 @@ export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeE
         }`}>
           {isVerified
             ? <><ShieldCheck size={14} /> Verified</>
-            : <><ShieldAlert size={14} /> Unverified</>
+            : <><ShieldAlert size={14} /> Verification Pending</>
           }
         </div>
       </div>
 
-      {/* Current email display */}
       <div className="flex items-center gap-3 p-4 border-2 border-white/10 bg-white/5">
         <Mail size={16} className="text-white/40 shrink-0" />
         <span className="font-sans text-sm font-bold text-white tracking-tight">{currentEmail}</span>
       </div>
 
       {!isVerified && (
-        <p className="font-sans text-[11px] text-[#F5E000]/70 leading-relaxed">
-          ⚠ Your email is not verified yet. Check your inbox for the verification link.
-        </p>
+        <div className="space-y-4 border-2 border-[#F5E000]/20 bg-[#F5E000]/5 p-4">
+          <p className="font-sans text-[11px] text-[#F5E000] leading-relaxed">
+            Your email is still unverified. You can resend the 6-digit code and complete verification from this profile area.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resending}
+              className="btn-secondary text-sm"
+            >
+              {resending ? "Sending..." : "Resend Verification Code"}
+            </button>
+            <Link
+              href={`/${locale}/verify-email?email=${encodeURIComponent(currentEmail)}&from=profile`}
+              className="btn-primary text-sm"
+            >
+              Verify Email Now
+            </Link>
+          </div>
+        </div>
       )}
 
-      {/* Toggle form */}
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
@@ -168,6 +211,17 @@ export default function ChangeEmailForm({ currentEmail, emailVerified }: ChangeE
             </div>
           </div>
         </form>
+      )}
+
+      {!showForm && error && (
+        <p className="text-danger text-sm font-medium flex items-center gap-2">
+          <AlertCircle size={16} /> {error}
+        </p>
+      )}
+      {!showForm && success && (
+        <p className="text-ok text-sm font-medium flex items-center gap-2">
+          <CheckCircle2 size={16} /> {success}
+        </p>
       )}
     </div>
   );

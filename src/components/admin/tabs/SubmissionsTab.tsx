@@ -16,20 +16,20 @@ export default function SubmissionsTab({ stats }: Props) {
       <section>
         <SectionHeader
           icon={Music}
-          title="EDITORIAL_HEALTH"
+          title="EDITORIAL HEALTH"
           subtitle="Is the review process working?"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <StatCard title="TOTAL_SUBMISSIONS" value={stats.editorial.totalSubmissions} />
-          <StatCard title="THIS_WEEK" value={stats.editorial.submissionsPeriod} />
-          <StatCard title="THIS_MONTH" value={stats.editorial.submissionsPeriod} />
+          <StatCard title="TOTAL SUBMISSIONS" value={stats.editorial.totalSubmissions} />
+          <StatCard title="THIS WEEK" value={stats.editorial.submissionsPeriod} />
+          <StatCard title="THIS MONTH" value={stats.editorial.submissionsPeriod} />
           <StatCard
-            title="AVG_RESPONSE_TIME"
+            title="AVG RESPONSE TIME"
             value={`${stats.editorial.avgResponseHours || 0}h`}
             subtext="curator review"
           />
           <StatCard
-            title="SLA_BREACHES"
+            title="SLA BREACHES"
             value={stats.alerts.slaBreaches}
             subtext=">72h PENDING"
             color={
@@ -42,7 +42,7 @@ export default function SubmissionsTab({ stats }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="border-4 border-white/10 p-10 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-              SUBMISSIONS_BY_OPPORTUNITY
+              SUBMISSIONS BY OPPORTUNITY
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={stats.editorial.byOpportunity}>
@@ -67,7 +67,7 @@ export default function SubmissionsTab({ stats }: Props) {
           </div>
           <div className="border-4 border-white/10 p-10 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-              STATUS_BREAKDOWN
+              STATUS BREAKDOWN
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>

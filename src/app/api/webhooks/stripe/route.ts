@@ -146,12 +146,34 @@ export async function POST(req: Request) {
 
       revalidateSubmissionViews();
     } else if (type === "premium-pr" && submissionId) {
-      await prisma.submission.update({
+      const submission = await prisma.submission.update({
         where: { id: submissionId },
         data: {
           premiumPrStatus: "PAID",
         },
+        select: {
+          userId: true,
+          premiumServices: true,
+        },
       });
+
+      const existingPremiumPrTx = await prisma.creditTransaction.findUnique({
+        where: { stripeSessionId: session.id },
+      });
+
+      if (!existingPremiumPrTx) {
+        await prisma.creditTransaction.create({
+          data: {
+            userId: submission.userId,
+            type: "PREMIUM_PR_PURCHASE",
+            credits: 0,
+            amount: session.amount_total || 0,
+            currency: "usd",
+            stripeSessionId: session.id,
+          },
+        });
+      }
+
       revalidateSubmissionViews();
     } else if (type === "premium_service" && submissionId) {
       await prisma.submission.update({

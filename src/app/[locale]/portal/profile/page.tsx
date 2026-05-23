@@ -49,12 +49,6 @@ export default async function ProfilePage({ params: { locale } }: { params: { lo
     redirect(`/${locale}/login`);
   }
 
-  // Redirect to onboarding if profile is incomplete
-  const isComplete = !!user.country && !!user.monthlyListeners;
-  if (!isComplete) {
-    redirect(`/${locale}/portal/onboarding`);
-  }
-
   return (
     <div className="max-w-4xl mx-auto py-8">
       <div className="mb-12 border-b-4 border-white/10 pb-8">

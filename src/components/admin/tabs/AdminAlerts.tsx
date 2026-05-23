@@ -17,7 +17,7 @@ export default function AdminAlerts({ stats, aiInsights }: Props) {
         <section className="animate-reveal">
           <SectionHeader
             icon={Activity}
-            title="AI_INSIGHTS"
+            title="AI INSIGHTS"
             subtitle="Neural analysis of current vectors"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -41,7 +41,7 @@ export default function AdminAlerts({ stats, aiInsights }: Props) {
       <section>
         <SectionHeader
           icon={ShieldAlert}
-          title="EARLY_WARNING_SIGNALS"
+          title="EARLY WARNING SIGNALS"
           subtitle="Things that need attention"
         />
 
@@ -66,7 +66,7 @@ export default function AdminAlerts({ stats, aiInsights }: Props) {
         {/* Active Queue By Curator */}
         <div className="border-4 border-white/10 p-10 bg-black mb-8">
           <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-            ACTIVE_QUEUE_BY_CURATOR
+            ACTIVE QUEUE BY CURATOR
           </p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={stats.alerts.queueByCurator}>
@@ -101,10 +101,10 @@ export default function AdminAlerts({ stats, aiInsights }: Props) {
                 {stats.alerts?.ghostArtists || 0}
               </p>
               <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                GHOST_ARTISTS
+                GHOST ARTISTS
               </p>
               <p className="font-sans text-[8px] font-bold uppercase tracking-widest leading-relaxed text-white/20 mt-1">
-                REGISTERED_NO_SUBMISSION
+                REGISTERED NO SUBMISSION
               </p>
             </div>
           </div>
@@ -117,10 +117,10 @@ export default function AdminAlerts({ stats, aiInsights }: Props) {
                 {stats.alerts?.duplicateSubmissions || 0}
               </p>
               <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                DUPLICATE_PAIRS
+                DUPLICATE PAIRS
               </p>
               <p className="font-sans text-[8px] font-bold uppercase tracking-widest leading-relaxed text-white/20 mt-1">
-                SAME_ARTIST_SAME_TRACK
+                SAME ARTIST SAME TRACK
               </p>
             </div>
           </div>

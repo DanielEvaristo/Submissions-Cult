@@ -18,18 +18,18 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
       <section>
         <SectionHeader
           icon={BarChart2}
-          title="PRODUCT_HEALTH"
+          title="PRODUCT HEALTH"
           subtitle="Do people understand and use the platform?"
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <StatCard
-            title="PROFILE_COMPLETION"
+            title="PROFILE COMPLETION"
             value={`${stats.product?.profileCompletion || 0}%`}
             subtext="artists with genre set"
           />
           <div className="border-4 border-white/10 p-6 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 border-b-2 border-white/10 pb-2 w-fit">
-              ROLE_DISTRIBUTION
+              ROLE DISTRIBUTION
             </p>
             <ResponsiveContainer width="100%" height={150}>
               <PieChart>
@@ -60,7 +60,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
           </div>
           <div className="border-4 border-white/10 p-6 bg-black">
             <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-4 border-b-2 border-white/10 pb-2 w-fit">
-              TOP_COUNTRIES
+              TOP COUNTRIES
             </p>
             <div className="space-y-3">
               {stats.product.byCountry.slice(0, 3).map((c, i) => (
@@ -77,7 +77,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
         </div>
         <div className="border-4 border-white/10 p-10 bg-black">
           <p className="font-sans text-[10px] font-black uppercase tracking-[0.3em] mb-8 border-b-2 border-white/10 pb-2 w-fit">
-            TOP_GENRES_SUBMITTED
+            TOP GENRES SUBMITTED
           </p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
@@ -112,7 +112,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
       <section>
         <SectionHeader
           icon={Activity}
-          title="INTELLIGENCE_MODULE"
+          title="INTELLIGENCE MODULE"
           subtitle="Search and filter artist vectors"
         />
         <div className="flex flex-col md:flex-row gap-6 p-8 border-4 border-white/10 bg-black">
@@ -128,7 +128,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
               }
             >
               <option value="" className="bg-black text-white">
-                ALL_GENRES
+                ALL GENRES
               </option>
               <option value="ROCK" className="bg-black text-white">
                 ROCK
@@ -157,7 +157,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
           </div>
           <div className="flex-1 space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest opacity-40">
-              RELEVANCE_FILTER
+              RELEVANCE FILTER
             </label>
             <div className="flex gap-2">
               {["ALL", "HIGH", "MED", "LOW"].map((r) => (
@@ -183,7 +183,7 @@ export default function ArtistsTab({ stats, artistFilter, setArtistFilter }: Pro
           <div className="p-20 text-center space-y-8">
             <Activity size={64} className="mx-auto opacity-10 text-[#F5E000]" />
             <p className="font-sans text-xl font-black uppercase tracking-tighter text-white/40">
-              ARTIST_INTELLIGENCE_MODULE_ACTIVE
+              ARTIST INTELLIGENCE MODULE ACTIVE
             </p>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 max-w-sm mx-auto leading-relaxed">
               Filters applied. Showing agents matching your vectors.

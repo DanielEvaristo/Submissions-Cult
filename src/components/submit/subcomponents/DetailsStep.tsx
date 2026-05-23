@@ -11,6 +11,9 @@ interface DetailsStepProps {
   session: any;
   fetchingInfo: boolean;
   handleAutoFill: () => void;
+  artistNameLocked: boolean;
+  artistMetadataMismatch: boolean;
+  registeredArtistName: string;
 }
 
 export default function DetailsStep({
@@ -19,6 +22,9 @@ export default function DetailsStep({
   session,
   fetchingInfo,
   handleAutoFill,
+  artistNameLocked,
+  artistMetadataMismatch,
+  registeredArtistName,
 }: DetailsStepProps) {
   return (
     <div className="space-y-8 animate-reveal">
@@ -38,11 +44,11 @@ export default function DetailsStep({
       <div className="grid grid-cols-1 gap-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
-            <label className="label">STREAMING URL (SPOTIFY/SC)</label>
+            <label className="label">STREAMING URL (SONG OR RELEASE ONLY)</label>
             <input
               type="url"
               className="input"
-              placeholder="Paste track or album link..."
+              placeholder="Paste a song, single, EP, or album link..."
               value={form.streamingUrl}
               onChange={(e) => {
                 const url = e.target.value;
@@ -134,22 +140,28 @@ export default function DetailsStep({
             <label className="label">ARTIST NAME</label>
             <input
               type="text"
-              className="input"
+              className="input disabled:opacity-70 disabled:cursor-not-allowed"
               value={form.artistName}
               onChange={(e) => set("artistName", e.target.value)}
+              readOnly={artistNameLocked}
+              disabled={artistNameLocked}
             />
-            {session?.user?.accountType === "ARTIST" &&
-              session.user.artistName &&
-              form.artistName &&
-              form.artistName.trim().toLowerCase() !==
-                (session.user.artistName || "").trim().toLowerCase() && (
-                <div className="mt-3 p-3 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-3 animate-reveal">
-                  <AlertCircle size={16} className="text-[#FF0000] shrink-0 mt-0.5" strokeWidth={3} />
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF0000] leading-relaxed">
-                    Your account is registered as <span className="text-white">&quot;{session.user.artistName}&quot;</span>. You can only submit under your registered name.
-                  </p>
-                </div>
-              )}
+            {artistNameLocked && (
+              <div className="mt-3 p-3 border-2 border-cult-yellow/20 bg-cult-yellow/5 flex items-start gap-3 animate-reveal">
+                <AlertCircle size={16} className="text-cult-yellow shrink-0 mt-0.5" strokeWidth={3} />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cult-yellow leading-relaxed">
+                  This submission uses your registered artist name: <span className="text-white">&quot;{registeredArtistName}&quot;</span>.
+                </p>
+              </div>
+            )}
+            {artistMetadataMismatch && (
+              <div className="mt-3 p-3 border-2 border-[#FF0000] bg-[#FF0000]/10 flex items-start gap-3 animate-reveal">
+                <AlertCircle size={16} className="text-[#FF0000] shrink-0 mt-0.5" strokeWidth={3} />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF0000] leading-relaxed">
+                  The streaming link appears to belong to a different artist. We only allow your own releases, but collaborations are accepted when <span className="text-white">&quot;{registeredArtistName}&quot;</span> is part of the credited artists.
+                </p>
+              </div>
+            )}
           </div>
 
           {(!session || !session.user?.instagram) && (

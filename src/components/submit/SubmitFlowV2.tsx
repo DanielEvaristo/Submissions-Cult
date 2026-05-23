@@ -73,6 +73,33 @@ const INITIAL: FormData = {
   reviewRequested: false,
   premiumServices: [],
 };
+
+function normalizeArtistValue(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/(feat|featuring|ft|with)/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function registeredArtistMatchesMetadata(registeredArtist: string, metadataArtist: string) {
+  const registered = normalizeArtistValue(registeredArtist);
+  const metadata = normalizeArtistValue(metadataArtist);
+
+  if (!registered || !metadata) return true;
+  if (registered === metadata) return true;
+  if (metadata.includes(registered)) return true;
+
+  const collaborators = metadata
+    .split(/\s*(?:,|&| x | and )\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return collaborators.some((name) => name === registered || name.includes(registered) || registered.includes(name));
+}
 interface SubmitFlowV2Props {
   managedArtists?: ManagedArtistRef[];
   basePath: string;
@@ -107,20 +134,35 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const [showRejectedConfirm, setShowRejectedConfirm] = useState(false);
   const [showActiveBlockModal, setShowActiveBlockModal] = useState(false);
   const [forceResubmit, setForceResubmit] = useState(false);
+  const registeredArtistName = session?.user?.accountType === "ARTIST" ? (session.user.artistName || session.user.name || "") : "";
+  const artistNameLocked = !!registeredArtistName && !hasManagedArtists;
+  const artistMetadataMismatch = !!registeredArtistName && !!form.autoFilledArtist && !registeredArtistMatchesMetadata(registeredArtistName, form.autoFilledArtist);
 
   const handleAutoFill = async () => {
     if (!form.streamingUrl.trim()) return;
     setFetchingInfo(true);
+    setError("");
     try {
       const res = await fetch(`/api/track-info?url=${encodeURIComponent(form.streamingUrl)}`);
+      const data = await res.json().catch(() => null);
+
       if (!res.ok) {
+        setForm((prev) => ({
+          ...prev,
+          autoFilledTitle: "",
+          autoFilledArtist: "",
+          autoFilledCover: "",
+          autoFillSource: "",
+          streamingPlatform: "",
+        }));
+        setError(data?.error || "Use a direct song or album link. Artist profile links are not accepted.");
         return;
       }
-      const data = await res.json();
+
       setForm((prev) => ({
         ...prev,
         trackTitle: data.title || prev.trackTitle,
-        artistName: data.artist || prev.artistName,
+        artistName: artistNameLocked ? prev.artistName : (data.artist || prev.artistName),
         autoFilledTitle: data.title || "",
         autoFilledArtist: data.artist || "",
         autoFilledCover: data.cover || "",
@@ -129,6 +171,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         submissionType: data.type || prev.submissionType,
       }));
     } catch {
+      setError("Could not validate that link. Use a direct song or album URL.");
     } finally {
       setFetchingInfo(false);
     }
@@ -139,12 +182,15 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     if (session?.user) {
       setForm((prev) => ({
         ...prev,
+        artistName: session.user.accountType === "ARTIST" && !hasManagedArtists
+          ? (session.user.artistName || session.user.name || prev.artistName)
+          : prev.artistName,
         instagram: session.user.instagram || prev.instagram,
         genre: session.user.genre || prev.genre,
         subgenre: session.user.subgenre || prev.subgenre,
       }));
     }
-  }, [session]);
+  }, [hasManagedArtists, session]);
 
   const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -214,9 +260,8 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     if (step === 0) return !!form.managedArtistId;
     if (step === 1) {
       const hasBasicInfo = !!form.streamingUrl && !!form.trackTitle && !!form.artistName && !!form.genre && !!form.subgenre;
-      // Instagram is required for anonymous users, but for logged in users we use session data
       const hasInstagram = !!session?.user?.instagram || !!form.instagram;
-      return hasBasicInfo && hasInstagram && (!!session || !!form.email);
+      return hasBasicInfo && hasInstagram && (!!session || !!form.email) && !artistMetadataMismatch;
     }
     if (step === 2) return !!form.submissionType;
     if (step === 3) return form.channels.length > 0 || form.applyAllChannels;
@@ -658,6 +703,9 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           session={session}
           fetchingInfo={fetchingInfo}
           handleAutoFill={handleAutoFill}
+          artistNameLocked={artistNameLocked}
+          artistMetadataMismatch={artistMetadataMismatch}
+          registeredArtistName={registeredArtistName}
         />
       )}
 

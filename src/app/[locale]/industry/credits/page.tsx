@@ -19,6 +19,13 @@ type Transaction = {
   createdAt: string;
 };
 
+const TRANSACTION_LABELS: Record<string, string> = {
+  PURCHASE: "Credit Purchase",
+  USAGE: "Credit Usage",
+  RETENTION_OFFER: "Retention Discount",
+  PREMIUM_PR_PURCHASE: "Premium PR Payment",
+};
+
 export default function CreditsPage() {
   const { data: session, update } = useSession();
   const { locale } = useParams<{ locale: string }>();
@@ -178,12 +185,20 @@ export default function CreditsPage() {
               transactions.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between py-4 border-b border-white/10 group hover:bg-white/5 px-2 transition-colors">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white">{tx.type}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white">{TRANSACTION_LABELS[tx.type] || tx.type}</p>
                     <p className="text-[8px] font-bold opacity-30 uppercase tracking-[0.2em]">{new Date(tx.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-black ${tx.type === "PURCHASE" ? "text-[#00FF00]" : "text-[#FF0000]"}`}>
-                      {tx.type === "PURCHASE" ? "+" : "-"}{tx.credits} CRD
+                    <p className={`text-sm font-black ${
+                      tx.type === "PURCHASE"
+                        ? "text-[#00FF00]"
+                        : tx.type === "PREMIUM_PR_PURCHASE"
+                        ? "text-[#F5E000]"
+                        : "text-[#FF0000]"
+                    }`}>
+                      {tx.type === "PREMIUM_PR_PURCHASE"
+                        ? "PREMIUM PR"
+                        : `${tx.type === "PURCHASE" ? "+" : "-"}${tx.credits} CRD`}
                     </p>
                     <p className="text-[8px] font-bold opacity-30 uppercase tracking-widest">${(tx.amount / 100).toFixed(2)} USD</p>
                   </div>

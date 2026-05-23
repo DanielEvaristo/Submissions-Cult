@@ -65,6 +65,8 @@ export async function GET(req: Request) {
       dupSubmissions,
       retainedSubmissions,
       funnelEvents,
+      allSubmissionsFinance,
+      admins,
     ] = await Promise.all([
       prisma.user.count({ where: { accountType: "ARTIST" } }),
       prisma.user.count({ where: { accountType: "ARTIST", createdAt: { gte: startDate } } }),
@@ -104,6 +106,8 @@ export async function GET(req: Request) {
       prisma.submission.groupBy({ by: ["userId", "trackTitle"], _count: { id: true }, having: { id: { _count: { gt: 1 } } } }),
       prisma.submission.groupBy({ by: ["userId"], _count: { id: true }, having: { id: { _count: { gt: 1 } } } }),
       prisma.funnelEvent.findMany({ where: { createdAt: { gte: funnelStartDate } } }),
+      prisma.submission.findMany({ select: { premiumServices: true, totalCostUsd: true, premiumPrStatus: true } }),
+      prisma.admin.findMany({ select: { id: true, name: true, email: true } }),
     ]);
 
     // Average response time
@@ -145,6 +149,31 @@ export async function GET(req: Request) {
       if (s.done) completed++;
     });
 
+    // Finance calculations
+    let normalSubmissionsCount = 0;
+    let premiumSubmissionsCount = 0;
+    let premiumRevenueCents = 0;
+    let pendingPremiumRevenueCents = 0;
+    
+    // Normal submission estimate = $5 (500 cents)
+    const NORMAL_SUBMISSION_CENTS = 500;
+
+    for (const sub of allSubmissionsFinance) {
+      if (!sub.premiumServices || sub.premiumServices.length === 0) {
+        normalSubmissionsCount++;
+      } else {
+        premiumSubmissionsCount++;
+        if (sub.premiumPrStatus === "PAID") {
+          premiumRevenueCents += sub.totalCostUsd || 0;
+        } else if (sub.premiumPrStatus === "REQUESTED" || sub.premiumPrStatus === "APPROVED") {
+          pendingPremiumRevenueCents += sub.totalCostUsd || 0;
+        }
+      }
+    }
+
+    const normalRevenueCents = normalSubmissionsCount * NORMAL_SUBMISSION_CENTS;
+    const totalRevenueCents = normalRevenueCents + premiumRevenueCents;
+
     return NextResponse.json({
       period,
       business: {
@@ -176,8 +205,22 @@ export async function GET(req: Request) {
           step1, step2, step3, completed,
         }
       },
+      finance: {
+        totalRevenueCents,
+        normalSubmissionsCount,
+        premiumSubmissionsCount,
+        normalRevenueCents,
+        premiumRevenueCents,
+        pendingPremiumRevenueCents,
+      },
       alerts: {
-        queueByCurator: curatorQueue.map(r => ({ curatorId: r.curatorId, count: r._count.curatorId })),
+        queueByCurator: curatorQueue.map(r => {
+          const admin = admins.find(a => a.id === r.curatorId);
+          return {
+            curatorId: admin?.name || admin?.email || r.curatorId || "Unassigned",
+            count: r._count.curatorId
+          };
+        }),
         slaBreaches,
         ghostArtists,
         duplicateSubmissions: duplicatePairs,

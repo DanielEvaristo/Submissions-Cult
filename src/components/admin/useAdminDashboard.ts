@@ -38,6 +38,14 @@ export interface DashboardStats {
       completed: number;
     };
   };
+  finance: {
+    totalRevenueCents: number;
+    normalSubmissionsCount: number;
+    premiumSubmissionsCount: number;
+    normalRevenueCents: number;
+    premiumRevenueCents: number;
+    pendingPremiumRevenueCents: number;
+  };
   alerts: {
     queueByCurator: { curatorId: string | null; count: number }[];
     slaBreaches: number;
@@ -47,7 +55,7 @@ export interface DashboardStats {
 }
 
 export type Period = "week" | "month" | "year";
-export type Tab = "overview" | "submissions" | "artists" | "claim_accounts";
+export type Tab = "overview" | "submissions" | "artists" | "claim_accounts" | "premium_pr";
 
 export function useAdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -78,6 +86,10 @@ export function useAdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [aiInsights, setAiInsights] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
+
+  // Premium PR state
+  const [premiumPrRequests, setPremiumPrRequests] = useState<any[]>([]);
+  const [premiumPrLoading, setPremiumPrLoading] = useState(false);
 
   // ── Stats loader ────────────────────────────────────────────────────────
   const load = useCallback(
@@ -144,8 +156,47 @@ export function useAdminDashboard() {
         loadClaimAccounts();
       }, 500); // Debounce search
       return () => clearTimeout(timeout);
+    } else if (activeTab === "premium_pr") {
+      loadPremiumPr();
     }
   }, [activeTab, loadClaimAccounts, claimSearch, claimPage]);
+
+  const loadPremiumPr = async () => {
+    setPremiumPrLoading(true);
+    try {
+      const res = await fetch("/api/admin/premium-pr");
+      if (res.ok) {
+        const data = await res.json();
+        setPremiumPrRequests(data.requests);
+      }
+    } finally {
+      setPremiumPrLoading(false);
+    }
+  };
+
+  const handlePremiumPrAction = async (id: string, action: "APPROVE" | "REJECT", type: "SUBMISSION" | "CREATIVE") => {
+    setProcessingId(id);
+    try {
+      const endpoint = type === "SUBMISSION" ? `/api/admin/premium-pr/${id}` : `/api/creative-requests/${id}`;
+      const method = type === "SUBMISSION" ? "PATCH" : "PATCH"; // Adapt according to route
+      
+      const payload = type === "SUBMISSION" 
+        ? { status: action } // For submission premiumPrStatus
+        : { status: action === "APPROVE" ? "APPROVED" : "REJECTED" }; // For CreativeRequest
+
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        await loadPremiumPr();
+      }
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const handleClaimAction = async (userId: string, action: "APPROVE" | "REJECT") => {
     setProcessingId(userId);
@@ -190,8 +241,11 @@ export function useAdminDashboard() {
     lastUpdated,
     aiInsights,
     analyzing,
+    premiumPrRequests,
+    premiumPrLoading,
     load,
     runAiAnalysis,
     handleClaimAction,
+    handlePremiumPrAction,
   };
 }

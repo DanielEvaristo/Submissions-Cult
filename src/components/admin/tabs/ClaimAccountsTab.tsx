@@ -36,7 +36,7 @@ export default function ClaimAccountsTab({
     <div className="space-y-10 animate-reveal">
       <SectionHeader
         icon={UserCheck}
-        title="CLAIM_ACCOUNTS"
+        title="CLAIM ACCOUNTS"
         subtitle="Cuentas importadas desde legacy esperando ser reclamadas"
       />
 
@@ -137,10 +137,10 @@ export default function ClaimAccountsTab({
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-3">
                         <span className="font-black text-lg text-white">
-                          {u.artistName || u.name || "—"}
+                          {u.artistName || u.name || "Sin Nombre"}
                         </span>
                         <span className="px-2 py-0.5 bg-[#F5E000]/20 text-[#F5E000] text-[9px] font-black uppercase tracking-widest">
-                          PENDING_CLAIM
+                          PENDING CLAIM
                         </span>
                       </div>
                       <p className="text-xs font-bold text-white/50">{u.email}</p>

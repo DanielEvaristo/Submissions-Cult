@@ -7,6 +7,7 @@ import OverviewTab from "@/components/admin/tabs/OverviewTab";
 import SubmissionsTab from "@/components/admin/tabs/SubmissionsTab";
 import ArtistsTab from "@/components/admin/tabs/ArtistsTab";
 import ClaimAccountsTab from "@/components/admin/tabs/ClaimAccountsTab";
+import PremiumPrTab from "@/components/admin/tabs/PremiumPrTab";
 import AdminAlerts from "@/components/admin/tabs/AdminAlerts";
 
 export default function AdminDashboard() {
@@ -36,6 +37,9 @@ export default function AdminDashboard() {
     load,
     runAiAnalysis,
     handleClaimAction,
+    premiumPrRequests,
+    premiumPrLoading,
+    handlePremiumPrAction,
   } = useAdminDashboard();
 
   return (
@@ -44,7 +48,7 @@ export default function AdminDashboard() {
       <div className="border-b-4 border-black pb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-8">
         <div>
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-4 block">
-            CONTROL_CENTER_V2.5
+            CONTROL CENTER V2.5
           </span>
           <h1 className="font-sans text-[clamp(40px,10vw,80px)] font-black text-white tracking-tighter uppercase leading-[0.85]">
             ANALYTICS<br />
@@ -75,8 +79,8 @@ export default function AdminDashboard() {
         <div className="flex flex-col items-start md:items-end gap-4 w-full md:w-auto">
           <p className="font-sans text-[10px] font-black uppercase tracking-[0.2em] text-white/20 text-left md:text-right">
             {lastUpdated
-              ? `LAST_SYNC: ${lastUpdated.toLocaleTimeString()}`
-              : "SYSTEM_READY"}
+              ? `LAST SYNC: ${lastUpdated.toLocaleTimeString()}`
+              : "SYSTEM READY"}
           </p>
           <div className="flex gap-4 w-full md:w-auto">
             <button
@@ -101,7 +105,7 @@ export default function AdminDashboard() {
               ) : (
                 <Activity size={14} />
               )}
-              AI_ANALYZE
+              AI ANALYZE
             </button>
           </div>
         </div>
@@ -154,6 +158,16 @@ export default function AdminDashboard() {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setActiveTab("premium_pr")}
+          className={`px-8 py-5 font-black text-xs uppercase tracking-[0.2em] border-t-4 border-x-4 border-white/10 transition-all ${
+            activeTab === "premium_pr"
+              ? "bg-[#00FF00] text-black translate-y-1"
+              : "bg-black text-white opacity-20 hover:opacity-100"
+          }`}
+        >
+          PREMIUM PR & COLLABS
+        </button>
       </div>
 
       {/* ── Loading ── */}
@@ -192,9 +206,17 @@ export default function AdminDashboard() {
           handleClaimAction={handleClaimAction}
         />
       )}
+      {activeTab === "premium_pr" && (
+        <PremiumPrTab
+          premiumPrRequests={premiumPrRequests}
+          premiumPrLoading={premiumPrLoading}
+          processingId={processingId}
+          handlePremiumPrAction={handlePremiumPrAction}
+        />
+      )}
 
       {/* ── Shared Alerts / AI Section (Visible across tabs if stats exist) ── */}
-      {stats && activeTab !== "claim_accounts" && (
+      {stats && activeTab !== "claim_accounts" && activeTab !== "premium_pr" && (
         <>
           <AdminAlerts stats={stats} aiInsights={aiInsights} />
 
@@ -204,14 +226,14 @@ export default function AdminDashboard() {
               className="px-10 py-6 bg-[#FF0000] text-white border-4 border-[#FF0000] font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all shadow-[8px_8px_0px_0px_rgba(255,0,0,0.2)]"
               id="admin-review-pending-btn"
             >
-              REVIEW_PENDING_APPLICATIONS
+              REVIEW PENDING APPLICATIONS
             </Link>
             <Link
               href="submissions"
               className="px-10 py-6 bg-black text-white border-4 border-white/10 font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-white/10 transition-all"
               id="admin-view-submissions-btn"
             >
-              VIEW_ALL_SUBMISSIONS
+              VIEW ALL SUBMISSIONS
             </Link>
           </div>
         </>

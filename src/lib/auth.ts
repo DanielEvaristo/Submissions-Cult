@@ -70,12 +70,7 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        if (!user.emailVerified) {
-          devLog("[AUTH] Login blocked: Email not verified for", email);
-          throw new Error("EMAIL_NOT_VERIFIED:" + user.email);
-        }
-
-        devLog("[AUTH] Login successful for USER:", user.id, user.email);
+        devLog("[AUTH] Login successful for USER:", user.id, user.email, user.emailVerified ? "verified" : "unverified");
         return {
           id: user.id,
           email: user.email,
