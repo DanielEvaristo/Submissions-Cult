@@ -39,17 +39,6 @@ export default function ProfileSocials({
         {t("socials.title")}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Spotify */}
-        <div>
-          <label className="label">{t("socials.spotify")}</label>
-          <input
-            type="text"
-            className="input"
-            value={form.spotifyUrl}
-            onChange={(e) => set("spotifyUrl", e.target.value)}
-          />
-        </div>
-
         {/* Instagram */}
         <div>
           <div className="flex items-center justify-between mb-2">

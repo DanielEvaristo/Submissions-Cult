@@ -60,6 +60,8 @@
     "industryDesc": "Gérez plusieurs artistes. Comptes pour labels, PR, management et agences. Vérification manuelle requise (1–3 jours ouvrables)."
   },
   "register": {
+    "artistLinkedNoticeTitle": "AVIS D'ENREGISTREMENT DE L'ARTISTE",
+    "artistLinkedNotice": "L'artiste Spotify \"{artistName}\" sera enregistré et lié de manière permanente à l'adresse e-mail: {email}",
     "createAccount": "Créez votre compte",
     "placeholders": {
       "artistName": "Votre nom d'artiste ou de groupe"

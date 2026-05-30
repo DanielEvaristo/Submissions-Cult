@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Loader2, Music, ExternalLink, Lock, ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 type Status =
+  | "AWAITING_PAYMENT"
   | "PENDING"
   | "IN_REVIEW"
   | "CURATOR_APPROVED"
@@ -48,6 +50,7 @@ export default function SubmissionsPage() {
   const t = useTranslations("submissions");
   const tStatus = useTranslations("status");
   const locale = useLocale();
+  const router = useRouter();
   const { data: session } = useSession();
   // Profile is complete when the user has provided all mandatory fields
   const isProfileIncomplete = session?.user?.accountType === "ARTIST" && 
@@ -147,6 +150,7 @@ export default function SubmissionsPage() {
     });
 
   const statusLabel = (s: Status): string => {
+    if (s === "AWAITING_PAYMENT") return "AWAITING PAYMENT";
     if (s === "PENDING" || s === "IN_REVIEW" || s === "CURATOR_APPROVED" || s === "MASTER_REVIEW") {
       return tStatus("underReview");
     }
@@ -172,7 +176,7 @@ export default function SubmissionsPage() {
           </h1>
         </div>
         <Link
-          href={`/${locale}/portal/submit`}
+          href={`/${locale}/portal/submit?new=true`}
           className="bg-black text-white px-8 py-4 font-sans font-black text-xs uppercase tracking-[0.3em] hover:bg-[#F5E000] hover:text-black transition-all border-2 border-white/10"
           id="new-submission-btn"
         >
@@ -291,6 +295,7 @@ export default function SubmissionsPage() {
                       sub.status === "PUBLISHED" ? "bg-[#00CC66] text-black border-[#00CC66]" :
                       sub.status === "ACCEPTED" ? "bg-[#F5E000] text-black border-black" :
                       sub.status === "REJECTED" || sub.status === "CURATOR_REJECTED" ? "bg-[#FF0000] text-white border-[#FF0000]" :
+                      sub.status === "AWAITING_PAYMENT" ? "bg-orange-500 text-white border-orange-500 animate-pulse" :
                       "bg-black text-white border-white/10"
                     }`}>
                       {statusLabel(sub.status)}
@@ -303,6 +308,21 @@ export default function SubmissionsPage() {
                         <span className="font-sans text-[9px] font-black uppercase tracking-widest text-[#F5E000] border border-[#F5E000]/30 px-2 py-1 text-center">
                           {sub.placement}
                         </span>
+                      )}
+
+                      {/* AWAITING PAYMENT — Complete Checkout CTA */}
+                      {sub.status === "AWAITING_PAYMENT" && (
+                        <button
+                          onClick={() => {
+                            setPayLoading(sub.id);
+                            router.push(`/${locale}/portal/submit?edit=${sub.id}`);
+                          }}
+                          disabled={payLoading === sub.id}
+                          className="px-4 py-2 bg-orange-500 text-white font-sans font-black text-[9px] uppercase tracking-widest hover:bg-orange-400 transition-all flex items-center gap-2 border-2 border-orange-500"
+                        >
+                          {payLoading === sub.id ? <Loader2 size={12} className="animate-spin" /> : null}
+                          EDIT / PAY
+                        </button>
                       )}
                       
                       {/* Premium PR Status UI */}

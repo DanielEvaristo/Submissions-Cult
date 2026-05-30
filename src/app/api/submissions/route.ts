@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       autoFillSource,
       managedArtistId,
       useCredits,
+      submissionId, // For explicit updates
     } = body;
 
     // Validate required fields
@@ -157,6 +158,22 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
+    
+    // ── GUARD 5: Track already has an AWAITING_PAYMENT submission ───────────
+    // If they already clicked "Pay & Submit" but didn't pay, we should update
+    // the existing submission rather than creating a duplicate.
+    // If a specific submissionId is provided, look for that exact one.
+    const existingAwaitingPayment = submissionId
+      ? await prisma.submission.findUnique({
+          where: { id: submissionId, userId: session.user.id, status: "AWAITING_PAYMENT" },
+        })
+      : await prisma.submission.findFirst({
+          where: {
+            userId: session.user.id,
+            streamingUrl: streamingUrl.trim(),
+            status: "AWAITING_PAYMENT",
+          },
+        });
 
     const dbUser = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -231,6 +248,11 @@ export async function POST(req: NextRequest) {
       resolvedManagedArtistId = ownedArtist.id;
     }
 
+    // Determine if payment is needed via Stripe
+    // When useCredits=false but credits are needed, submission is held as AWAITING_PAYMENT
+    // until the Stripe webhook confirms payment.
+    const needsStripePayment = !useCredits && expectedCredits > 0;
+
     // Use a transaction for credit deduction and submission creation
     const submission = await prisma.$transaction(async (tx) => {
       if (useCredits && creditsToDeduct > 0) {
@@ -253,42 +275,57 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return await tx.submission.create({
-        data: {
-          userId: session.user.id,
-          channels: channels || [],
-          fastTrack: !!fastTrack,
-          fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
-          reviewRequested: !!reviewRequested,
-          premiumServices: finalPremiumServices,
-          premiumPrStatus: premiumPrStatus as any,
-          streamingUrl,
-          streamingPlatform: streamingPlatform ? (streamingPlatform.toUpperCase() as any) : null,
-          artistName,
-          trackTitle,
-          instagram: instagram ?? null,
-          spotifyUrl: spotifyUrl ?? null,
-          releaseType: releaseType as any,
-          releaseDate: releaseDate ?? null,
-          genres: [genre],
-          subgenres: subgenre ? [subgenre] : [],
-          pitch: pitch ?? null,
-          pressKitUrl: pressKitUrl ?? null,
-          autoFilledTitle: autoFilledTitle ?? null,
-          autoFilledArtist: autoFilledArtist ?? null,
-          autoFilledCover: autoFilledCover ?? null,
-          autoFillSource: autoFillSource ?? null,
-          managedArtistId: resolvedManagedArtistId,
-          isFree: !useCredits,
-          creditsUsed: useCredits ? creditsToDeduct : 0,
-          curatorId: assignedCuratorId,
-          status: assignedCuratorId ? "IN_REVIEW" : "PENDING",
-        },
-      });
+      const submissionData = {
+        userId: session.user.id,
+        channels: channels || [],
+        fastTrack: !!fastTrack,
+        fastTrackDeadline: fastTrack ? new Date(Date.now() + 48 * 60 * 60 * 1000) : null,
+        reviewRequested: !!reviewRequested,
+        premiumServices: finalPremiumServices,
+        premiumPrStatus: premiumPrStatus as any,
+        streamingUrl: streamingUrl.trim(),
+        streamingPlatform: streamingPlatform ? (streamingPlatform.toUpperCase() as any) : null,
+        artistName,
+        trackTitle,
+        instagram: instagram ?? null,
+        spotifyUrl: spotifyUrl ?? null,
+        releaseType: releaseType as any,
+        releaseDate: releaseDate ?? null,
+        genres: [genre],
+        subgenres: subgenre ? [subgenre] : [],
+        pitch: pitch ?? null,
+        pressKitUrl: pressKitUrl ?? null,
+        autoFilledTitle: autoFilledTitle ?? null,
+        autoFilledArtist: autoFilledArtist ?? null,
+        autoFilledCover: autoFilledCover ?? null,
+        autoFillSource: autoFillSource ?? null,
+        managedArtistId: resolvedManagedArtistId,
+        isFree: !useCredits && !needsStripePayment, // only truly free if expectedCredits === 0
+        creditsUsed: useCredits ? creditsToDeduct : 0,
+        curatorId: needsStripePayment ? null : assignedCuratorId, // don't assign curator until paid
+        // AWAITING_PAYMENT: submission needs Stripe; curator can't see it yet
+        // IN_REVIEW: assigned to curator immediately (credit-paid or free)
+        status: needsStripePayment
+          ? "AWAITING_PAYMENT"
+          : assignedCuratorId
+            ? "IN_REVIEW"
+            : "PENDING",
+      } as any;
+
+      if (existingAwaitingPayment) {
+        return await tx.submission.update({
+          where: { id: existingAwaitingPayment.id },
+          data: submissionData,
+        });
+      } else {
+        return await tx.submission.create({
+          data: submissionData,
+        });
+      }
     });
 
-    // Send confirmation email (non-blocking)
-    if (session.user.email) {
+    // Send confirmation email (non-blocking) - only if actually submitted
+    if (session.user.email && submission.status !== "AWAITING_PAYMENT") {
       sendSubmissionConfirmationEmail(session.user.email, submission.trackTitle, submission.artistName);
     }
 
@@ -310,10 +347,13 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const statusFilter = searchParams.get("status");
+    const idFilter = searchParams.get("id");
 
     const where: any = { userId: session.user.id };
 
-    if (statusFilter) {
+    if (idFilter) {
+      where.id = idFilter;
+    } else if (statusFilter) {
       if (statusFilter === "UNDER_REVIEW") {
         where.status = { in: ["PENDING", "IN_REVIEW", "MASTER_REVIEW", "CURATOR_APPROVED"] };
       } else if (statusFilter === "SELECTED") {
@@ -336,7 +376,18 @@ export async function GET(req: NextRequest) {
         status: true,
         releaseType: true,
         genres: true,
+        subgenres: true,
+        streamingPlatform: true,
+        channels: true,
+        fastTrack: true,
+        reviewRequested: true,
+        premiumServices: true,
         autoFilledCover: true,
+        autoFilledTitle: true,
+        autoFilledArtist: true,
+        autoFillSource: true,
+        pitch: true,
+        pressKitUrl: true,
         streamingUrl: true,
         submittedAt: true,
         placement: true,

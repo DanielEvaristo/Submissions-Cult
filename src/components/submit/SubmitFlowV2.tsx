@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import {
   Loader2,
@@ -108,6 +108,7 @@ interface SubmitFlowV2Props {
 export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2Props) {
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
 
   const hasManagedArtists = Array.isArray(managedArtists) && managedArtists.length > 0;
@@ -134,6 +135,10 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   const [showRejectedConfirm, setShowRejectedConfirm] = useState(false);
   const [showActiveBlockModal, setShowActiveBlockModal] = useState(false);
   const [forceResubmit, setForceResubmit] = useState(false);
+  const [paymentReturned, setPaymentReturned] = useState<"canceled" | "success" | null>(null);
+  const [editingSubmissionId, setEditingSubmissionId] = useState<string | null>(null);
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+
   const registeredArtistName = session?.user?.accountType === "ARTIST" ? (session.user.artistName || session.user.name || "") : "";
   const artistNameLocked = !!registeredArtistName && !hasManagedArtists;
   const artistMetadataMismatch = !!registeredArtistName && !!form.autoFilledArtist && !registeredArtistMatchesMetadata(registeredArtistName, form.autoFilledArtist);
@@ -274,6 +279,56 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   };
 
   useEffect(() => {
+    const canceled = searchParams?.get("canceled");
+    const success = searchParams?.get("success");
+    const editId = searchParams?.get("edit");
+    const isNew = searchParams?.get("new") === "true";
+
+    if (canceled || success) {
+      setPaymentReturned(canceled ? "canceled" : "success");
+      window.sessionStorage.removeItem(draftStorageKey);
+      return;
+    }
+
+    if (isNew) {
+      window.sessionStorage.removeItem(draftStorageKey);
+    }
+
+    if (editId && session) {
+      setIsLoadingEdit(true);
+      fetch(`/api/submissions?id=${editId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const sub = data[0];
+            setForm((prev) => ({
+              ...prev,
+              trackTitle: sub.trackTitle || prev.trackTitle,
+              artistName: sub.artistName || prev.artistName,
+              submissionType: sub.releaseType || prev.submissionType,
+              genre: sub.genres?.[0] || prev.genre,
+              subgenre: sub.subgenres?.[0] || prev.subgenre,
+              streamingUrl: sub.streamingUrl || prev.streamingUrl,
+              streamingPlatform: sub.streamingPlatform || prev.streamingPlatform,
+              autoFilledCover: sub.autoFilledCover || prev.autoFilledCover,
+              autoFilledTitle: sub.autoFilledTitle || prev.autoFilledTitle,
+              autoFilledArtist: sub.autoFilledArtist || prev.autoFilledArtist,
+              autoFillSource: sub.autoFillSource || prev.autoFillSource,
+              channels: sub.channels || prev.channels,
+              applyAllChannels: sub.channels?.includes("ALL") || false,
+              fastTrack: sub.fastTrack || false,
+              reviewRequested: sub.reviewRequested || false,
+              premiumServices: sub.premiumServices || [],
+            }));
+            setEditingSubmissionId(editId);
+            setStep(6); // Jump straight to summary
+          }
+        })
+        .finally(() => setIsLoadingEdit(false));
+    }
+  }, [searchParams, draftStorageKey, session]);
+
+  useEffect(() => {
     const savedDraft = window.sessionStorage.getItem(draftStorageKey);
     if (!savedDraft) return;
 
@@ -377,7 +432,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     };
 
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    return () => document.removeEventListener("popstate", handlePopState);
   }, [shouldWarnOnExit]);
 
   useEffect(() => {
@@ -410,18 +465,40 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
   }, [session]);
 
   const handleNext = () => {
-    if (step === 6) { // Leaving Checkout
-      if (isFreeFlow && !showDonationPrompt && !includeDonation) {
-        setShowDonationPrompt(true);
-        return;
-      }
+    if (step === 6) { // Leaving Checkout (only reached when !isFreeFlow)
       if (!session) {
         setStep(10); // Go to registration
       } else {
         handleSubmit();
       }
     } else if (step === 4 && !isQualifiedForPremium) {
-      setStep(6);
+      // Skip step 5 (premium services) for non-qualified artists
+      if (isFreeFlow) {
+        // Free flow: skip checkout entirely, show donation prompt then submit
+        if (!showDonationPrompt && !includeDonation) {
+          setShowDonationPrompt(true);
+        } else if (!session) {
+          setStep(10);
+        } else {
+          void handleSubmit();
+        }
+      } else {
+        setStep(6);
+      }
+    } else if (step === 5) {
+      // After premium services step
+      if (isFreeFlow) {
+        // Free flow: skip checkout entirely
+        if (!showDonationPrompt && !includeDonation) {
+          setShowDonationPrompt(true);
+        } else if (!session) {
+          setStep(10);
+        } else {
+          void handleSubmit();
+        }
+      } else {
+        setStep(6);
+      }
     } else if (step === 10) {
       handleSubmit();
     } else {
@@ -433,7 +510,7 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
     if (step === (hasManagedArtists ? 0 : 1)) {
       router.back();
     } else if (step === 10) {
-      setStep(6);
+      setStep(isFreeFlow ? (hasManagedArtists ? 0 : 1) : 6);
     } else if (step === 6 && !isQualifiedForPremium) {
       setStep(4);
     } else {
@@ -502,6 +579,11 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         password: form.password,
         instagram: form.instagram || session?.user?.instagram,
         forceResubmit: forceResubmit || forceResubmitOverride,
+        autoFilledCover: form.autoFilledCover,
+        autoFillSource: form.autoFillSource,
+        managedArtistId: form.managedArtistId,
+        useCredits: canPayWithCredits && !retentionDiscountApplied,
+        submissionId: editingSubmissionId,
       };
 
       if (session && hasManagedArtists && form.managedArtistId) {
@@ -631,7 +713,37 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           <CheckCircle2 size={40} className="text-black" />
         </div>
         <h1 className="text-5xl font-black uppercase tracking-tighter text-white mb-4 text-center">SUBMITTED.</h1>
-        <button onClick={() => router.push(`/${locale}${basePath}`)} className="btn-primary mt-8">VIEW DASHBOARD</button>
+        <button onClick={() => router.push(`/${locale}/portal/submissions`)} className="btn-primary mt-8">VIEW DASHBOARD</button>
+      </div>
+    );
+  }
+
+  if (paymentReturned) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 animate-reveal">
+        <div className="w-20 h-20 bg-[#F5E000] border-4 border-black flex items-center justify-center mb-10">
+          <CheckCircle2 size={40} className="text-black" />
+        </div>
+        <h1 className="text-5xl font-black uppercase tracking-tighter text-white mb-4 text-center">
+          {paymentReturned === "success" ? "PAYMENT IN PROGRESS." : "SUBMISSION SAVED."}
+        </h1>
+        <p className="font-sans text-sm text-center text-white/70 max-w-md mb-8">
+          {paymentReturned === "success" 
+            ? "Your payment is being verified by Stripe. Check your dashboard for updates." 
+            : "Your submission has been safely saved. Go to your dashboard to review, modify, or complete payment."}
+        </p>
+        <button onClick={() => router.push(`/${locale}/portal/submissions`)} className="btn-primary mt-4">VIEW DASHBOARD</button>
+      </div>
+    );
+  }
+
+  if (isLoadingEdit) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 animate-reveal">
+        <Loader2 size={48} className="animate-spin text-[#F5E000] mb-6" />
+        <h1 className="text-xl font-black uppercase tracking-widest text-white animate-pulse">
+          LOADING SUBMISSION...
+        </h1>
       </div>
     );
   }
@@ -742,13 +854,17 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
         />
       )}
 
-      {/* ── STEP 6: Checkout Summary ── */}
-      {step === 6 && (
+      {/* ── STEP 6: Checkout Summary (only for paid submissions) ── */}
+      {step === 6 && !isFreeFlow && (
         <CheckoutSummaryStep
           form={form}
           credits={credits}
-          retentionDiscountApplied={retentionDiscountApplied}
+          retentionDiscountApplied={retentionDiscountApplied && !canPayWithCredits}
           totalCreditsNeeded={totalCreditsNeeded}
+          canPayWithCredits={canPayWithCredits}
+          currentCredits={currentCredits}
+          basePriceUsd={baseCreditPrice}
+          discountedPriceUsd={discountedCreditUsdTotal}
         />
       )}
 
@@ -776,15 +892,19 @@ export default function SubmitFlowV2({ managedArtists, basePath }: SubmitFlowV2P
           </button>
           <button onClick={handleNext} disabled={!canNext() || loading} className="btn-primary w-1/3 flex justify-center items-center gap-2">
             {loading ? <Loader2 className="animate-spin" /> : 
-              step === 6 ? (
-                isFreeFlow ? "SUBMIT" : 
-                canPayWithCredits && totalUsdNeeded === 0 ? `SUBMIT (USE ${totalCreditsNeeded} CREDITS)` :
-                "PAY & SUBMIT"
-              ) : 
-              step === 10 ? "SUBMIT" : "NEXT"
-            }
-          </button>
-        </div>
+            step === 6 ? (
+              canPayWithCredits
+                ? `SUBMIT — USE ${totalCreditsNeeded} CREDIT${totalCreditsNeeded !== 1 ? "S" : ""}`
+                : "PAY & SUBMIT"
+            ) :
+            // Free flow reaching last content step before submit
+            (step === 4 && !isQualifiedForPremium && isFreeFlow) || (step === 5 && isFreeFlow)
+              ? "SUBMIT"
+            :
+            step === 10 ? "SUBMIT" : "NEXT"
+          }
+        </button>
+      </div>
       )}
 
       {/* ── MODALS ── */}

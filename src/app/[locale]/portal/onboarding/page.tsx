@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import {
   MapPin, Music2, Globe2, Mic2, BarChart2, CheckCircle2,
   ChevronRight, ChevronLeft, Loader2,
@@ -26,7 +27,7 @@ export default function OnboardingPage() {
   const tRegister = useTranslations("register");
   const locale = useLocale();
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, update } = useSession();
 
   const {
     step, loading, showUnlocked, setShowUnlocked,
@@ -39,6 +40,18 @@ export default function OnboardingPage() {
     () => {}, // onQualified: modal will show, no redirect yet
     () => router.push(`/${locale}/portal/profile`)
   );
+
+  // Pre-fill artistName from session (set during anonymous submission registration)
+  const sessionArtistName = session?.user?.artistName || "";
+  const isArtistNameLocked = !!sessionArtistName;
+
+  useEffect(() => {
+    if (sessionArtistName && !form.artistName) {
+      set("artistName", sessionArtistName);
+    }
+  // Only run once when session loads
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionArtistName]);
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -101,6 +114,7 @@ export default function OnboardingPage() {
               setNameError={setNameError} checkArtistName={checkArtistName}
               copiedEmail={copiedEmail} copySupportEmail={copySupportEmail}
               autofillNameFromUrl={autofillNameFromUrl} t={t}
+              isArtistNameLocked={isArtistNameLocked}
             />
           )}
           {step === 2 && <StepProject form={form} set={set} t={t} tRegister={tRegister} />}

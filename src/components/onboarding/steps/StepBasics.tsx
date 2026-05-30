@@ -1,6 +1,6 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { Info, Lock } from "lucide-react";
 import { Country, State } from "country-state-city";
 import { OnboardingFormData, SetFormField } from "../useOnboardingForm";
 import { StepHeader } from "../OnboardingShared";
@@ -16,11 +16,13 @@ interface Props {
   copySupportEmail: () => void;
   autofillNameFromUrl: (url: string) => Promise<void>;
   t: (key: string, opts?: any) => string;
+  isArtistNameLocked?: boolean;
 }
 
 export default function StepBasics({
   form, set, checkingName, nameError, setNameError,
   checkArtistName, copiedEmail, copySupportEmail, autofillNameFromUrl, t,
+  isArtistNameLocked = false,
 }: Props) {
   return (
     <div className="animate-fade-in space-y-6">
@@ -34,74 +36,105 @@ export default function StepBasics({
       <StepHeader title={t("basics.title")} />
 
       <div className="space-y-6">
-        <div className="p-4 bg-bg-surface border border-border">
-          <p className="text-xs font-bold uppercase tracking-wider mb-4 text-cm-text-muted">
-            Auto-Fill Profile
-          </p>
-          <p className="text-sm text-cm-text-primary mb-4 leading-relaxed">
-            Paste your Spotify or SoundCloud profile link to automatically fetch your Official
-            Artist Name.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="label">Spotify URL</label>
-              <input
-                type="url"
-                className="input"
-                placeholder="https://open.spotify.com/artist/..."
-                value={form.spotifyUrl}
-                onChange={(e) => set("spotifyUrl", e.target.value)}
-                onBlur={(e) => autofillNameFromUrl(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="label">Other Link URL</label>
-              <input
-                type="url"
-                className="input"
-                placeholder="https://..."
-                value={form.soundcloudUrl}
-                onChange={(e) => set("soundcloudUrl", e.target.value)}
-                onBlur={(e) => autofillNameFromUrl(e.target.value)}
-              />
+        {/* Auto-fill (hidden when artist name is already locked) */}
+        {!isArtistNameLocked && (
+          <div className="p-4 bg-bg-surface border border-border">
+            <p className="text-xs font-bold uppercase tracking-wider mb-4 text-cm-text-muted">
+              Auto-Fill Profile
+            </p>
+            <p className="text-sm text-cm-text-primary mb-4 leading-relaxed">
+              Paste your Spotify or SoundCloud profile link to automatically fetch your Official
+              Artist Name.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label">Spotify URL</label>
+                <input
+                  type="url"
+                  className="input"
+                  placeholder="https://open.spotify.com/artist/..."
+                  value={form.spotifyUrl}
+                  onChange={(e) => set("spotifyUrl", e.target.value)}
+                  onBlur={(e) => autofillNameFromUrl(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label">Other Link URL</label>
+                <input
+                  type="url"
+                  className="input"
+                  placeholder="https://..."
+                  value={form.soundcloudUrl}
+                  onChange={(e) => set("soundcloudUrl", e.target.value)}
+                  onBlur={(e) => autofillNameFromUrl(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div>
           <label className="label" htmlFor="artistName">Artist Name *</label>
-          <input
-            id="artistName"
-            type="text"
-            className={`input ${nameError ? "border-red-500 bg-red-500/5" : ""}`}
-            placeholder="E.g. MIDNIGHT ECHO"
-            value={form.artistName}
-            onChange={(e) => { set("artistName", e.target.value); setNameError(""); }}
-            onBlur={(e) => checkArtistName(e.target.value)}
-            required
-          />
-          {checkingName && (
-            <p className="text-xs text-cm-text-muted mt-2 font-bold uppercase tracking-wider">
-              Checking availability...
-            </p>
-          )}
-          {nameError && (
-            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/50">
-              <p className="text-sm font-bold text-red-500 mb-2">{nameError}</p>
-              <button
-                type="button"
-                onClick={copySupportEmail}
-                className="text-xs font-black uppercase tracking-wider text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 inline-block transition-colors"
-              >
-                {copiedEmail ? "COPIED!" : "Contact Support"}
-              </button>
+
+          {isArtistNameLocked ? (
+            // Locked: show as read-only with a notice
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 input bg-white/5 cursor-not-allowed select-none">
+                <Lock size={14} className="text-[#F5E000] shrink-0" />
+                <span className="font-bold tracking-tight">{form.artistName}</span>
+              </div>
+              <div className="flex items-start gap-2 p-3 bg-[#F5E000]/10 border border-[#F5E000]/30">
+                <Lock size={14} className="text-[#F5E000] shrink-0 mt-0.5" />
+                <p className="text-xs font-bold text-cm-text-primary leading-relaxed">
+                  This artist name was registered when you submitted your track. It cannot be changed here. Contact{" "}
+                  <button
+                    type="button"
+                    onClick={copySupportEmail}
+                    className="underline text-[#F5E000] hover:text-white transition-colors"
+                  >
+                    {copiedEmail ? "support@cultmachine.com (copied!)" : "support"}
+                  </button>{" "}
+                  if this is a mistake.
+                </p>
+              </div>
             </div>
-          )}
-          {!nameError && (
-            <p className="text-xs text-cm-text-muted mt-2">
-              If you didn&apos;t use a link above, please write your name EXACTLY as it appears on
-              official sites to match future submissions.
-            </p>
+          ) : (
+            // Editable
+            <>
+              <input
+                id="artistName"
+                type="text"
+                className={`input ${nameError ? "border-red-500 bg-red-500/5" : ""}`}
+                placeholder="E.g. MIDNIGHT ECHO"
+                value={form.artistName}
+                onChange={(e) => { set("artistName", e.target.value); setNameError(""); }}
+                onBlur={(e) => checkArtistName(e.target.value)}
+                required
+              />
+              {checkingName && (
+                <p className="text-xs text-cm-text-muted mt-2 font-bold uppercase tracking-wider">
+                  Checking availability...
+                </p>
+              )}
+              {nameError && (
+                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/50">
+                  <p className="text-sm font-bold text-red-500 mb-2">{nameError}</p>
+                  <button
+                    type="button"
+                    onClick={copySupportEmail}
+                    className="text-xs font-black uppercase tracking-wider text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 inline-block transition-colors"
+                  >
+                    {copiedEmail ? "COPIED!" : "Contact Support"}
+                  </button>
+                </div>
+              )}
+              {!nameError && (
+                <p className="text-xs text-cm-text-muted mt-2">
+                  If you didn&apos;t use a link above, please write your name EXACTLY as it appears on
+                  official sites to match future submissions.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

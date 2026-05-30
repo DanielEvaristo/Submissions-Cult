@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { sendCreditPurchaseEmail } from "@/lib/emails";
+import { sendCreditPurchaseEmail, sendSubmissionConfirmationEmail } from "@/lib/emails";
 import { revalidateSubmissionViews } from "@/lib/revalidate-dashboards";
 import { devLog } from "@/lib/dev-log";
+import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
@@ -92,17 +93,54 @@ export async function POST(req: Request) {
         );
       }
     } else if (type === "submission" && submissionId) {
+      // Fetch the submission to get genre info needed for curator assignment
+      const existingSubmission = await prisma.submission.findUnique({
+        where: { id: submissionId },
+        select: { genres: true, status: true, userId: true, creditsUsed: true, trackTitle: true, artistName: true },
+      });
+
+      if (!existingSubmission) {
+        devLog("[STRIPE WEBHOOK] Submission not found:", submissionId);
+        return NextResponse.json({ received: true });
+      }
+
+      // Assign a curator now that payment is confirmed (only if not already assigned)
+      const curatorId = existingSubmission.status === "AWAITING_PAYMENT"
+        ? await findLeastLoadedCuratorId(prisma, existingSubmission.genres)
+        : null;
+
       const submission = await prisma.submission.update({
         where: { id: submissionId },
         data: {
           isFree: false,
           totalCostUsd: session.amount_total || 0,
+          // Activate submission if it was waiting for payment
+          ...(existingSubmission.status === "AWAITING_PAYMENT" && {
+            status: curatorId ? "IN_REVIEW" : "PENDING",
+            curatorId,
+          }),
         },
         select: {
           userId: true,
           creditsUsed: true,
         },
       });
+
+      devLog("[STRIPE WEBHOOK] Submission activated after payment:", submissionId, "→", curatorId ? "IN_REVIEW" : "PENDING");
+
+      if (existingSubmission.status === "AWAITING_PAYMENT") {
+        const user = await prisma.user.findUnique({
+          where: { id: submission.userId },
+          select: { email: true },
+        });
+        if (user?.email) {
+          sendSubmissionConfirmationEmail(
+            user.email,
+            existingSubmission.trackTitle,
+            existingSubmission.artistName
+          );
+        }
+      }
 
       if (retentionDiscountApplied) {
         const existingOffer = await prisma.creditTransaction.findFirst({
