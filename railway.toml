@@ -1,0 +1,13 @@
+[build]
+# Railway auto-detects Dockerfile — use multi-stage build
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Health check to verify the app is up
+healthcheckPath = "/api/auth/providers"
+healthcheckTimeout = 300
+# Number of seconds to wait before routing traffic
+startCommand = "node server.js"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

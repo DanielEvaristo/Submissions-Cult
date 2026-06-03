@@ -42,5 +42,6 @@ next-env.d.ts
 # pnpm store
 .pnpm-store/
 
+stripe.exe
 stripe.zip
 stripe_cli/

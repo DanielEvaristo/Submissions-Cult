@@ -5,9 +5,20 @@ import { AccountType, RoleType, LabelStatus } from "@prisma/client";
 import { sendVerificationEmail, sendIndustryWelcomeEmail } from "@/lib/emails";
 import { generateOTP } from "@/lib/otp";
 import { devLog } from "@/lib/dev-log";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 registrations per IP per hour
+    const ip = getClientIp(req);
+    const limited = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+      );
+    }
+
     const body = await req.json();
     const { accountType, email, password, ...rest } = body;
 

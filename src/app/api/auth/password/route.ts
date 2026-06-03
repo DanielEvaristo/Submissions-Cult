@@ -4,12 +4,23 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { sendPasswordChangedEmail } from "@/lib/emails";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 5 password change attempts per 15 minutes
+  const ip = getClientIp(req);
+  const limited = rateLimit(`password:${session.user.id}:${ip}`, 5, 15 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many attempts. Please wait before trying again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+    );
   }
 
   try {
@@ -19,8 +30,8 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    if (newPassword.length < 6) {
-      return NextResponse.json({ error: "New password must be at least 6 characters" }, { status: 400 });
+    if (newPassword.length < 8) {
+      return NextResponse.json({ error: "New password must be at least 8 characters" }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -37,7 +48,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Incorrect current password" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     await prisma.user.update({
       where: { id: session.user.id },

@@ -10,6 +10,9 @@ declare global {
 function createPrismaClient(): PrismaClient {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
+    max: 10,                       // max concurrent connections
+    idleTimeoutMillis: 30000,      // close idle connections after 30s
+    connectionTimeoutMillis: 5000, // fail fast if DB unreachable
   });
   const adapter = new PrismaPg(pool);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
