@@ -5,9 +5,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ReleaseType } from "@prisma/client";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-04-10" as any,
-});
 
 const CREDIT_PACKS = {
   pack_5: { credits: 5, priceCents: 400, label: "Starter Pack" },
@@ -59,6 +56,10 @@ function getCreditUsdValue(credits: number) {
 }
 
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2024-04-10" as any,
+  });
+
   try {
     const body = (await req.json()) as CheckoutBody;
 

@@ -7,9 +7,6 @@ import { revalidateSubmissionViews } from "@/lib/revalidate-dashboards";
 import { devLog } from "@/lib/dev-log";
 import { findLeastLoadedCuratorId } from "@/lib/curator-assignment";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-04-10" as any,
-});
 
 const CREDIT_PACKS = {
   pack_5: { credits: 5 },
@@ -18,6 +15,10 @@ const CREDIT_PACKS = {
 } as const;
 
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2024-04-10" as any,
+  });
+
   const body = await req.text();
   const signature = headers().get("Stripe-Signature") as string;
 
