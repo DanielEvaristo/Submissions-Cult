@@ -87,25 +87,6 @@ function RegisterPageContent() {
       return;
     }
 
-    if (accountType === AccountType.ARTIST) {
-      setLoading(true);
-      const loginResult = await signIn("credentials", {
-        email: email.toLowerCase().trim(),
-        password,
-        redirect: false,
-      });
-      setLoading(false);
-
-      if (loginResult?.ok) {
-        window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
-        return;
-      }
-
-      setError("Account created, but automatic sign-in failed. Please log in manually.");
-      router.push(`/${locale}/login`);
-      return;
-    }
-
     router.push(`/${locale}${data.redirect}`);
   };
 
