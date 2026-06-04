@@ -36,8 +36,23 @@ function isPublicPath(pathname: string): boolean {
   return false;
 }
 
+import { NextResponse } from "next/server";
+import type { NextRequestWithAuth } from "next-auth/middleware";
+
 export default withAuth(
-  function middleware(req: NextRequest) {
+  function middleware(req: NextRequestWithAuth) {
+    const token = req.nextauth.token;
+    const pathname = req.nextUrl.pathname;
+    
+    // Si el usuario está logueado pero no verificado, y está intentando acceder
+    // a una ruta protegida (que no es pública), redirigirlo a verify-email
+    if (token && token.userType === "USER" && !token.emailVerified && !isPublicPath(pathname)) {
+      const match = pathname.match(/^\/(en|es|fr)(\/.*)?$/);
+      const locale = match ? match[1] : "en";
+      const redirectUrl = new URL(`/${locale}/verify-email?email=${encodeURIComponent(token.email ?? "")}`, req.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+    
     return intlMiddleware(req);
   },
   {

@@ -18,6 +18,10 @@ export async function GET(req: NextRequest) {
     return redirect(`/${locale}/admin`);
   }
   
+  if (user.userType === "USER" && !user.emailVerified) {
+    return redirect(`/${locale}/verify-email?email=${encodeURIComponent(user.email ?? "")}`);
+  }
+  
   if (user.isMasterCurator) {
     return redirect(`/${locale}/curator/master`);
   }
