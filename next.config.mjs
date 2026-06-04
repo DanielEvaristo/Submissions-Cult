@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const ContentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://js.stripe.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://storage.ko-fi.com",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data: https://fonts.gstatic.com",
   "connect-src 'self' https://api.stripe.com https://*.stripe.com",
