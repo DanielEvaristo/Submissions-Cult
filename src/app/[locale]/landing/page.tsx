@@ -87,6 +87,35 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           animation: ticker 40s linear infinite;
         }
 
+        /* Twinkling Stars */
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.15; transform: scale(0.8); }
+          50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        .star-twinkle {
+          animation: twinkle 4s ease-in-out infinite;
+        }
+
+        /* Marquee animations */
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0%); }
+        }
+        .animate-marquee {
+          animation: marquee 35s linear infinite;
+          display: flex;
+          width: max-content;
+        }
+        .animate-marquee-reverse {
+          animation: marquee-reverse 35s linear infinite;
+          display: flex;
+          width: max-content;
+        }
+
         /* Hover effects */
         .btn-hover:hover {
           background-color: #0A0A0A;
@@ -109,7 +138,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
       >
         <div className="flex-1 flex items-center gap-3">
           <span className="font-black text-2xl tracking-tighter uppercase leading-none flex items-center gap-2">
-            CULT <span className={`text-[1.2em] transition-colors ${isNavInverted ? 'text-black' : 'text-[#F5E000]'}`}>★</span> MACHINE
+            CULT <span className={`text-[1.2em] transition-colors ${isNavInverted ? 'text-white' : 'text-black'}`}>★</span> MACHINE
           </span>
         </div>
         
@@ -176,7 +205,30 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
       <main className="pt-24 overflow-hidden">
         
         {/* ── 2. HERO ── */}
-        <section className="relative min-h-screen flex items-center pt-32 pb-20 px-6 md:px-10 bg-black text-white overflow-hidden">
+        <section className="relative min-h-[80vh] flex items-center pt-32 pb-20 px-6 md:px-10 bg-black text-white overflow-hidden">
+          {/* Subtle Twinkling Stars Background */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+            {[...Array(20)].map((_, i) => {
+              const top = [15, 25, 38, 45, 60, 72, 85, 10, 30, 50, 68, 80, 20, 40, 55, 75, 90, 5, 35, 65][i];
+              const left = [10, 25, 15, 35, 45, 30, 20, 80, 75, 88, 70, 92, 55, 60, 78, 65, 82, 48, 95, 87][i];
+              const size = [2, 3, 2, 4, 3, 2, 3, 2, 4, 3, 2, 4, 2, 3, 2, 3, 2, 3, 2, 3][i];
+              const delay = [0, 1.5, 3, 0.5, 2.2, 1, 3.5, 2, 0.8, 1.2, 2.5, 3.1, 1.7, 0.3, 2.9, 1.1, 3.3, 0.6, 2.1, 1.9][i];
+              return (
+                <div 
+                  key={i}
+                  className="absolute bg-white rounded-full star-twinkle"
+                  style={{
+                    top: `${top}%`,
+                    left: `${left}%`,
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    animationDelay: `${delay}s`,
+                  }}
+                />
+              );
+            })}
+          </div>
+
           <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-20">
             <div className="flex-1 space-y-8">
               <h1 className="text-[clamp(60px,10vw,140px)] font-black uppercase leading-[0.85] tracking-tighter">
@@ -271,9 +323,14 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
         <section className="bg-black px-10 py-40 flex flex-col lg:flex-row gap-32">
           <div className="lg:w-1/2">
-            <span className="text-[#F5E000] text-[clamp(100px,20vw,280px)] font-black leading-none tracking-tighter drop-shadow-[10px_10px_0px_rgba(255,255,255,0.05)]">
-              +1M
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[#F5E000] text-[clamp(100px,20vw,280px)] font-black leading-none tracking-tighter drop-shadow-[10px_10px_0px_rgba(255,255,255,0.05)]">
+                +1M
+              </span>
+              <span className="text-white text-3xl md:text-4xl font-black uppercase tracking-widest mt-2">
+                +1M de views
+              </span>
+            </div>
             <div className="max-w-xl mt-16 space-y-8">
               <h3 className="text-white text-5xl font-black uppercase tracking-tighter leading-none">
                 EVERY SUBMISSION<br/>GETS A RESPONSE.
@@ -307,32 +364,48 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 6. GÉNEROS ── */}
-        <section className="bg-[#F5E000] py-32 px-10 border-b-4 border-black text-black overflow-hidden relative">
-          <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row justify-between items-center gap-16">
-            <div className="flex-1 min-w-[300px]">
-              <h3 className="text-6xl font-black uppercase tracking-tighter leading-none">
-                {t('landing.genres.title1')}<br />{t('landing.genres.title2')}
+        <section className="bg-[#F5E000] py-24 border-b-4 border-black text-black overflow-hidden relative">
+          <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-12">
+            <div className="px-10">
+              <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">
+                {t('landing.genres.title1')} {t('landing.genres.title2')}
               </h3>
             </div>
-            <div className="flex-[2] flex flex-wrap gap-4">
-              {[
-                "INDIE ROCK",
-                "INDIE POP",
-                "POP PUNK",
-                "PUNK",
-                "ALTERNATIVE",
-                "POST-PUNK",
-                "SHOEGAZE",
-                "ELECTRONIC",
-                "HIP HOP"
-              ].map((genre, i) => (
-                <span 
-                  key={genre}
-                  className="px-8 py-4 border-4 border-black text-xs font-black uppercase tracking-[0.3em] hover:bg-black hover:text-[#F5E000] transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
-                >
-                  {genre}
-                </span>
-              ))}
+            
+            <div className="space-y-6 select-none pointer-events-none">
+              {/* Row 1 - Marquee Left */}
+              <div className="relative flex overflow-hidden whitespace-nowrap border-y-2 border-black/10 py-3">
+                <div className="animate-marquee flex gap-4 pr-4">
+                  {[
+                    "INDIE ROCK", "INDIE POP", "POP PUNK", "PUNK", "ALTERNATIVE", "POST-PUNK", "SHOEGAZE", "ELECTRONIC", "HIP HOP", "DREAM POP", "LO-FI", "GARAGE ROCK",
+                    "INDIE ROCK", "INDIE POP", "POP PUNK", "PUNK", "ALTERNATIVE", "POST-PUNK", "SHOEGAZE", "ELECTRONIC", "HIP HOP", "DREAM POP", "LO-FI", "GARAGE ROCK"
+                  ].map((genre, i) => (
+                    <span 
+                      key={i}
+                      className="px-5 py-2 border-2 border-black text-[10px] font-black uppercase tracking-[0.2em] bg-white text-black shrink-0"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 2 - Marquee Right */}
+              <div className="relative flex overflow-hidden whitespace-nowrap border-b-2 border-black/10 pb-3">
+                <div className="animate-marquee-reverse flex gap-4 pr-4">
+                  {[
+                    "POST-ROCK", "NOISE ROCK", "SYNTHPOP", "EMO", "GRUNGE", "FOLK ROCK", "INDIE FOLK", "PSYCHEDELIC", "ART POP", "TRAP", "NEW WAVE", "DARKWAVE",
+                    "POST-ROCK", "NOISE ROCK", "SYNTHPOP", "EMO", "GRUNGE", "FOLK ROCK", "INDIE FOLK", "PSYCHEDELIC", "ART POP", "TRAP", "NEW WAVE", "DARKWAVE"
+                  ].map((genre, i) => (
+                    <span 
+                      key={i}
+                      className="px-5 py-2 border-2 border-black text-[10px] font-black uppercase tracking-[0.2em] bg-white text-black shrink-0"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -368,61 +441,58 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 </Link>
               </div>
 
-              {/* Card 2 - ADD-ONS */}
+              {/* Card 2 - ADD-ONS & PREMIUM PR */}
               <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
-                <div className="space-y-10">
-                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">ENHANCE YOUR EXPERIENCE</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
-                  <div className="text-5xl font-black tracking-tighter text-black leading-none">
-                    1 CREDIT <span className="text-sm tracking-normal text-black/40 inline-block align-middle ml-2">EACH</span>
+                <div>
+                  <div className="space-y-10">
+                    <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">ENHANCE YOUR EXPERIENCE</span>
+                    <h3 className="text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
+                    <div className="text-5xl font-black tracking-tighter text-black leading-none">
+                      1 CREDIT <span className="text-sm tracking-normal text-black/40 inline-block align-middle ml-2">EACH</span>
+                    </div>
                   </div>
-                </div>
-                <ul className="mt-24 space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
-                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Fast response (48 hours)</li>
-                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Song review</li>
-                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Apply to all channels</li>
-                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Listen to full EP / Album</li>
-                </ul>
-              </div>
-
-              {/* Card 3 - PREMIUM PR */}
-              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
-                <div className="space-y-10">
-                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">INVITE ONLY</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">PREMIUM PR</h3>
-                  <div className="text-xl font-black tracking-tighter text-black/40 leading-snug">FOR ELIGIBLE ARTISTS</div>
-                </div>
-                <div className="mt-24 space-y-8">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-black/60 leading-relaxed mb-8">
-                    If you meet the requirements (10k+ followers), unlock our top tier PR services.
-                  </p>
-                  <ul className="space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
-                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Exclusive Interviews</li>
-                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Dedicated Articles</li>
+                  <ul className="mt-16 space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Fast response (48 hours)</li>
+                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Apply to all channels</li>
+                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Listen to full EP / Album</li>
                   </ul>
                 </div>
-              </div>
-            </div>
 
-            {/* Credit Packs */}
-            <div className="mt-16 bg-white border-4 border-black p-12 md:p-16 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b-4 border-black pb-8 mb-8">
-                <h3 className="text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
-                <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">DISCOUNTED RATES</span>
+                <div className="border-t-2 border-black/10 pt-8 mt-12 space-y-6">
+                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">INVITE ONLY</span>
+                  <h4 className="text-2xl font-black uppercase tracking-tighter">PREMIUM PR*</h4>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-black/60 leading-relaxed">
+                    Exclusive interviews & dedicated articles if you meet the requirements (10k+ followers).
+                  </p>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
-                <div className="flex justify-between items-baseline border-b-2 border-black/10 md:border-none pb-4 md:pb-0">
-                  <span className="font-black text-sm uppercase tracking-widest text-black/60">5 CREDITS</span>
-                  <span className="text-4xl font-black">$4</span>
+
+              {/* Card 3 - CREDIT PACKS */}
+              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+                <div className="space-y-10">
+                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">BUY IN BULK</span>
+                  <h3 className="text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
+                  <div className="text-xl font-black tracking-tighter text-black/40 leading-snug">SAVE ON ADD-ONS</div>
                 </div>
-                <div className="flex justify-between items-baseline border-b-2 border-black/10 md:border-none pb-4 md:pb-0">
-                  <span className="font-black text-sm uppercase tracking-widest text-black/60">10 CREDITS</span>
-                  <span className="text-4xl font-black">$7</span>
+
+                <div className="mt-16 space-y-8">
+                  <div className="flex justify-between items-baseline border-b-2 border-black/10 pb-4">
+                    <span className="font-black text-xs uppercase tracking-widest text-black/60">5 CREDITS</span>
+                    <span className="text-3xl font-black">$4</span>
+                  </div>
+                  <div className="flex justify-between items-baseline border-b-2 border-black/10 pb-4">
+                    <span className="font-black text-xs uppercase tracking-widest text-black/60">10 CREDITS</span>
+                    <span className="text-3xl font-black">$7</span>
+                  </div>
+                  <div className="flex justify-between items-baseline pb-4">
+                    <span className="font-black text-xs uppercase tracking-widest text-black/60">20 CREDITS</span>
+                    <span className="text-3xl font-black">$12</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-baseline">
-                  <span className="font-black text-sm uppercase tracking-widest text-black/60">20 CREDITS</span>
-                  <span className="text-4xl font-black">$12</span>
-                </div>
+
+                <Link href={`/${locale}/role-selection`} className="mt-12 bg-black text-white w-full py-6 font-black text-xs uppercase tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
+                  BUY CREDITS
+                </Link>
               </div>
             </div>
           </div>
@@ -430,17 +500,6 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
         {/* ── 8. PARTNERS ── */}
         <section id="partners" className="bg-white border-y-4 border-black py-20 text-center overflow-hidden">
-          <style dangerouslySetInnerHTML={{__html: `
-            @keyframes marquee {
-              0% { transform: translateX(0%); }
-              100% { transform: translateX(-50%); }
-            }
-            .animate-marquee {
-              animation: marquee 30s linear infinite;
-              display: flex;
-              width: max-content;
-            }
-          `}} />
           <p className="text-black/40 text-[10px] font-black uppercase tracking-[0.5em] mb-16">
             TRUSTED BY
           </p>
@@ -486,10 +545,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </h2>
             <div className="space-y-4">
               {[
-                { q: "HOW LONG DOES IT TAKE TO GET A RESPONSE?", a: "With our standard free submission, we usually reply within 7-14 days. If you use the Fast Response Add-on, we guarantee a reply in under 48 hours." },
-                { q: "WHAT GENRES DO YOU COVER?", a: "We focus heavily on alternative sounds that appeal to young audiences. Indie rock, indie pop, pop punk, shoegaze, electronic, and hip hop are our favorites, but if it's good, we'll listen." },
-                { q: "IS IT REALLY FREE?", a: "Yes. Your first submission has zero cost. We don't believe artists should have to pay just to be heard. We charge for optional Add-ons like detailed reviews or fast tracking." },
-                { q: "HOW DOES PREMIUM PR WORK?", a: "Premium PR is an invite-only tier. If you have over 10k followers on Instagram or Spotify, our team can work with you on exclusive interviews and dedicated articles to further push your releases." }
+                { q: t('landing.faq.item1.q'), a: t('landing.faq.item1.a') },
+                { q: t('landing.faq.item2.q'), a: t('landing.faq.item2.a') },
+                { q: t('landing.faq.item3.q'), a: t('landing.faq.item3.a') },
+                { q: t('landing.faq.item4.q'), a: t('landing.faq.item4.a') }
               ].map((faq, i) => (
                 <div key={i} className="border-4 border-black bg-white p-8 md:p-12 transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group cursor-default">
                   <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-black mb-4 transition-colors">{faq.q}</h3>

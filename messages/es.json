@@ -452,23 +452,23 @@
       "press": "Prensa Musical",
       "radio": "Radios Web",
       "item1": {
-        "name": "Recomendación Semanal",
-        "desc": "Destacado en nuestra selección curada en todas las redes sociales y el sitio principal.",
+        "name": "Radar",
+        "desc": "una serie donde publicamos canciones nuevas que nos mandan o descubrimos",
         "cost": "GRATIS"
       },
       "item2": {
-        "name": "Playlist de Spotify",
-        "desc": "Ubicación directa en nuestras playlists 'Cult Sounds' por género con rotación activa.",
+        "name": "Internet Wave",
+        "desc": "una serie donde recomendamos canciones que nos salen en nuestro fyp o que descubrimos",
         "cost": "ADD-ON"
       },
       "item3": {
-        "name": "Radio Web",
-        "desc": "Transmisión y mención en nuestro programa de radio underground semanal.",
+        "name": "Stories",
+        "desc": "subir una serie dedicada a tu cancion en nuestras stories",
         "cost": "ADD-ON"
       },
       "item4": {
-        "name": "Historia de Álbum",
-        "desc": "Solo cuentas de agencia. Inmersión profunda en el proceso creativo y visuales de tu lanzamiento.",
+        "name": "Premium PR",
+        "desc": "accedes a interviews y articulos*",
         "cost": "PRO"
       }
     },
@@ -535,6 +535,24 @@
       "instagram": "Instagram",
       "spotify": "Spotify",
       "rights": "© 2025 CULT MACHINE WORLDWIDE. TODOS LOS DERECHOS RESERVADOS."
+    },
+    "faq": {
+      "item1": {
+        "q": "¿CUÁNTO TIEMPO TARDA EN LLEGAR UNA RESPUESTA?",
+        "a": "Con los envíos gratuitos responderemos en un plazo de hasta 7 días. Si utilizas el add-on de respuesta rápida, garantizamos una respuesta en menos de 48 horas."
+      },
+      "item2": {
+        "q": "¿QUÉ GÉNEROS ACEPTAN?",
+        "a": "Aceptamos todos los géneros, siempre y cuando tengan una audiencia joven, pero sin duda nuestros favoritos son los géneros alternativos."
+      },
+      "item3": {
+        "q": "¿ES REALMENTE GRATIS?",
+        "a": "Sí, todas las submissions son gratis. Creemos en la comunidad y por eso lo hemos hecho gratis, aunque puedes mejorar tu experiencia por un precio más bajo, y todo el dinero va destinado a seguir creciendo."
+      },
+      "item4": {
+        "q": "¿CÓMO FUNCIONA EL PREMIUM PR?",
+        "a": "Premium PR es un nivel exclusivo por invitación. Si cumples con los requisitos (más de 10k seguidores en Instagram o Spotify), nuestro equipo puede trabajar contigo en entrevistas exclusivas y artículos dedicados para impulsar aún más tus lanzamientos."
+      }
     }
   },
   "aestheticLabels": {

@@ -453,23 +453,23 @@
       "press": "Music Press",
       "radio": "Web Radios",
       "item1": {
-        "name": "Weekly Recommendation",
-        "desc": "Featured in our curated highlights across all social channels and main site.",
+        "name": "Radar",
+        "desc": "a series where we publish new songs that are sent to us or that we discover",
         "cost": "FREE"
       },
       "item2": {
-        "name": "Spotify Playlist",
-        "desc": "Direct placement into our genre-specific 'Cult Sounds' playlists with active rotation.",
+        "name": "Internet Wave",
+        "desc": "a series where we recommend songs that show up on our fyp or that we discover",
         "cost": "ADD-ON"
       },
       "item3": {
-        "name": "Web Radio",
-        "desc": "Track placement and shoutout in our weekly underground radio show.",
+        "name": "Stories",
+        "desc": "upload a series dedicated to your song on our stories",
         "cost": "ADD-ON"
       },
       "item4": {
-        "name": "Album Story",
-        "desc": "Agency accounts only. Deep dive into your release's creative process and visuals.",
+        "name": "Premium PR",
+        "desc": "access to interviews and articles*",
         "cost": "PRO"
       }
     },
@@ -536,6 +536,24 @@
       "instagram": "Instagram",
       "spotify": "Spotify",
       "rights": "© 2025 CULT MACHINE WORLDWIDE. ALL RIGHTS RESERVED."
+    },
+    "faq": {
+      "item1": {
+        "q": "HOW LONG DOES IT TAKE TO GET A RESPONSE?",
+        "a": "With free submissions, we will respond within 7 days. If you use the Fast Response Add-on, we guarantee a reply in under 48 hours."
+      },
+      "item2": {
+        "q": "WHAT GENRES DO YOU COVER?",
+        "a": "We accept all genres, as long as they have a young audience, but without a doubt our favorites are alternative genres."
+      },
+      "item3": {
+        "q": "IS IT REALLY FREE?",
+        "a": "Yes, all submissions are free. We believe in the community and that is why we have made it free, although you can enhance your experience for a lower price, and all the money is destined to keep growing."
+      },
+      "item4": {
+        "q": "HOW DOES PREMIUM PR WORK?",
+        "a": "Premium PR is an invite-only tier. If you meet the requirements (over 10k followers on Instagram or Spotify), our team can work with you on exclusive interviews and dedicated articles to further push your releases."
+      }
     }
   },
   "aestheticLabels": {
