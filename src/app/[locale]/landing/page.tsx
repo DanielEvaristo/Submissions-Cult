@@ -328,7 +328,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 +1M
               </span>
               <span className="text-white text-3xl md:text-4xl font-black uppercase tracking-widest mt-2">
-                +1M de views
+                views
               </span>
             </div>
             <div className="max-w-xl mt-16 space-y-8">
