@@ -108,14 +108,16 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         }`}
       >
         <div className="flex-1 flex items-center gap-3">
-          <div className={`w-10 h-10 flex items-center justify-center font-black border-2 transition-colors ${isNavInverted ? 'bg-[#F5E000] text-black border-black' : 'bg-black text-[#F5E000] border-white/10'}`}>★</div>
-          <span className="font-black text-2xl tracking-tighter uppercase leading-none">CULT MACHINE</span>
+          <span className="font-black text-2xl tracking-tighter uppercase leading-none flex items-center gap-2">
+            CULT <span className={`text-[1.2em] transition-colors ${isNavInverted ? 'text-black' : 'text-[#F5E000]'}`}>★</span> MACHINE
+          </span>
         </div>
         
         <div className="hidden lg:flex flex-1 justify-center gap-12 font-black text-[10px] tracking-[0.3em] uppercase opacity-60">
           <a href="#how-it-works" className="hover:text-[#F5E000] transition-colors">{t('landing.nav.howItWorks')}</a>
           <a href="#pricing" className="hover:text-[#F5E000] transition-colors">{t('landing.nav.pricing')}</a>
           <a href="#partners" className="hover:text-[#F5E000] transition-colors">{t('landing.nav.industry')}</a>
+          <a href="#faq" className="hover:text-[#F5E000] transition-colors">FAQ</a>
         </div>
 
         <div className="flex-1 flex justify-end gap-6 md:gap-8 items-center relative">
@@ -178,12 +180,13 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-20">
             <div className="flex-1 space-y-8">
               <h1 className="text-[clamp(60px,10vw,140px)] font-black uppercase leading-[0.85] tracking-tighter">
-                {t('landing.hero.get')}<span className="text-[#F5E000] drop-shadow-[4px_4px_0px_rgba(255,255,255,0.1)]">{t('landing.hero.heard')}</span><br />
-                {t('landing.hero.notBuried')}
+                GET <span className="text-[#F5E000] drop-shadow-[4px_4px_0px_rgba(255,255,255,0.1)]">HEARD</span>,<br />
+                NOT BURIED.
               </h1>
-              <p className="text-lg md:text-2xl font-bold max-w-2xl text-white/80 leading-tight">
-                {t('landing.hero.subtitle')}
-              </p>
+              <div className="text-lg md:text-2xl font-bold max-w-2xl text-white/80 leading-tight space-y-4">
+                <p>The official submissions platform of Cult Machine.</p>
+                <p>Real ears. Honest curation. All submissions for free.</p>
+              </div>
               <div className="pt-8 flex flex-col sm:flex-row gap-6">
                 <Link 
                   href={`/${locale}/role-selection`} 
@@ -213,8 +216,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         {/* ── 3. STATS BAR ── */}
         <section className="bg-white border-y-4 border-black grid grid-cols-1 md:grid-cols-3">
           {[
-            { n: "1.7M+", label: t('landing.stats.views'), desc: t('landing.stats.viewsDesc') },
-            { n: "623K+", label: t('landing.stats.reached'), desc: t('landing.stats.reachedDesc') },
+            { n: "1.0M+", label: t('landing.stats.views'), desc: t('landing.stats.viewsDesc') },
+            { n: "400K+", label: t('landing.stats.reached'), desc: t('landing.stats.reachedDesc') },
             { n: "2025", label: t('landing.stats.founded'), desc: t('landing.stats.foundedDesc') },
           ].map((stat, i) => (
             <div 
@@ -238,10 +241,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-4 border-black">
               {[
-                { id: "01", name: t('landing.outcome.item1.name'), desc: t('landing.outcome.item1.desc'), cost: t('landing.outcome.item1.cost') },
-                { id: "02", name: t('landing.outcome.item2.name'), desc: t('landing.outcome.item2.desc'), cost: t('landing.outcome.item2.cost') },
-                { id: "03", name: t('landing.outcome.item3.name'), desc: t('landing.outcome.item3.desc'), cost: t('landing.outcome.item3.cost') },
-                { id: "04", name: t('landing.outcome.item4.name'), desc: t('landing.outcome.item4.desc'), cost: t('landing.outcome.item4.cost'), disabled: true },
+                { id: "01", name: "RADAR", desc: t('landing.outcome.item1.desc'), cost: t('landing.outcome.item1.cost') },
+                { id: "02", name: "INTERNET WAVE", desc: t('landing.outcome.item2.desc'), cost: t('landing.outcome.item2.cost') },
+                { id: "03", name: "STORIES", desc: t('landing.outcome.item3.desc'), cost: t('landing.outcome.item3.cost') },
+                { id: "04", name: "PREMIUM PR", desc: t('landing.outcome.item4.desc'), cost: t('landing.outcome.item4.cost'), disabled: true },
               ].map((opp, i) => (
                 <div 
                   key={i} 
@@ -260,28 +263,33 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 </div>
               ))}
             </div>
+            <p className="text-right text-xs font-black uppercase tracking-[0.3em] text-black/40 mt-8">
+              More coming soon...
+            </p>
           </div>
         </section>
 
         <section className="bg-black px-10 py-40 flex flex-col lg:flex-row gap-32">
           <div className="lg:w-1/2">
             <span className="text-[#F5E000] text-[clamp(100px,20vw,280px)] font-black leading-none tracking-tighter drop-shadow-[10px_10px_0px_rgba(255,255,255,0.05)]">
-              92.8%
+              +1M
             </span>
             <div className="max-w-xl mt-16 space-y-8">
-              <h3 className="text-white text-5xl font-black uppercase tracking-tighter leading-none">{t('landing.why.title1')}<br/>{t('landing.why.title2')}</h3>
+              <h3 className="text-white text-5xl font-black uppercase tracking-tighter leading-none">
+                EVERY SUBMISSION<br/>GETS A RESPONSE.
+              </h3>
               <p className="text-white/40 text-2xl font-bold uppercase tracking-tight leading-snug">
-                {t('landing.why.desc1')}
+                We listen to everything. No ghost rejections, no black holes. If you send it, we hear it — and we'll tell you what we think.
               </p>
             </div>
           </div>
           
           <div className="lg:w-1/2 space-y-16">
             {[
-              { t: t('landing.why.point1Title'), d: t('landing.why.point1Desc') },
-              { t: t('landing.why.point2Title'), d: t('landing.why.point2Desc') },
-              { t: t('landing.why.point3Title'), d: t('landing.why.point3Desc') },
-              { t: t('landing.why.point4Title'), d: t('landing.why.point4Desc') },
+              { t: "100% RESPONSE RATE", d: "Every track submitted gets reviewed and responded to. Always. No exceptions." },
+              { t: "REAL PUBLICATION. REAL TEAM.", d: "We're an active music magazine with original content, real writers, and an international editorial team discovering music from every corner of the world." },
+              { t: "ALL SUBMISSIONS FREE", d: "Your first submission costs nothing. No credit card, no catch. We built this for artists who are working hard, not for those with big budgets." },
+              { t: "BUILT ON REAL ENGAGEMENT", d: "1.0M+ views. 400K+ accounts reached. 184K+ interactions. That's not inflated. That's organic." },
             ].map((item, i) => (
               <div key={i} className="flex gap-10 group">
                 <span className="text-[#F5E000] text-5xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
@@ -308,13 +316,15 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
             <div className="flex-[2] flex flex-wrap gap-4">
               {[
-                t('landing.genres.electronic'),
-                t('landing.genres.indieRock'),
-                t('landing.genres.postPunk'),
-                t('landing.genres.hipHop'),
-                t('landing.genres.ambient'),
-                t('landing.genres.experimental'),
-                t('landing.genres.metal'),
+                "INDIE ROCK",
+                "INDIE POP",
+                "POP PUNK",
+                "PUNK",
+                "ALTERNATIVE",
+                "POST-PUNK",
+                "SHOEGAZE",
+                "ELECTRONIC",
+                "HIP HOP"
               ].map((genre, i) => (
                 <span 
                   key={genre}
@@ -336,104 +346,161 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Card 1 */}
-              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
-                <div className="space-y-10">
-                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">{t('aestheticLabels.initialStep')}</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">{t('landing.pricing.firstTrack')}</h3>
-                  <div className="text-8xl font-black tracking-tighter text-black leading-none">{t('landing.pricing.free')}</div>
-                </div>
-                <ul className="mt-24 space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/40">
-                  <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" /> {t('landing.pricing.oneSubmission')}</li>
-                  <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" /> No expiration</li>
-                  <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" /> Direct feedback</li>
-                </ul>
-              </div>
-
-              {/* Card 2 - Highlight */}
+              {/* Card 1 - ALL SUBMISSIONS FREE (Highlighted) */}
               <div className="p-12 md:p-16 bg-[#F5E000] flex flex-col justify-between relative border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 md:-translate-y-4 z-10">
                 <div className="absolute top-0 left-0 w-full bg-black text-[#F5E000] text-center py-3 font-black text-[10px] uppercase tracking-[0.5em]">
-                  {t('aestheticLabels.mostFair')}
+                  CORE EXPERIENCE
                 </div>
                 <div className="pt-10 space-y-10">
-                  <span className="inline-block px-3 py-1 bg-white text-black text-[8px] font-black uppercase tracking-[0.4em]">{t('aestheticLabels.standardRate')}</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter text-[#F5E000]">{t('landing.pricing.singleCredit')}</h3>
-                  <div className="text-8xl font-black tracking-tighter text-white leading-none">{t('landing.pricing.oneDollar')}</div>
+                  <span className="inline-block px-3 py-1 bg-white text-black text-[8px] font-black uppercase tracking-[0.4em]">START HERE</span>
+                  <h3 className="text-4xl font-black uppercase tracking-tighter text-black">ALL SUBMISSIONS</h3>
+                  <div className="text-8xl font-black tracking-tighter text-black leading-none">FREE</div>
                 </div>
                 <div className="mt-24 space-y-8">
-                  <ul className="space-y-6 text-xs font-black uppercase tracking-[0.2em] text-white/40">
-                    <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-[#F5E000]" /> {t('landing.pricing.oneSubmission')}</li>
-                    <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-[#F5E000]" /> {t('landing.pricing.payAsYouGo')}</li>
+                  <ul className="space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                    <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> Unlimited Submissions</li>
+                    <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> Direct Feedback</li>
+                    <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> No Expiration</li>
                   </ul>
                 </div>
-                <Link href={`/${locale}/role-selection`} className="mt-16 bg-black text-white w-full py-6 font-black text-xs uppercase tracking-[0.4em] text-center hover:bg-white hover:text-black transition-all border-4 border-black">
-                  {t('landing.pricing.getStarted')}
+                <Link href={`/${locale}/role-selection`} className="mt-16 bg-black text-white w-full py-6 font-black text-xs uppercase tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
+                  GET STARTED
                 </Link>
               </div>
 
-              {/* Card 3 */}
+              {/* Card 2 - ADD-ONS */}
               <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
                 <div className="space-y-10">
-                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">{t('aestheticLabels.volumePacks')}</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">{t('landing.pricing.artistPacks')}</h3>
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-baseline border-b-2 border-black/10 pb-4">
-                      <span className="font-black text-xs uppercase tracking-widest">{t('landing.pricing.fiveSubmissions')}</span>
-                      <span className="text-5xl font-black">{t('landing.pricing.fiveDollars')}</span>
-                    </div>
-                    <div className="flex justify-between items-baseline border-b-2 border-black/10 pb-4">
-                      <span className="font-black text-xs uppercase tracking-widest">{t('landing.pricing.tenSubmissions')}</span>
-                      <span className="text-5xl font-black">{t('landing.pricing.eightDollars')}</span>
-                    </div>
+                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">ENHANCE YOUR EXPERIENCE</span>
+                  <h3 className="text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
+                  <div className="text-5xl font-black tracking-tighter text-black leading-none">
+                    1 CREDIT <span className="text-sm tracking-normal text-black/40 inline-block align-middle ml-2">EACH</span>
                   </div>
                 </div>
-                <p className="mt-24 text-[10px] font-black uppercase tracking-[0.2em] italic text-black/20">
-                  Credits never expire. No subscriptions.
-                </p>
+                <ul className="mt-24 space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Fast response (48 hours)</li>
+                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Song review</li>
+                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Apply to all channels</li>
+                  <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Listen to full EP / Album</li>
+                </ul>
+              </div>
+
+              {/* Card 3 - PREMIUM PR */}
+              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+                <div className="space-y-10">
+                  <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">INVITE ONLY</span>
+                  <h3 className="text-4xl font-black uppercase tracking-tighter">PREMIUM PR</h3>
+                  <div className="text-xl font-black tracking-tighter text-black/40 leading-snug">FOR ELIGIBLE ARTISTS</div>
+                </div>
+                <div className="mt-24 space-y-8">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-black/60 leading-relaxed mb-8">
+                    If you meet the requirements (10k+ followers), unlock our top tier PR services.
+                  </p>
+                  <ul className="space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Exclusive Interviews</li>
+                    <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Dedicated Articles</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Credit Packs */}
+            <div className="mt-16 bg-white border-4 border-black p-12 md:p-16 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b-4 border-black pb-8 mb-8">
+                <h3 className="text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
+                <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">DISCOUNTED RATES</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
+                <div className="flex justify-between items-baseline border-b-2 border-black/10 md:border-none pb-4 md:pb-0">
+                  <span className="font-black text-sm uppercase tracking-widest text-black/60">5 CREDITS</span>
+                  <span className="text-4xl font-black">$4</span>
+                </div>
+                <div className="flex justify-between items-baseline border-b-2 border-black/10 md:border-none pb-4 md:pb-0">
+                  <span className="font-black text-sm uppercase tracking-widest text-black/60">10 CREDITS</span>
+                  <span className="text-4xl font-black">$7</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span className="font-black text-sm uppercase tracking-widest text-black/60">20 CREDITS</span>
+                  <span className="text-4xl font-black">$12</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── 8. TESTIMONIALS ── */}
-        <section className="bg-black px-10 py-40 border-t-4 border-white/10">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
-            {[
-              { q: "Finally a platform that doesn't feel like a predatory ATM. They actually listened and gave real feedback.", a: "KALT", g: "POST-PUNK" },
-              { q: "The reach on their Instagram is insane. My track got more streams from one story than three paid campaigns.", a: "LUNA PHASE", g: "SHOEGAZE" },
-              { q: "Honest curation. I got rejected twice before being accepted, and that's why their feed is actually good.", a: "CYBERP0P", g: "MINIMAL SYNTH" },
-            ].map((t, i) => (
-              <div key={i} className="border-4 border-white/10 p-12 relative group hover:border-[#F5E000] transition-colors">
-                <div className="absolute left-0 top-12 w-2 h-24 bg-[#F5E000] group-hover:top-0 group-hover:h-full transition-all duration-500"></div>
-                <p className="text-white text-2xl font-bold uppercase tracking-tight leading-snug mb-12">
-                  "{t.q}"
-                </p>
-                <div className="pt-8 border-t-2 border-white/10">
-                  <p className="text-white font-black text-sm uppercase tracking-[0.3em] group-hover:text-[#F5E000] transition-colors">{t.a}</p>
-                  <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] mt-2">{t.g}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── 9. PARTNERS ── */}
-        <section id="partners" className="bg-white border-y-4 border-black px-10 py-32 text-center">
+        {/* ── 8. PARTNERS ── */}
+        <section id="partners" className="bg-white border-y-4 border-black py-20 text-center overflow-hidden">
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes marquee {
+              0% { transform: translateX(0%); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+              animation: marquee 30s linear infinite;
+              display: flex;
+              width: max-content;
+            }
+          `}} />
           <p className="text-black/40 text-[10px] font-black uppercase tracking-[0.5em] mb-16">
-            {t('aestheticLabels.trustedBy')}
+            TRUSTED BY
           </p>
-          <div className="flex flex-wrap justify-center gap-x-20 gap-y-12 text-black font-black text-3xl md:text-5xl tracking-tighter uppercase opacity-80">
-            <span className="hover:opacity-100 hover:text-[#F5E000] transition-all cursor-default">{t('landing.partners.virginMusic')}</span>
-            <span className="text-[#F5E000] opacity-20">/</span>
-            <span className="hover:opacity-100 hover:text-[#F5E000] transition-all cursor-default">{t('landing.partners.acRecords')}</span>
-            <span className="text-[#F5E000] opacity-20">/</span>
-            <span className="hover:opacity-100 hover:text-[#F5E000] transition-all cursor-default">{t('landing.partners.pitchPerfectPr')}</span>
-            <span className="text-[#F5E000] opacity-20">/</span>
-            <span className="hover:opacity-100 hover:text-[#F5E000] transition-all cursor-default">{t('landing.partners.subPop')}</span>
+          <div className="relative flex overflow-hidden whitespace-nowrap">
+            <div className="animate-marquee flex gap-x-20 font-black text-4xl md:text-6xl tracking-tighter uppercase opacity-80 text-black">
+              {[
+                "RCA",
+                "VIRGIN MUSIC",
+                "AWAL",
+                "ARTS & CRAFTS",
+                "BIG LOUD",
+                "PITCH PERFECT",
+                "TRUCK FESTIVAL",
+                "BUZZ MUSIC",
+                "THE SAKAI GROUP",
+                "PFR RECORDS",
+                // Repeat for seamless loop
+                "RCA",
+                "VIRGIN MUSIC",
+                "AWAL",
+                "ARTS & CRAFTS",
+                "BIG LOUD",
+                "PITCH PERFECT",
+                "TRUCK FESTIVAL",
+                "BUZZ MUSIC",
+                "THE SAKAI GROUP",
+                "PFR RECORDS"
+              ].map((p, i) => (
+                <div key={i} className="flex items-center gap-x-20">
+                  <span className="hover:text-[#F5E000] hover:scale-110 transition-all cursor-default">{p}</span>
+                  <span className="text-[#F5E000] opacity-30 text-3xl">★</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── 10. FINAL CTA ── */}
+        {/* ── 10. FAQ ── */}
+        <section id="faq" className="bg-[#F5E000] border-y-4 border-black px-10 py-40">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black text-center mb-24">
+              FREQUENTLY<br />ASKED QUESTIONS
+            </h2>
+            <div className="space-y-4">
+              {[
+                { q: "HOW LONG DOES IT TAKE TO GET A RESPONSE?", a: "With our standard free submission, we usually reply within 7-14 days. If you use the Fast Response Add-on, we guarantee a reply in under 48 hours." },
+                { q: "WHAT GENRES DO YOU COVER?", a: "We focus heavily on alternative sounds that appeal to young audiences. Indie rock, indie pop, pop punk, shoegaze, electronic, and hip hop are our favorites, but if it's good, we'll listen." },
+                { q: "IS IT REALLY FREE?", a: "Yes. Your first submission has zero cost. We don't believe artists should have to pay just to be heard. We charge for optional Add-ons like detailed reviews or fast tracking." },
+                { q: "HOW DOES PREMIUM PR WORK?", a: "Premium PR is an invite-only tier. If you have over 10k followers on Instagram or Spotify, our team can work with you on exclusive interviews and dedicated articles to further push your releases." }
+              ].map((faq, i) => (
+                <div key={i} className="border-4 border-black bg-white p-8 md:p-12 transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group cursor-default">
+                  <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-black mb-4 transition-colors">{faq.q}</h3>
+                  <p className="text-black/60 font-bold uppercase tracking-tight leading-snug">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 11. FINAL CTA ── */}
         <section className="bg-black px-10 py-60 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[#F5E000]/5 pointer-events-none" />
           <h2 className="text-white text-[clamp(40px,10vw,140px)] font-black uppercase tracking-tighter leading-[0.85] mb-20 relative z-10">
@@ -454,28 +521,31 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-32">
             <div className="space-y-10">
               <div className="flex items-center gap-4 text-white">
-                <div className="w-12 h-12 bg-[#F5E000] text-black flex items-center justify-center font-black border-2 border-black text-xl">★</div>
-                <span className="font-black text-3xl tracking-tighter uppercase leading-none">CULT MACHINE</span>
+                <span className="font-black text-3xl tracking-tighter uppercase leading-none flex items-center gap-2">
+                  CULT <span className="text-[#F5E000] text-[1.2em]">★</span> MACHINE
+                </span>
               </div>
               <p className="text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.3em] leading-loose italic">
-                {t('landing.footer.desc')}
+                Global Indie Music Magazine For Fans, By Fans.
               </p>
             </div>
             
             <div className="grid grid-cols-2 gap-32">
               <div className="space-y-8">
-                <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">{t('landing.footer.legal')}</p>
+                <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">LEGAL</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
-                  <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.privacy')}</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.terms')}</a></li>
+                  <li><Link href={`/${locale}/privacy`} className="hover:text-white transition-colors">PRIVACY POLICY</Link></li>
+                  <li><Link href={`/${locale}/terms`} className="hover:text-white transition-colors">TERMS OF SERVICE</Link></li>
+                  <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
                 </ul>
               </div>
 
               <div className="space-y-8">
-                <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">{t('landing.footer.social')}</p>
+                <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">ABOUT</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
-                  <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.instagram')}</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">{t('landing.footer.spotify')}</a></li>
+                  <li><a href="https://cult-machine.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WEB</a></li>
+                  <li><a href="https://www.instagram.com/cult.machine" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">INSTA</a></li>
+                  <li><a href="mailto:cultmachinemag@gmail.com" className="hover:text-white transition-colors">EMAIL</a></li>
                 </ul>
               </div>
             </div>
@@ -485,7 +555,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             <p className="text-white/10 font-black italic text-xs tracking-[0.5em] uppercase">
               "{t('landing.footer.slogan')}"
             </p>
-            <p className="text-white/5 mt-4 text-[8px] font-black tracking-widest uppercase">{t('landing.footer.rights')}</p>
+            <p className="text-white/5 mt-4 text-[8px] font-black tracking-widest uppercase">© 2026 CULT MACHINE. ALL RIGHTS RESERVED.</p>
           </div>
         </footer>
       </main>
