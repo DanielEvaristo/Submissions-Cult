@@ -48,8 +48,7 @@ export default function ProfileGenres({
             key={r}
             type="button"
             onClick={() => set("roleType", r)}
-            disabled={!!initialData.roleType && initialData.roleType !== r}
-            className={`p-6 border-4 transition-all duration-150 rounded-none text-left flex flex-col justify-between disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`p-4 sm:p-6 border-4 transition-all duration-150 rounded-none text-left flex flex-col justify-between ${
               form.roleType === r
                 ? "border-[#F5E000] bg-[#F5E000] text-black shadow-[6px_6px_0px_0px_rgba(245,224,0,0.1)]"
                 : "border-white/10 bg-white/5 text-white/40 hover:border-white/20 hover:text-white"

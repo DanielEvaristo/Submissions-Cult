@@ -10,6 +10,38 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
   const t = useTranslations();
   const [isNavInverted, setIsNavInverted] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cult-machine.com';
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        url: siteUrl,
+        name: 'Cult Machine',
+        inLanguage: locale,
+        description: 'Official Cult Machine submissions platform for artists, industry teams, and creative collaborators.',
+        publisher: { '@id': `${siteUrl}/#organization` },
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${siteUrl}/#organization`,
+        name: 'Cult Machine',
+        url: siteUrl,
+        logo: `${siteUrl}/opengraph-image`,
+        sameAs: ['https://cult-machine.com', 'https://www.instagram.com/cult.machine'],
+      },
+      {
+        '@type': 'WebPage',
+        '@id': `${siteUrl}/${locale}/landing/#webpage`,
+        url: `${siteUrl}/${locale}/landing`,
+        name: 'Cult Machine Landing Page',
+        isPartOf: { '@id': `${siteUrl}/#website` },
+        about: { '@id': `${siteUrl}/#organization` },
+        description: 'Submit music, buy submission add-ons, and connect with Cult Machine editorial and PR workflows.',
+      },
+    ],
+  };
 
 
   // Animations and Nav Inversion logic
@@ -62,6 +94,11 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
   return (
     <div className={`font-sans selection:bg-[#F5E000] selection:text-black bg-white text-black`}>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
       <style jsx global>{`
         section {
@@ -130,14 +167,14 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
       {/* ── 1. FIXED NAV ── */}
       <nav 
-        className={`fixed top-0 w-full z-[1000] transition-all duration-500 border-b-4 h-24 flex items-center px-10 ${
+        className={`fixed top-0 w-full z-[1000] transition-all duration-500 border-b-4 h-20 md:h-24 flex items-center px-4 sm:px-6 md:px-10 ${
           isNavInverted 
             ? 'bg-black border-white/10 text-white' 
             : 'bg-white border-black text-black'
         }`}
       >
         <div className="flex-1 flex items-center gap-3">
-          <span className="font-black text-2xl tracking-tighter uppercase leading-none flex items-center gap-2">
+          <span className="font-black text-lg sm:text-xl md:text-2xl tracking-tighter uppercase leading-none flex items-center gap-2">
             CULT <span className={`text-[1.2em] transition-colors ${isNavInverted ? 'text-white' : 'text-black'}`}>★</span> MACHINE
           </span>
         </div>
@@ -149,7 +186,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <a href="#faq" className="hover:text-[#F5E000] transition-colors">FAQ</a>
         </div>
 
-        <div className="flex-1 flex justify-end gap-6 md:gap-8 items-center relative">
+        <div className="flex-1 flex justify-end gap-4 sm:gap-6 md:gap-8 items-center relative">
           
           {/* Language Dropdown */}
           <div className="relative">
@@ -188,10 +225,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
             )}
           </div>
-          <Link href={`/${locale}/login`} className="font-black text-[10px] uppercase tracking-widest self-center hover:underline decoration-4">{t('landing.nav.logIn')}</Link>
+          <Link href={`/${locale}/login`} className="font-black text-[9px] sm:text-[10px] uppercase tracking-[0.25em] sm:tracking-widest self-center hover:underline decoration-4">{t('landing.nav.logIn')}</Link>
           <Link 
             href={`/${locale}/role-selection`}
-            className={`px-8 py-4 font-black text-[10px] uppercase tracking-[0.3em] border-2 transition-all ${
+            className={`px-4 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] border-2 transition-all ${
               isNavInverted 
                 ? 'bg-[#F5E000] text-black border-black hover:bg-white' 
                 : 'bg-black text-[#F5E000] border-[#F5E000] hover:bg-[#F5E000] hover:text-black'
@@ -202,10 +239,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </div>
       </nav>
 
-      <main className="pt-24 overflow-hidden">
+      <main className="pt-20 md:pt-24 overflow-hidden">
         
         {/* ── 2. HERO ── */}
-        <section className="relative min-h-[80vh] flex items-center pt-32 pb-20 px-6 md:px-10 bg-black text-white overflow-hidden">
+        <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center pt-20 pb-14 sm:pt-24 sm:pb-16 md:pt-32 md:pb-20 px-4 sm:px-6 md:px-10 bg-black text-white overflow-hidden">
           {/* Subtle Twinkling Stars Background */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
             {[...Array(20)].map((_, i) => {
@@ -229,24 +266,24 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             })}
           </div>
 
-          <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-20">
-            <div className="flex-1 space-y-8">
+          <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-10 md:gap-20">
+            <div className="flex-1 space-y-6 md:space-y-8">
               <h1 className="text-[clamp(60px,10vw,140px)] font-black uppercase leading-[0.85] tracking-tighter">
                 GET <span className="text-[#F5E000] drop-shadow-[4px_4px_0px_rgba(255,255,255,0.1)]">HEARD</span>,<br />
                 NOT BURIED.
               </h1>
-              <div className="text-lg md:text-2xl font-bold max-w-2xl text-white/80 leading-tight space-y-4">
+              <div className="text-base sm:text-lg md:text-2xl font-bold max-w-2xl text-white/80 leading-tight space-y-3 md:space-y-4">
                 <p>The official submissions platform of Cult Machine.</p>
                 <p>Real ears. Honest curation. All submissions for free.</p>
               </div>
-              <div className="pt-8 flex flex-col sm:flex-row gap-6">
+              <div className="pt-4 md:pt-8 flex flex-col sm:flex-row gap-4 sm:gap-5 md:gap-6">
                 <Link 
                   href={`/${locale}/role-selection`} 
-                  className="bg-[#F5E000] text-black px-10 py-6 font-black text-sm uppercase tracking-[0.2em] border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2 transition-all flex items-center justify-center gap-4"
+                  className="bg-[#F5E000] text-black px-6 py-4 sm:px-8 sm:py-5 md:px-10 md:py-6 font-black text-xs sm:text-sm uppercase tracking-[0.16em] sm:tracking-[0.2em] border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] md:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2 transition-all flex items-center justify-center gap-3 md:gap-4"
                 >
                   {t('landing.hero.ctaFree')} <ArrowRight size={20} strokeWidth={3} />
                 </Link>
-                <Link href={`/${locale}/login`} className="bg-black text-white px-12 py-7 font-black text-sm uppercase tracking-[0.4em] hover:bg-[#F5E000] hover:text-black transition-all border-4 border-white/20 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 text-center">
+                <Link href={`/${locale}/login`} className="bg-black text-white px-7 py-4 sm:px-10 sm:py-5 md:px-12 md:py-7 font-black text-xs sm:text-sm uppercase tracking-[0.22em] sm:tracking-[0.4em] hover:bg-[#F5E000] hover:text-black transition-all border-4 border-white/20 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.05)] md:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 text-center">
                   {t('landing.nav.logIn')}
                 </Link>
               </div>
@@ -254,10 +291,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           </div>
           
           {/* Ticker */}
-          <div className="absolute bottom-10 left-0 w-full overflow-hidden border-y-2 border-white/5 py-6">
+          <div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-0 w-full overflow-hidden border-y-2 border-white/5 py-3 sm:py-4 md:py-6">
             <div className="ticker-animate">
               {[...Array(10)].map((_, i) => (
-                <span key={i} className="text-white font-black text-xl uppercase tracking-[0.5em] mx-12 opacity-10">
+                <span key={i} className="text-white font-black text-sm sm:text-base md:text-xl uppercase tracking-[0.25em] sm:tracking-[0.35em] md:tracking-[0.5em] mx-5 sm:mx-8 md:mx-12 opacity-10">
                   {t('landing.hero.marquee')}
                 </span>
               ))}
@@ -274,9 +311,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           ].map((stat, i) => (
             <div 
               key={i} 
-              className={`p-12 flex flex-col justify-center border-black transition-all duration-300 group hover:bg-[#F5E000] ${i !== 2 ? 'md:border-r-4' : ''} ${i !== 0 ? 'border-t-4 md:border-t-0' : ''}`}
+              className={`p-7 sm:p-9 md:p-12 flex flex-col justify-center border-black transition-all duration-300 group hover:bg-[#F5E000] ${i !== 2 ? 'md:border-r-4' : ''} ${i !== 0 ? 'border-t-4 md:border-t-0' : ''}`}
             >
-              <span className="text-6xl font-black tracking-tighter text-black mb-2 group-hover:scale-110 transition-transform origin-left">{stat.n}</span>
+              <span className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-black mb-2 group-hover:scale-110 transition-transform origin-left">{stat.n}</span>
               <span className="text-[10px] font-black text-black/40 uppercase tracking-[0.3em] group-hover:text-black">{stat.label}</span>
               <span className="text-[10px] font-black text-black/20 uppercase tracking-tighter group-hover:text-black/60">{stat.desc}</span>
             </div>
@@ -284,10 +321,10 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 4. OPORTUNIDADES ── */}
-        <section id="how-it-works" className="bg-white px-10 py-40 border-b-4 border-black">
-          <div className="max-w-7xl mx-auto space-y-32">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b-4 border-black pb-12">
-              <h2 className="text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.outcome.title')}</h2>
+        <section id="how-it-works" className="bg-white px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40 border-b-4 border-black">
+          <div className="max-w-7xl mx-auto space-y-16 sm:space-y-20 md:space-y-32">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-8 md:pb-12">
+              <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.outcome.title')}</h2>
               <p className="font-black text-xs uppercase tracking-[0.4em] text-black/40 md:text-right max-w-xs">{t('landing.outcome.subtitle')}</p>
             </div>
             
@@ -300,15 +337,15 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               ].map((opp, i) => (
                 <div 
                   key={i} 
-                  className={`p-16 border-black card-hover transition-all relative group ${i % 2 === 0 ? 'md:border-r-4' : ''} ${i < 2 ? 'border-b-4' : ''} ${opp.disabled ? 'opacity-40 grayscale' : ''}`}
+                  className={`p-6 sm:p-8 md:p-16 border-black card-hover transition-all relative group ${i % 2 === 0 ? 'md:border-r-4' : ''} ${i < 2 ? 'border-b-4' : ''} ${opp.disabled ? 'opacity-40 grayscale' : ''}`}
                 >
-                  <span className="text-[120px] font-black text-black/5 absolute top-4 right-12 select-none group-hover:text-black/10 transition-colors leading-none">{opp.id}</span>
+                  <span className="text-[72px] sm:text-[96px] md:text-[120px] font-black text-black/5 absolute top-3 sm:top-4 right-4 sm:right-8 md:right-12 select-none group-hover:text-black/10 transition-colors leading-none">{opp.id}</span>
                   <div className="relative z-10">
-                    <span className="inline-block px-4 py-1 border-2 border-black text-[10px] font-black uppercase mb-8 tracking-[0.3em] group-hover:bg-black group-hover:text-[#F5E000] transition-colors">
+                    <span className="inline-block px-3 sm:px-4 py-1 border-2 border-black text-[9px] sm:text-[10px] font-black uppercase mb-5 sm:mb-6 md:mb-8 tracking-[0.2em] sm:tracking-[0.3em] group-hover:bg-black group-hover:text-[#F5E000] transition-colors">
                       {opp.cost}
                     </span>
-                    <h3 className="text-4xl font-black text-black uppercase tracking-tighter mb-6">{opp.name}</h3>
-                    <p className="text-black/60 text-xl font-bold uppercase tracking-tight leading-snug max-w-sm">
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-black uppercase tracking-tighter mb-4 sm:mb-5 md:mb-6">{opp.name}</h3>
+                    <p className="text-black/60 text-base sm:text-lg md:text-xl font-bold uppercase tracking-tight leading-snug max-w-sm">
                       {opp.desc}
                     </p>
                   </div>
@@ -321,7 +358,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           </div>
         </section>
 
-        <section className="bg-black px-10 py-40 flex flex-col lg:flex-row gap-32">
+        <section className="bg-black px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40 flex flex-col lg:flex-row gap-12 sm:gap-16 md:gap-32">
           <div className="lg:w-1/2">
             <div className="flex flex-col">
               <span className="text-[#F5E000] text-[clamp(100px,20vw,280px)] font-black leading-none tracking-tighter drop-shadow-[10px_10px_0px_rgba(255,255,255,0.05)]">
@@ -331,30 +368,30 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 views
               </span>
             </div>
-            <div className="max-w-xl mt-16 space-y-8">
-              <h3 className="text-white text-5xl font-black uppercase tracking-tighter leading-none">
+            <div className="max-w-xl mt-8 sm:mt-12 md:mt-16 space-y-5 sm:space-y-6 md:space-y-8">
+              <h3 className="text-white text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">
                 EVERY SUBMISSION<br/>GETS A RESPONSE.
               </h3>
-              <p className="text-white/40 text-2xl font-bold uppercase tracking-tight leading-snug">
+              <p className="text-white/40 text-base sm:text-lg md:text-2xl font-bold uppercase tracking-tight leading-snug">
                 We listen to everything. No ghost rejections, no black holes. If you send it, we hear it — and we'll tell you what we think.
               </p>
             </div>
           </div>
           
-          <div className="lg:w-1/2 space-y-16">
+          <div className="lg:w-1/2 space-y-8 sm:space-y-10 md:space-y-16">
             {[
               { t: "100% RESPONSE RATE", d: "Every track submitted gets reviewed and responded to. Always. No exceptions." },
               { t: "REAL PUBLICATION. REAL TEAM.", d: "We're an active music magazine with original content, real writers, and an international editorial team discovering music from every corner of the world." },
               { t: "ALL SUBMISSIONS FREE", d: "Your first submission costs nothing. No credit card, no catch. We built this for artists who are working hard, not for those with big budgets." },
               { t: "BUILT ON REAL ENGAGEMENT", d: "1.0M+ views. 400K+ accounts reached. 184K+ interactions. That's not inflated. That's organic." },
             ].map((item, i) => (
-              <div key={i} className="flex gap-10 group">
-                <span className="text-[#F5E000] text-5xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
-                <div className="space-y-4">
-                  <h4 className="text-white text-3xl font-black uppercase tracking-tighter group-hover:text-[#F5E000] transition-colors">
+              <div key={i} className="flex gap-4 sm:gap-6 md:gap-10 group">
+                <span className="text-[#F5E000] text-3xl sm:text-4xl md:text-5xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                  <h4 className="text-white text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-[#F5E000] transition-colors">
                     {item.t}
                   </h4>
-                  <p className="text-white/40 text-lg font-bold uppercase tracking-tight leading-snug">
+                  <p className="text-white/40 text-sm sm:text-base md:text-lg font-bold uppercase tracking-tight leading-snug">
                     {item.d}
                   </p>
                 </div>
@@ -365,9 +402,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
 
         {/* ── 6. GÉNEROS ── */}
         <section className="bg-[#F5E000] py-24 border-b-4 border-black text-black overflow-hidden relative">
-          <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-12">
-            <div className="px-10">
-              <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">
+          <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-8 md:gap-12">
+            <div className="px-4 sm:px-6 md:px-10">
+              <h3 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">
                 {t('landing.genres.title1')} {t('landing.genres.title2')}
               </h3>
             </div>
@@ -411,56 +448,56 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 7. PRICING ── */}
-        <section id="pricing" className="bg-white px-10 py-40">
-          <div className="max-w-7xl mx-auto space-y-32">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b-4 border-black pb-12">
-              <h2 className="text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.pricing.title')}</h2>
+        <section id="pricing" className="bg-white px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40">
+          <div className="max-w-7xl mx-auto space-y-16 sm:space-y-20 md:space-y-32">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-8 md:pb-12">
+              <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.pricing.title')}</h2>
               <p className="font-black text-xs uppercase tracking-[0.4em] text-black/40 md:text-right max-w-xs">{t('landing.pricing.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Card 1 - ALL SUBMISSIONS FREE (Highlighted) */}
-              <div className="p-12 md:p-16 bg-[#F5E000] flex flex-col justify-between relative border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 md:-translate-y-4 z-10">
+              <div className="p-6 sm:p-8 md:p-16 bg-[#F5E000] flex flex-col justify-between relative border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 md:-translate-y-4 z-10">
                 <div className="absolute top-0 left-0 w-full bg-black text-[#F5E000] text-center py-3 font-black text-[10px] uppercase tracking-[0.5em]">
                   CORE EXPERIENCE
                 </div>
-                <div className="pt-10 space-y-10">
+                <div className="pt-8 md:pt-10 space-y-6 sm:space-y-8 md:space-y-10">
                   <span className="inline-block px-3 py-1 bg-white text-black text-[8px] font-black uppercase tracking-[0.4em]">START HERE</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter text-black">ALL SUBMISSIONS</h3>
-                  <div className="text-8xl font-black tracking-tighter text-black leading-none">FREE</div>
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter text-black">ALL SUBMISSIONS</h3>
+                  <div className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-black leading-none">FREE</div>
                 </div>
-                <div className="mt-24 space-y-8">
+                <div className="mt-10 sm:mt-14 md:mt-24 space-y-6 md:space-y-8">
                   <ul className="space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
                     <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> Unlimited Submissions</li>
                     <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> Direct Feedback</li>
                     <li className="flex items-center gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0" /> No Expiration</li>
                   </ul>
                 </div>
-                <Link href={`/${locale}/role-selection`} className="mt-16 bg-black text-white w-full py-6 font-black text-xs uppercase tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
+                <Link href={`/${locale}/role-selection`} className="mt-10 sm:mt-12 md:mt-16 bg-black text-white w-full py-4 sm:py-5 md:py-6 font-black text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
                   GET STARTED
                 </Link>
               </div>
 
               {/* Card 2 - ADD-ONS & PREMIUM PR */}
-              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+              <div className="p-6 sm:p-8 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
                 <div>
-                  <div className="space-y-10">
+                  <div className="space-y-6 sm:space-y-8 md:space-y-10">
                     <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">ENHANCE YOUR EXPERIENCE</span>
-                    <h3 className="text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
-                    <div className="text-5xl font-black tracking-tighter text-black leading-none">
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-black leading-none">
                       1 CREDIT <span className="text-sm tracking-normal text-black/40 inline-block align-middle ml-2">EACH</span>
                     </div>
                   </div>
-                  <ul className="mt-16 space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                  <ul className="mt-8 sm:mt-10 md:mt-16 space-y-4 md:space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Fast response (48 hours)</li>
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Apply to all channels</li>
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Listen to full EP / Album</li>
                   </ul>
                 </div>
 
-                <div className="border-t-2 border-black/10 pt-8 mt-12 space-y-6">
+                <div className="border-t-2 border-black/10 pt-6 md:pt-8 mt-8 md:mt-12 space-y-4 md:space-y-6">
                   <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">INVITE ONLY</span>
-                  <h4 className="text-2xl font-black uppercase tracking-tighter">PREMIUM PR*</h4>
+                  <h4 className="text-xl sm:text-2xl font-black uppercase tracking-tighter">PREMIUM PR*</h4>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-black/60 leading-relaxed">
                     Exclusive interviews & dedicated articles if you meet the requirements (10k+ followers).
                   </p>
@@ -468,14 +505,14 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
 
               {/* Card 3 - CREDIT PACKS */}
-              <div className="p-12 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
-                <div className="space-y-10">
+              <div className="p-6 sm:p-8 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+                <div className="space-y-6 sm:space-y-8 md:space-y-10">
                   <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">BUY IN BULK</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
-                  <div className="text-xl font-black tracking-tighter text-black/40 leading-snug">SAVE ON ADD-ONS</div>
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
+                  <div className="text-base sm:text-lg md:text-xl font-black tracking-tighter text-black/40 leading-snug">SAVE ON ADD-ONS</div>
                 </div>
 
-                <div className="mt-16 space-y-8">
+                <div className="mt-8 sm:mt-10 md:mt-16 space-y-6 md:space-y-8">
                   <div className="flex justify-between items-baseline border-b-2 border-black/10 pb-4">
                     <span className="font-black text-xs uppercase tracking-widest text-black/60">5 CREDITS</span>
                     <span className="text-3xl font-black">$4</span>
@@ -490,7 +527,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                   </div>
                 </div>
 
-                <Link href={`/${locale}/role-selection`} className="mt-12 bg-black text-white w-full py-6 font-black text-xs uppercase tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
+                <Link href={`/${locale}/role-selection`} className="mt-8 md:mt-12 bg-black text-white w-full py-4 sm:py-5 md:py-6 font-black text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.4em] text-center hover:bg-[#F5E000] hover:text-black transition-all border-4 border-black">
                   BUY CREDITS
                 </Link>
               </div>
@@ -538,9 +575,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 10. FAQ ── */}
-        <section id="faq" className="bg-[#F5E000] border-y-4 border-black px-10 py-40">
+        <section id="faq" className="bg-[#F5E000] border-y-4 border-black px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black text-center mb-24">
+            <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black text-center mb-12 sm:mb-16 md:mb-24">
               FREQUENTLY<br />ASKED QUESTIONS
             </h2>
             <div className="space-y-4">
@@ -560,27 +597,27 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 11. FINAL CTA ── */}
-        <section className="bg-black px-10 py-60 text-center relative overflow-hidden">
+        <section className="bg-black px-4 sm:px-6 md:px-10 py-24 sm:py-28 md:py-60 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[#F5E000]/5 pointer-events-none" />
-          <h2 className="text-white text-[clamp(40px,10vw,140px)] font-black uppercase tracking-tighter leading-[0.85] mb-20 relative z-10">
+          <h2 className="text-white text-[clamp(36px,10vw,140px)] font-black uppercase tracking-tighter leading-[0.85] mb-10 sm:mb-14 md:mb-20 relative z-10">
             {t('landing.cta.title1')}<br/>{t('landing.cta.titleHighlight')}
           </h2>
           <div className="flex flex-col sm:flex-row justify-center gap-8 relative z-10">
-            <Link href={`/${locale}/role-selection`} className="inline-block bg-[#F5E000] text-black px-20 py-10 font-black text-2xl uppercase tracking-[0.4em] hover:bg-white transition-all border-8 border-[#F5E000] shadow-[20px_20px_0px_0px_rgba(245,224,0,0.1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+            <Link href={`/${locale}/role-selection`} className="inline-block bg-[#F5E000] text-black px-8 py-5 sm:px-12 sm:py-7 md:px-20 md:py-10 font-black text-sm sm:text-lg md:text-2xl uppercase tracking-[0.22em] sm:tracking-[0.3em] md:tracking-[0.4em] hover:bg-white transition-all border-4 md:border-8 border-[#F5E000] shadow-[10px_10px_0px_0px_rgba(245,224,0,0.1)] md:shadow-[20px_20px_0px_0px_rgba(245,224,0,0.1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2">
               {t('landing.cta.button')}
             </Link>
           </div>
-          <p className="text-white/20 mt-16 text-xs font-black uppercase tracking-[0.4em]">
+          <p className="text-white/20 mt-8 sm:mt-10 md:mt-16 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] sm:tracking-[0.4em]">
             No credit card required for your first submission.
           </p>
         </section>
 
         {/* ── 11. FOOTER ── */}
-        <footer className="bg-black border-t-4 border-white/10 px-10 py-24">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-32">
-            <div className="space-y-10">
+        <footer className="bg-black border-t-4 border-white/10 px-4 sm:px-6 md:px-10 py-16 sm:py-20 md:py-24">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-14 sm:gap-20 md:gap-32">
+            <div className="space-y-6 sm:space-y-8 md:space-y-10">
               <div className="flex items-center gap-4 text-white">
-                <span className="font-black text-3xl tracking-tighter uppercase leading-none flex items-center gap-2">
+                <span className="font-black text-2xl sm:text-3xl tracking-tighter uppercase leading-none flex items-center gap-2">
                   CULT <span className="text-[#F5E000] text-[1.2em]">★</span> MACHINE
                 </span>
               </div>
@@ -589,8 +626,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </p>
             </div>
             
-            <div className="grid grid-cols-2 gap-32">
-              <div className="space-y-8">
+            <div className="grid grid-cols-2 gap-10 sm:gap-16 md:gap-32">
+              <div className="space-y-5 sm:space-y-6 md:space-y-8">
                 <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">LEGAL</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
                   <li><Link href={`/${locale}/privacy`} className="hover:text-white transition-colors">PRIVACY POLICY</Link></li>
@@ -599,7 +636,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 </ul>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-5 sm:space-y-6 md:space-y-8">
                 <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">ABOUT</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
                   <li><a href="https://cult-machine.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WEB</a></li>
@@ -610,7 +647,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
           </div>
           
-          <div className="mt-32 pt-20 border-t-4 border-white/10 text-center">
+          <div className="mt-14 sm:mt-20 md:mt-32 pt-10 sm:pt-14 md:pt-20 border-t-4 border-white/10 text-center">
             <p className="text-white/10 font-black italic text-xs tracking-[0.5em] uppercase">
               "{t('landing.footer.slogan')}"
             </p>
