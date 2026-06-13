@@ -51,12 +51,12 @@ export default function RoleSelectionPage() {
       icon: Building2,
       onClick: handleSelectIndustry,
       className:
-        "bg-white text-black border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white hover:translate-x-1.5 hover:translate-y-1.5 hover:shadow-none",
-      iconWrap: "bg-black text-[#F5E000] group-hover:bg-[#F5E000] group-hover:text-black",
-      descriptionClass: "text-black/50 group-hover:text-white/72",
-      kickerClass: "text-black/40 group-hover:text-[#F5E000]",
-      footerClass: "text-black group-hover:text-white",
-      accentClass: "border-black/10 text-black/40 group-hover:border-white/16 group-hover:text-white/48",
+        "bg-white text-black border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:bg-[#F5E000] hover:text-black hover:translate-x-1.5 hover:translate-y-1.5 hover:shadow-none",
+      iconWrap: "bg-black text-[#F5E000] group-hover:bg-black group-hover:text-[#F5E000]",
+      descriptionClass: "text-black/50 group-hover:text-black/70",
+      kickerClass: "text-black/40 group-hover:text-black/60",
+      footerClass: "text-black group-hover:text-black",
+      accentClass: "border-black/10 text-black/40 group-hover:border-black/20 group-hover:text-black/60",
     },
     {
       title: "CREATIVE",

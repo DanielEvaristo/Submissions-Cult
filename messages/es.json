@@ -453,12 +453,12 @@
       "radio": "Radios Web",
       "item1": {
         "name": "Radar",
-        "desc": "una serie donde publicamos canciones nuevas que nos mandan o descubrimos",
+        "desc": "A series spotlighting the next generation of rock and alternative artists you need to know.",
         "cost": "GRATIS"
       },
       "item2": {
         "name": "Internet Wave",
-        "desc": "una serie donde recomendamos canciones que nos salen en nuestro fyp o que descubrimos",
+        "desc": "A series dedicated to the coolest artists pushing creative boundaries.",
         "cost": "ADD-ON"
       },
       "item3": {

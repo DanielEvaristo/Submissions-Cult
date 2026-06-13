@@ -186,7 +186,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           <a href="#faq" className="hover:text-[#F5E000] transition-colors">FAQ</a>
         </div>
 
-        <div className="flex-1 flex justify-end gap-4 sm:gap-6 md:gap-8 items-center relative">
+        <div className="flex-1 flex justify-end gap-2 sm:gap-4 md:gap-8 items-center relative">
           
           {/* Language Dropdown */}
           <div className="relative">
@@ -225,10 +225,19 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
             )}
           </div>
-          <Link href={`/${locale}/login`} className="font-black text-[9px] sm:text-[10px] uppercase tracking-[0.25em] sm:tracking-widest self-center hover:underline decoration-4">{t('landing.nav.logIn')}</Link>
+          <Link
+            href={`/${locale}/login`}
+            className={`inline-flex min-h-[42px] items-center justify-center border-2 px-3 py-2 sm:px-4 sm:py-2.5 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.25em] self-center transition-all ${
+              isNavInverted
+                ? 'border-white/20 text-white hover:bg-white hover:text-black'
+                : 'border-black/15 text-black hover:bg-black hover:text-white'
+            }`}
+          >
+            {t('landing.nav.logIn')}
+          </Link>
           <Link 
             href={`/${locale}/role-selection`}
-            className={`px-4 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] border-2 transition-all ${
+            className={`inline-flex min-h-[42px] items-center justify-center border-2 px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.3em] transition-all ${
               isNavInverted 
                 ? 'bg-[#F5E000] text-black border-black hover:bg-white' 
                 : 'bg-black text-[#F5E000] border-[#F5E000] hover:bg-[#F5E000] hover:text-black'

@@ -428,12 +428,12 @@
       "radio": "Web Radios",
       "item1": {
         "name": "Radar",
-        "desc": "une série où nous publions de nouvelles chansons qui nous sont envoyées ou que nous découvrons",
+        "desc": "A series spotlighting the next generation of rock and alternative artists you need to know.",
         "cost": "GRATUIT"
       },
       "item2": {
         "name": "Internet Wave",
-        "desc": "une série où nous recommandons des chansons qui apparaissent dans notre fyp ou que nous découvrons",
+        "desc": "A series dedicated to the coolest artists pushing creative boundaries.",
         "cost": "ADD-ON"
       },
       "item3": {

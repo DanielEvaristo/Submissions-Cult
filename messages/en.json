@@ -454,12 +454,12 @@
       "radio": "Web Radios",
       "item1": {
         "name": "Radar",
-        "desc": "a series where we publish new songs that are sent to us or that we discover",
+        "desc": "A series spotlighting the next generation of rock and alternative artists you need to know.",
         "cost": "FREE"
       },
       "item2": {
         "name": "Internet Wave",
-        "desc": "a series where we recommend songs that show up on our fyp or that we discover",
+        "desc": "A series dedicated to the coolest artists pushing creative boundaries.",
         "cost": "ADD-ON"
       },
       "item3": {
