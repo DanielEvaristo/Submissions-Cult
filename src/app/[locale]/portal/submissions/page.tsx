@@ -337,7 +337,8 @@ export default function SubmissionsPage() {
                             }>{sub.premiumPrStatus}</span>
                           </span>
                           
-                          {sub.premiumPrStatus === "APPROVED" && (
+                          {/* Only show payment button here if the track is not yet accepted (otherwise show in the prominent bottom section) */}
+                          {sub.premiumPrStatus === "APPROVED" && sub.status !== "ACCEPTED" && sub.status !== "PUBLISHED" && (
                             <button
                               onClick={() => handlePremiumPayment(sub.id)}
                               className="px-4 py-2 bg-[#F5E000] text-black font-sans font-black text-[9px] uppercase tracking-widest hover:bg-white transition-all w-full mt-1 border-2 border-transparent"
@@ -406,7 +407,7 @@ export default function SubmissionsPage() {
                           Your track was accepted for {sub.assignedPremiumServices.join(" and ")}.
                         </p>
                       </div>
-                      {sub.premiumServicesPaid ? (
+                      {sub.premiumServicesPaid || sub.premiumPrStatus === "PAID" ? (
                         <span className="px-6 py-3 bg-[#00CC66] text-black font-black uppercase text-[10px] tracking-widest">
                           PAID & ACTIVE
                         </span>

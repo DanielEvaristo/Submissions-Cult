@@ -251,7 +251,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
       <main className="pt-20 md:pt-24 overflow-hidden">
         
         {/* ── 2. HERO ── */}
-        <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center pt-20 pb-14 sm:pt-24 sm:pb-16 md:pt-32 md:pb-20 px-4 sm:px-6 md:px-10 bg-black text-white overflow-hidden">
+        <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center pt-28 pb-16 md:pt-32 md:pb-20 px-6 md:px-10 bg-black text-white overflow-hidden">
           {/* Subtle Twinkling Stars Background */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
             {[...Array(20)].map((_, i) => {
@@ -275,9 +275,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             })}
           </div>
 
-          <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-10 md:gap-20">
-            <div className="flex-1 space-y-6 md:space-y-8">
-              <h1 className="text-[clamp(60px,10vw,140px)] font-black uppercase leading-[0.85] tracking-tighter">
+          <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-20">
+            <div className="flex-1 space-y-8">
+              <h1 className="text-[clamp(42px,10vw,140px)] font-black uppercase leading-[0.85] tracking-tighter">
                 GET <span className="text-[#F5E000] drop-shadow-[4px_4px_0px_rgba(255,255,255,0.1)]">HEARD</span>,<br />
                 NOT BURIED.
               </h1>
@@ -320,7 +320,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           ].map((stat, i) => (
             <div 
               key={i} 
-              className={`p-7 sm:p-9 md:p-12 flex flex-col justify-center border-black transition-all duration-300 group hover:bg-[#F5E000] ${i !== 2 ? 'md:border-r-4' : ''} ${i !== 0 ? 'border-t-4 md:border-t-0' : ''}`}
+              className={`p-6 md:p-12 flex flex-col justify-center border-black transition-all duration-300 group hover:bg-[#F5E000] ${i !== 2 ? 'md:border-r-4' : ''} ${i !== 0 ? 'border-t-4 md:border-t-0' : ''}`}
             >
               <span className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-black mb-2 group-hover:scale-110 transition-transform origin-left">{stat.n}</span>
               <span className="text-[10px] font-black text-black/40 uppercase tracking-[0.3em] group-hover:text-black">{stat.label}</span>
@@ -330,9 +330,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 4. OPORTUNIDADES ── */}
-        <section id="how-it-works" className="bg-white px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40 border-b-4 border-black">
-          <div className="max-w-7xl mx-auto space-y-16 sm:space-y-20 md:space-y-32">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-8 md:pb-12">
+        <section id="how-it-works" className="bg-white px-6 md:px-10 py-16 md:py-28 border-b-4 border-black">
+          <div className="max-w-7xl mx-auto space-y-12 md:space-y-24">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-6 md:pb-12">
               <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.outcome.title')}</h2>
               <p className="font-black text-xs uppercase tracking-[0.4em] text-black/40 md:text-right max-w-xs">{t('landing.outcome.subtitle')}</p>
             </div>
@@ -346,7 +346,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               ].map((opp, i) => (
                 <div 
                   key={i} 
-                  className={`p-6 sm:p-8 md:p-16 border-black card-hover transition-all relative group ${i % 2 === 0 ? 'md:border-r-4' : ''} ${i < 2 ? 'border-b-4' : ''} ${opp.disabled ? 'opacity-40 grayscale' : ''}`}
+                  className={`p-6 md:p-12 border-black card-hover transition-all relative group ${i % 2 === 0 ? 'md:border-r-4' : ''} ${i < 2 ? 'border-b-4' : ''} ${opp.disabled ? 'opacity-40 grayscale' : ''}`}
                 >
                   <span className="text-[72px] sm:text-[96px] md:text-[120px] font-black text-black/5 absolute top-3 sm:top-4 right-4 sm:right-8 md:right-12 select-none group-hover:text-black/10 transition-colors leading-none">{opp.id}</span>
                   <div className="relative z-10">
@@ -367,7 +367,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
           </div>
         </section>
 
-        <section className="bg-black px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40 flex flex-col lg:flex-row gap-12 sm:gap-16 md:gap-32">
+        <section className="bg-black px-6 md:px-10 py-16 md:py-28 flex flex-col lg:flex-row gap-12 md:gap-32">
           <div className="lg:w-1/2">
             <div className="flex flex-col">
               <span className="text-[#F5E000] text-[clamp(100px,20vw,280px)] font-black leading-none tracking-tighter drop-shadow-[10px_10px_0px_rgba(255,255,255,0.05)]">
@@ -377,7 +377,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 views
               </span>
             </div>
-            <div className="max-w-xl mt-8 sm:mt-12 md:mt-16 space-y-5 sm:space-y-6 md:space-y-8">
+            <div className="max-w-xl mt-6 md:mt-16 space-y-4 md:space-y-8">
               <h3 className="text-white text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">
                 EVERY SUBMISSION<br/>GETS A RESPONSE.
               </h3>
@@ -387,16 +387,16 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
           </div>
           
-          <div className="lg:w-1/2 space-y-8 sm:space-y-10 md:space-y-16">
+          <div className="lg:w-1/2 space-y-8 md:space-y-16">
             {[
               { t: "100% RESPONSE RATE", d: "Every track submitted gets reviewed and responded to. Always. No exceptions." },
               { t: "REAL PUBLICATION. REAL TEAM.", d: "We're an active music magazine with original content, real writers, and an international editorial team discovering music from every corner of the world." },
               { t: "ALL SUBMISSIONS FREE", d: "Your first submission costs nothing. No credit card, no catch. We built this for artists who are working hard, not for those with big budgets." },
               { t: "BUILT ON REAL ENGAGEMENT", d: "1.0M+ views. 400K+ accounts reached. 184K+ interactions. That's not inflated. That's organic." },
             ].map((item, i) => (
-              <div key={i} className="flex gap-4 sm:gap-6 md:gap-10 group">
+              <div key={i} className="flex gap-4 md:gap-10 group">
                 <span className="text-[#F5E000] text-3xl sm:text-4xl md:text-5xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
-                <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                <div className="space-y-2 md:space-y-4">
                   <h4 className="text-white text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-[#F5E000] transition-colors">
                     {item.t}
                   </h4>
@@ -410,8 +410,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 6. GÉNEROS ── */}
-        <section className="bg-[#F5E000] py-24 border-b-4 border-black text-black overflow-hidden relative">
-          <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-8 md:gap-12">
+        <section className="bg-[#F5E000] py-12 md:py-20 border-b-4 border-black text-black overflow-hidden relative">
+          <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-6 md:gap-12">
             <div className="px-4 sm:px-6 md:px-10">
               <h3 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">
                 {t('landing.genres.title1')} {t('landing.genres.title2')}
@@ -457,20 +457,20 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 7. PRICING ── */}
-        <section id="pricing" className="bg-white px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40">
-          <div className="max-w-7xl mx-auto space-y-16 sm:space-y-20 md:space-y-32">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-8 md:pb-12">
+        <section id="pricing" className="bg-white px-6 md:px-10 py-16 md:py-28">
+          <div className="max-w-7xl mx-auto space-y-12 md:space-y-24">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 border-b-4 border-black pb-6 md:pb-12">
               <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black">{t('landing.pricing.title')}</h2>
               <p className="font-black text-xs uppercase tracking-[0.4em] text-black/40 md:text-right max-w-xs">{t('landing.pricing.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Card 1 - ALL SUBMISSIONS FREE (Highlighted) */}
-              <div className="p-6 sm:p-8 md:p-16 bg-[#F5E000] flex flex-col justify-between relative border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 md:-translate-y-4 z-10">
+              <div className="p-6 md:p-12 bg-[#F5E000] flex flex-col justify-between relative border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 md:-translate-y-4 z-10">
                 <div className="absolute top-0 left-0 w-full bg-black text-[#F5E000] text-center py-3 font-black text-[10px] uppercase tracking-[0.5em]">
                   CORE EXPERIENCE
                 </div>
-                <div className="pt-8 md:pt-10 space-y-6 sm:space-y-8 md:space-y-10">
+                <div className="pt-8 md:pt-10 space-y-6 md:space-y-10">
                   <span className="inline-block px-3 py-1 bg-white text-black text-[8px] font-black uppercase tracking-[0.4em]">START HERE</span>
                   <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter text-black">ALL SUBMISSIONS</h3>
                   <div className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-black leading-none">FREE</div>
@@ -488,16 +488,16 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
 
               {/* Card 2 - ADD-ONS & PREMIUM PR */}
-              <div className="p-6 sm:p-8 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+              <div className="p-6 md:p-12 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
                 <div>
-                  <div className="space-y-6 sm:space-y-8 md:space-y-10">
+                  <div className="space-y-6 md:space-y-10">
                     <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">ENHANCE YOUR EXPERIENCE</span>
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter">ADD-ONS</h3>
                     <div className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-black leading-none">
                       1 CREDIT <span className="text-sm tracking-normal text-black/40 inline-block align-middle ml-2">EACH</span>
                     </div>
                   </div>
-                  <ul className="mt-8 sm:mt-10 md:mt-16 space-y-4 md:space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
+                  <ul className="mt-6 md:mt-16 space-y-4 md:space-y-6 text-xs font-black uppercase tracking-[0.2em] text-black/60">
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Fast response (48 hours)</li>
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Apply to all channels</li>
                     <li className="flex items-start gap-3"><Zap size={14} fill="currentColor" className="text-black shrink-0 mt-1" /> Listen to full EP / Album</li>
@@ -514,8 +514,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </div>
 
               {/* Card 3 - CREDIT PACKS */}
-              <div className="p-6 sm:p-8 md:p-16 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
-                <div className="space-y-6 sm:space-y-8 md:space-y-10">
+              <div className="p-6 md:p-12 flex flex-col justify-between bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-none hover:translate-x-2 hover:translate-y-2">
+                <div className="space-y-6 md:space-y-10">
                   <span className="inline-block px-3 py-1 bg-black text-[#F5E000] text-[8px] font-black uppercase tracking-[0.4em]">BUY IN BULK</span>
                   <h3 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter">CREDIT PACKS</h3>
                   <div className="text-base sm:text-lg md:text-xl font-black tracking-tighter text-black/40 leading-snug">SAVE ON ADD-ONS</div>
@@ -545,8 +545,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 8. PARTNERS ── */}
-        <section id="partners" className="bg-white border-y-4 border-black py-20 text-center overflow-hidden">
-          <p className="text-black/40 text-[10px] font-black uppercase tracking-[0.5em] mb-16">
+        <section id="partners" className="bg-white border-y-4 border-black py-12 md:py-20 text-center overflow-hidden">
+          <p className="text-black/40 text-[10px] font-black uppercase tracking-[0.5em] mb-8 md:mb-16">
             TRUSTED BY
           </p>
           <div className="relative flex overflow-hidden whitespace-nowrap">
@@ -584,9 +584,9 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 10. FAQ ── */}
-        <section id="faq" className="bg-[#F5E000] border-y-4 border-black px-4 sm:px-6 md:px-10 py-20 sm:py-24 md:py-40">
+        <section id="faq" className="bg-[#F5E000] border-y-4 border-black px-6 md:px-10 py-16 md:py-28">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black text-center mb-12 sm:mb-16 md:mb-24">
+            <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none text-black text-center mb-10 md:mb-20">
               FREQUENTLY<br />ASKED QUESTIONS
             </h2>
             <div className="space-y-4">
@@ -596,7 +596,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 { q: t('landing.faq.item3.q'), a: t('landing.faq.item3.a') },
                 { q: t('landing.faq.item4.q'), a: t('landing.faq.item4.a') }
               ].map((faq, i) => (
-                <div key={i} className="border-4 border-black bg-white p-8 md:p-12 transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group cursor-default">
+                <div key={i} className="border-4 border-black bg-white p-6 md:p-12 transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group cursor-default">
                   <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-black mb-4 transition-colors">{faq.q}</h3>
                   <p className="text-black/60 font-bold uppercase tracking-tight leading-snug">{faq.a}</p>
                 </div>
@@ -606,25 +606,25 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── 11. FINAL CTA ── */}
-        <section className="bg-black px-4 sm:px-6 md:px-10 py-24 sm:py-28 md:py-60 text-center relative overflow-hidden">
+        <section className="bg-black px-6 md:px-10 py-16 md:py-36 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[#F5E000]/5 pointer-events-none" />
-          <h2 className="text-white text-[clamp(36px,10vw,140px)] font-black uppercase tracking-tighter leading-[0.85] mb-10 sm:mb-14 md:mb-20 relative z-10">
+          <h2 className="text-white text-[clamp(36px,10vw,140px)] font-black uppercase tracking-tighter leading-[0.85] mb-10 md:mb-20 relative z-10">
             {t('landing.cta.title1')}<br/>{t('landing.cta.titleHighlight')}
           </h2>
-          <div className="flex flex-col sm:flex-row justify-center gap-8 relative z-10">
+          <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
             <Link href={`/${locale}/role-selection`} className="inline-block bg-[#F5E000] text-black px-8 py-5 sm:px-12 sm:py-7 md:px-20 md:py-10 font-black text-sm sm:text-lg md:text-2xl uppercase tracking-[0.22em] sm:tracking-[0.3em] md:tracking-[0.4em] hover:bg-white transition-all border-4 md:border-8 border-[#F5E000] shadow-[10px_10px_0px_0px_rgba(245,224,0,0.1)] md:shadow-[20px_20px_0px_0px_rgba(245,224,0,0.1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2">
               {t('landing.cta.button')}
             </Link>
           </div>
-          <p className="text-white/20 mt-8 sm:mt-10 md:mt-16 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] sm:tracking-[0.4em]">
+          <p className="text-white/20 mt-8 md:mt-16 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] sm:tracking-[0.4em]">
             No credit card required for your first submission.
           </p>
         </section>
 
         {/* ── 11. FOOTER ── */}
-        <footer className="bg-black border-t-4 border-white/10 px-4 sm:px-6 md:px-10 py-16 sm:py-20 md:py-24">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-14 sm:gap-20 md:gap-32">
-            <div className="space-y-6 sm:space-y-8 md:space-y-10">
+        <footer className="bg-black border-t-4 border-white/10 px-6 md:px-10 py-12 md:py-20">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-10 md:gap-32">
+            <div className="space-y-6 md:space-y-10">
               <div className="flex items-center gap-4 text-white">
                 <span className="font-black text-2xl sm:text-3xl tracking-tighter uppercase leading-none flex items-center gap-2">
                   CULT <span className="text-[#F5E000] text-[1.2em]">★</span> MACHINE
@@ -635,8 +635,8 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
               </p>
             </div>
             
-            <div className="grid grid-cols-2 gap-10 sm:gap-16 md:gap-32">
-              <div className="space-y-5 sm:space-y-6 md:space-y-8">
+            <div className="grid grid-cols-2 gap-8 md:gap-32">
+              <div className="space-y-5 md:space-y-8">
                 <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">LEGAL</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
                   <li><Link href={`/${locale}/privacy`} className="hover:text-white transition-colors">PRIVACY POLICY</Link></li>
@@ -645,7 +645,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 </ul>
               </div>
 
-              <div className="space-y-5 sm:space-y-6 md:space-y-8">
+              <div className="space-y-5 md:space-y-8">
                 <p className="font-black text-[10px] uppercase tracking-[0.5em] text-[#F5E000]">ABOUT</p>
                 <ul className="space-y-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
                   <li><a href="https://cult-machine.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WEB</a></li>
@@ -656,7 +656,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             </div>
           </div>
           
-          <div className="mt-14 sm:mt-20 md:mt-32 pt-10 sm:pt-14 md:pt-20 border-t-4 border-white/10 text-center">
+          <div className="mt-10 md:mt-24 pt-8 md:pt-16 border-t-4 border-white/10 text-center">
             <p className="text-white/10 font-black italic text-xs tracking-[0.5em] uppercase">
               "{t('landing.footer.slogan')}"
             </p>

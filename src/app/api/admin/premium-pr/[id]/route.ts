@@ -35,6 +35,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       where: { id: params.id },
       data: {
         premiumPrStatus: status as any,
+        ...(status === "APPROVED" && {
+          assignedPremiumServices: submission.premiumServices,
+        }),
       },
     });
 

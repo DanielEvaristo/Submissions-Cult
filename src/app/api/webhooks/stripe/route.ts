@@ -210,6 +210,7 @@ export async function POST(req: Request) {
         where: { id: submissionId },
         data: {
           premiumPrStatus: "PAID",
+          premiumServicesPaid: true,
         },
         select: {
           userId: true,
@@ -240,6 +241,7 @@ export async function POST(req: Request) {
         where: { id: submissionId },
         data: {
           premiumServicesPaid: true,
+          premiumPrStatus: "PAID",
           premiumPaymentIntentId: session.payment_intent as string,
         },
       });

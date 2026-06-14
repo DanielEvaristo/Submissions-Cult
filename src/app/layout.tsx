@@ -37,6 +37,14 @@ export const metadata: Metadata = {
     "music magazine",
     "premium PR",
   ],
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: "/en/landing",
+      es: "/es/landing",
+      fr: "/fr/landing",
+    },
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
