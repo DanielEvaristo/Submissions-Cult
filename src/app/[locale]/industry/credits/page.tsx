@@ -60,15 +60,39 @@ export default function CreditsPage() {
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("success") === "true") {
+      const checkoutSessionId = url.searchParams.get("session_id");
       setIsUpdating(true);
-      setTimeout(async () => {
-        await refreshData();
-        await update();
-        setIsUpdating(false);
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("success");
-        window.history.replaceState({}, "", newUrl.toString());
-      }, 2000);
+
+      const syncCheckout = async () => {
+        try {
+          if (checkoutSessionId) {
+            const reconcileRes = await fetch("/api/checkout/reconcile", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId: checkoutSessionId }),
+            });
+
+            if (!reconcileRes.ok) {
+              const data = (await reconcileRes.json().catch(() => null)) as { error?: string } | null;
+              setError(data?.error || "Payment completed, but credits could not be synced yet.");
+            }
+          }
+
+          await refreshData();
+          await update();
+        } catch (err) {
+          console.error("Checkout sync failed:", err);
+          setError("Payment completed, but credits could not be synced yet.");
+        } finally {
+          setIsUpdating(false);
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete("success");
+          newUrl.searchParams.delete("session_id");
+          window.history.replaceState({}, "", newUrl.toString());
+        }
+      };
+
+      syncCheckout();
     }
   }, [update]);
 

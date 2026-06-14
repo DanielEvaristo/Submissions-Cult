@@ -55,6 +55,11 @@ function getCreditUsdValue(credits: number) {
   return credits * 100;
 }
 
+function withCheckoutSessionId(url: string) {
+  if (url.includes("session_id=")) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`;
+}
+
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2024-04-10" as any,
@@ -90,9 +95,10 @@ export async function POST(req: Request) {
             quantity: 1,
           },
         ],
-        success_url:
+        success_url: withCheckoutSessionId(
           body.successUrl ||
-          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/en/portal/credits?success=true`,
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/en/portal/credits?success=true`
+        ),
         cancel_url:
           body.cancelUrl ||
           `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/en/portal/credits?canceled=true`,
