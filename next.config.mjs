@@ -2,9 +2,11 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 const ContentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+  `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://js.stripe.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://storage.ko-fi.com",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data: https://fonts.gstatic.com",

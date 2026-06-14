@@ -7,13 +7,15 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Eye, EyeOff, Globe } from "lucide-react";
 
+import { Suspense } from "react";
+
 const LOCALES = [
   { code: "en", label: "EN", flag: "🇺🇸" },
   { code: "es", label: "ES", flag: "🇲🇽" },
   { code: "fr", label: "FR", flag: "🇫🇷" },
 ];
 
-export default function LoginPage() {
+function LoginFormContent() {
   const t = useTranslations();
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -27,9 +29,14 @@ export default function LoginPage() {
   const [langOpen, setLangOpen] = useState(false);
 
   useEffect(() => {
+    console.log("LoginPage hydrated successfully!");
     const code = searchParams.get("error");
     if (code === "CredentialsSignin") {
       setError(t("auth.invalidCredentials"));
+    } else if (code === "SessionNotFound") {
+      setError("Session error. Please ensure you access the site via http://localhost:3000 (not 127.0.0.1)");
+    } else if (code) {
+      setError(`Login Error: ${code}`);
     }
   }, [searchParams, t]);
 
@@ -44,33 +51,35 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email: email.toLowerCase().trim(),
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (result?.error) {
-      // NextAuth passes thrown errors as URL-encoded strings in result.error
-      if (result.error.includes("EMAIL_NOT_VERIFIED")) {
-        const encodedEmail = encodeURIComponent(email.toLowerCase().trim());
-        window.location.href = `/${locale}/verify-email?email=${encodedEmail}`;
+      if (result?.error) {
+        if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+          const encodedEmail = encodeURIComponent(email.toLowerCase().trim());
+          window.location.href = `/${locale}/verify-email?email=${encodedEmail}`;
+          return;
+        }
+        setError(t("auth.invalidCredentials"));
         return;
       }
-      setError(t("auth.invalidCredentials"));
-      return;
-    }
 
-    if (!result?.ok) {
-      setError(t("auth.invalidCredentials"));
-      return;
-    }
+      if (!result?.ok) {
+        setError(t("auth.invalidCredentials"));
+        return;
+      }
 
-    // Always use server-side redirect — getSession() right after signIn() is
-    // unreliable because the JWT cookie may not be available yet on the client.
-    window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
+      window.location.href = `/api/auth/after-login?locale=${encodeURIComponent(locale)}`;
+    } catch (err: any) {
+      setLoading(false);
+      setError(`Crash: ${err.message}`);
+    }
   };
 
   const currentLang = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
@@ -151,6 +160,7 @@ export default function LoginPage() {
               <label className="font-sans text-[10px] font-black uppercase tracking-[0.2em] mb-4 block text-white/40" htmlFor="email">{t("auth.email")}</label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none"
                 placeholder={t("auth.placeholders.email")}
@@ -165,6 +175,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   className="w-full bg-black border-2 border-white/10 p-6 font-sans text-lg font-black tracking-tight text-white focus:border-[#F5E000] focus:bg-[#F5E000]/5 transition-all outline-none pr-16"
                   placeholder="••••••••"
@@ -174,8 +185,11 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-[#F5E000] transition-colors"
-                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-[#F5E000] transition-colors z-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPassword(!showPassword);
+                  }}
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={20} strokeWidth={3} /> : <Eye size={20} strokeWidth={3} />}
@@ -239,3 +253,13 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+
+

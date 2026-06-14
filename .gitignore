@@ -45,3 +45,8 @@ next-env.d.ts
 stripe.exe
 stripe.zip
 stripe_cli/
+
+# Local development scratch files
+/scratch/
+/prisma/set-password.cjs
+/prisma/seed-admin.cjs

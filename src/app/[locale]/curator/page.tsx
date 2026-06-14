@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { 
@@ -82,6 +82,8 @@ export default function CuratorDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [newCount, setNewCount] = useState(0);
+  const prevIdsRef = useRef<Set<string>>(new Set());
 
   // History
   const [history, setHistory] = useState<Submission[]>([]);
@@ -93,15 +95,23 @@ export default function CuratorDashboard() {
   const [actionLoading, setActionLoading] = useState<"claim" | "approve" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubmissions = useCallback(async () => {
-    setLoading(true);
+  const fetchSubmissions = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch("/api/curator/submissions");
-      if (res.ok) setSubmissions(await res.json());
+      if (res.ok) {
+        const data: Submission[] = await res.json();
+        setSubmissions(data);
+        if (silent && prevIdsRef.current.size > 0) {
+          const incoming = data.filter((s) => !prevIdsRef.current.has(s.id));
+          if (incoming.length > 0) setNewCount((prev) => prev + incoming.length);
+        }
+        prevIdsRef.current = new Set(data.map((s) => s.id));
+      }
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -117,7 +127,25 @@ export default function CuratorDashboard() {
     }
   }, []);
 
-  useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+  useEffect(() => { 
+    fetchSubmissions();
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (!intervalId) intervalId = setInterval(() => fetchSubmissions(true), 30_000);
+    };
+    const stopPolling = () => {
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") { fetchSubmissions(true); startPolling(); }
+      else stopPolling();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    startPolling();
+    return () => { stopPolling(); document.removeEventListener("visibilitychange", handleVisibility); };
+  }, [fetchSubmissions]);
   useEffect(() => { if (activeTab === "history") fetchHistory(); }, [activeTab, fetchHistory]);
 
   // Reset form when selection changes
@@ -196,7 +224,23 @@ export default function CuratorDashboard() {
       <div className="w-1/3 min-w-[350px] border-r-4 border-white/10 bg-black flex flex-col h-full">
         {/* Header */}
         <div className="px-8 py-6 border-b-4 border-white/10 bg-black text-white shrink-0">
-          <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">CURATOR</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">CURATOR</h1>
+            <div className="flex items-center gap-3">
+              {newCount > 0 && (
+                <button
+                  onClick={() => setNewCount(0)}
+                  className="px-3 py-1 bg-[#F5E000] text-black font-black text-[10px] uppercase tracking-widest animate-pulse"
+                >
+                  +{newCount} NEW
+                </button>
+              )}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 border border-green-400/40 bg-green-400/10">
+                <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="font-black text-[10px] uppercase tracking-widest text-green-400">LIVE</span>
+              </div>
+            </div>
+          </div>
         </div>
         {/* Tabs */}
         <div className="flex border-b-4 border-white/10 shrink-0">

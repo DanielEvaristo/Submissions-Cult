@@ -63,6 +63,7 @@ export interface Submission {
   fastTrack: boolean;
   fastTrackDeadline: string | null;
   reviewRequested: boolean;
+  premiumPrStatus: string;
   submittedAt: string;
   curatorNotes: string | null;
   curatorRating: number | null;
@@ -250,6 +251,63 @@ export function PriorityItem({
           {sub.reviewRequested && !sub.fastTrackDeadline && (
             <p className="font-sans text-[9px] font-bold uppercase tracking-widest text-[#F5E000]/60">
               Written review required
+            </p>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function PremiumItem({
+  sub,
+  selected,
+  onClick,
+}: {
+  sub: Submission;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-5 transition-all border-l-[6px] relative overflow-hidden ${
+        selected
+          ? "bg-[#FF00FF] text-white border-l-white"
+          : "bg-[#FF00FF]/10 text-white border-l-[#FF00FF] hover:bg-[#FF00FF]/20"
+      }`}
+    >
+      <div className="flex gap-4 items-start">
+        {/* Cover */}
+        <div className="w-12 h-12 shrink-0 overflow-hidden bg-black flex items-center justify-center">
+          {sub.autoFilledCover
+            ? <img src={sub.autoFilledCover} alt="" className="w-full h-full object-cover" />
+            : <Music size={18} className="text-[#FF00FF]" strokeWidth={3} />}
+        </div>
+
+        {/* Info */}
+        <div className="min-w-0 flex-1">
+          <p className="font-sans text-sm font-black uppercase tracking-tight truncate leading-none mb-0.5">
+            {sub.trackTitle}
+          </p>
+          <p className="font-sans text-[10px] font-bold uppercase tracking-widest opacity-60 truncate mb-2">
+            {sub.artistName}
+          </p>
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#FF00FF] text-white">
+              🎙️ PREMIUM PR: {sub.premiumPrStatus}
+            </span>
+            {sub.fastTrack && (
+              <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 bg-[#FF0000] text-white">
+                ⚡ FAST TRACK
+              </span>
+            )}
+          </div>
+          {sub.premiumServices?.length > 0 && (
+            <p className="font-sans text-[9px] font-bold uppercase tracking-widest text-[#FF00FF]/80">
+              Services: {sub.premiumServices.join(", ")}
             </p>
           )}
         </div>

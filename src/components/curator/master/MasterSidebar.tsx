@@ -1,13 +1,15 @@
 import { Loader2, ShieldCheck, Send, Music, Lock, CheckCircle2 } from "lucide-react";
-import { Submission, QueueItem, SubmissionItem, PriorityItem, formatDate } from "./MasterShared";
+import { Submission, QueueItem, SubmissionItem, PriorityItem, PremiumItem, formatDate } from "./MasterShared";
 
 interface Props {
-  activeTab: "priority" | "inbox" | "queue";
-  setActiveTab: (tab: "priority" | "inbox" | "queue") => void;
+  activeTab: "priority" | "premium" | "inbox" | "queue";
+  setActiveTab: (tab: "priority" | "premium" | "inbox" | "queue") => void;
   submissions: Submission[];
   loading: boolean;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
+  newCount: number;
+  setNewCount: (n: number) => void;
   queue: QueueItem[];
   queueLoading: boolean;
   setPublishModalId: (id: string | null) => void;
@@ -23,6 +25,8 @@ export function MasterSidebar({
   loading,
   selectedId,
   setSelectedId,
+  newCount,
+  setNewCount,
   queue,
   queueLoading,
   setPublishModalId,
@@ -40,6 +44,8 @@ export function MasterSidebar({
       return 0;
     });
 
+  const premiumSubs = submissions.filter((s) => s.premiumPrStatus === "REQUESTED" || s.premiumPrStatus === "PAID");
+
   const regularSubs = submissions.filter((s) => !s.fastTrack);
 
   return (
@@ -50,11 +56,27 @@ export function MasterSidebar({
     >
       {/* Header */}
       <div className="px-8 py-6 border-b-4 border-white/10 bg-[#F5E000] text-black shrink-0">
-        <div className="flex items-center gap-3 mb-1">
-          <ShieldCheck size={24} className="text-black" strokeWidth={3} />
-          <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">
-            MASTER
-          </h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 mb-1">
+            <ShieldCheck size={24} className="text-black" strokeWidth={3} />
+            <h1 className="font-sans text-4xl font-black uppercase tracking-tighter leading-none">
+              MASTER
+            </h1>
+          </div>
+          <div className="flex items-center gap-3">
+            {newCount > 0 && (
+              <button
+                onClick={() => setNewCount(0)}
+                className="px-3 py-1 bg-black text-[#F5E000] font-black text-[10px] uppercase tracking-widest animate-pulse"
+              >
+                +{newCount} NEW
+              </button>
+            )}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="font-black text-[10px] uppercase tracking-widest text-green-400">LIVE</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -71,6 +93,18 @@ export function MasterSidebar({
           }`}
         >
           PRIORITY ({prioritySubs.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("premium")}
+          className={`flex-1 py-4 font-sans text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeTab === "premium"
+              ? "bg-[#FF00FF] text-white"
+              : premiumSubs.length > 0
+              ? "bg-[#FF00FF]/20 text-[#FF00FF] hover:bg-[#FF00FF]/30"
+              : "bg-black text-white/40 hover:text-white"
+          }`}
+        >
+          PREMIUM ({premiumSubs.length})
         </button>
         <button
           onClick={() => setActiveTab("inbox")}
@@ -111,6 +145,30 @@ export function MasterSidebar({
           ) : (
             prioritySubs.map((sub) => (
               <PriorityItem
+                key={sub.id}
+                sub={sub}
+                selected={selectedId === sub.id}
+                onClick={() => setSelectedId(sub.id)}
+              />
+            ))
+          ))}
+
+        {/* ── PREMIUM PR TAB ── */}
+        {activeTab === "premium" &&
+          (loading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 size={32} className="animate-spin text-[#FF00FF]" strokeWidth={3} />
+            </div>
+          ) : premiumSubs.length === 0 ? (
+            <div className="text-center py-10 text-white/20 px-4">
+              <ShieldCheck size={48} className="mx-auto mb-4 opacity-10" strokeWidth={3} />
+              <p className="font-sans text-[10px] font-black uppercase tracking-widest">
+                NO_PREMIUM_PR_REQUESTS.
+              </p>
+            </div>
+          ) : (
+            premiumSubs.map((sub) => (
+              <PremiumItem
                 key={sub.id}
                 sub={sub}
                 selected={selectedId === sub.id}

@@ -24,6 +24,7 @@ const TRANSACTION_LABELS: Record<string, string> = {
   USAGE: "Credit Usage",
   RETENTION_OFFER: "Retention Discount",
   PREMIUM_PR_PURCHASE: "Premium PR Payment",
+  SUBMISSION_PAYMENT: "Submission Payment",
 };
 
 export default function CreditsPage() {
@@ -192,15 +193,19 @@ export default function CreditsPage() {
                     <p className={`text-sm font-black ${
                       tx.type === "PURCHASE"
                         ? "text-[#00FF00]"
-                        : tx.type === "PREMIUM_PR_PURCHASE"
+                        : tx.type === "PREMIUM_PR_PURCHASE" || tx.type === "SUBMISSION_PAYMENT"
                         ? "text-[#F5E000]"
                         : "text-[#FF0000]"
                     }`}>
                       {tx.type === "PREMIUM_PR_PURCHASE"
                         ? "PREMIUM PR"
+                        : tx.type === "SUBMISSION_PAYMENT"
+                        ? `$${(tx.amount / 100).toFixed(2)} USD`
                         : `${tx.type === "PURCHASE" ? "+" : "-"}${tx.credits} CRD`}
                     </p>
-                    <p className="text-[8px] font-bold opacity-30 uppercase tracking-widest">${(tx.amount / 100).toFixed(2)} USD</p>
+                    <p className="text-[8px] font-bold opacity-30 uppercase tracking-widest">
+                      {tx.type === "SUBMISSION_PAYMENT" ? "Song submission" : `$${(tx.amount / 100).toFixed(2)} USD`}
+                    </p>
                   </div>
                 </div>
               ))

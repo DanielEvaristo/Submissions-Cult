@@ -1,13 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Submission, QueueItem } from "./MasterShared";
 
+const POLL_INTERVAL_MS = 30_000; // 30 seconds
+
 export function useMasterDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"priority" | "inbox" | "queue">("priority");
+  const [activeTab, setActiveTab] = useState<"priority" | "premium" | "inbox" | "queue">("priority");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [newCount, setNewCount] = useState(0); // count of new submissions since last load
+  const prevIdsRef = useRef<Set<string>>(new Set());
 
   // Publication queue state
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -26,15 +30,24 @@ export function useMasterDashboard() {
   const [actionLoading, setActionLoading] = useState<"accept" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubmissions = useCallback(async () => {
-    setLoading(true);
+  const fetchSubmissions = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch("/api/master/submissions");
-      if (res.ok) setSubmissions(await res.json());
+      if (res.ok) {
+        const data: Submission[] = await res.json();
+        setSubmissions(data);
+        // Detect new arrivals on silent polls
+        if (silent && prevIdsRef.current.size > 0) {
+          const incoming = data.filter((s) => !prevIdsRef.current.has(s.id));
+          if (incoming.length > 0) setNewCount((prev) => prev + incoming.length);
+        }
+        prevIdsRef.current = new Set(data.map((s) => s.id));
+      }
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -50,8 +63,40 @@ export function useMasterDashboard() {
     }
   }, []);
 
+  // Initial load + auto-poll every 30 seconds, but only when the tab is visible
   useEffect(() => {
     fetchSubmissions();
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (!intervalId) {
+        intervalId = setInterval(() => fetchSubmissions(true), POLL_INTERVAL_MS);
+      }
+    };
+
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchSubmissions(true); // immediate refresh when coming back
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [fetchSubmissions]);
 
   useEffect(() => {
@@ -170,6 +215,8 @@ export function useMasterDashboard() {
     loading,
     selectedId,
     setSelectedId,
+    newCount,
+    setNewCount,
     queue,
     queueLoading,
     publishModalId,

@@ -129,6 +129,27 @@ export async function POST(req: Request) {
 
       devLog("[STRIPE WEBHOOK] Submission activated after payment:", submissionId, "→", curatorId ? "IN_REVIEW" : "PENDING");
 
+      // Log the submission payment in the transaction history so it appears in the user's credit log
+      const existingSubmissionTx = await prisma.creditTransaction.findFirst({
+        where: {
+          userId: existingSubmission.userId,
+          type: "SUBMISSION_PAYMENT",
+          stripeSessionId: session.id,
+        },
+      });
+      if (!existingSubmissionTx) {
+        await prisma.creditTransaction.create({
+          data: {
+            userId: existingSubmission.userId,
+            type: "SUBMISSION_PAYMENT",
+            credits: 0,
+            amount: session.amount_total || 0,
+            currency: "usd",
+            stripeSessionId: session.id,
+          },
+        });
+      }
+
       if (existingSubmission.status === "AWAITING_PAYMENT") {
         const user = await prisma.user.findUnique({
           where: { id: submission.userId },

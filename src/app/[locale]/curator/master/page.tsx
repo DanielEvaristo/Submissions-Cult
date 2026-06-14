@@ -15,6 +15,8 @@ export default function MasterCuratorDashboard() {
     loading,
     selectedId,
     setSelectedId,
+    newCount,
+    setNewCount,
     queue,
     queueLoading,
     publishModalId,
@@ -48,6 +50,8 @@ export default function MasterCuratorDashboard() {
         loading={loading}
         selectedId={selectedId}
         setSelectedId={setSelectedId}
+        newCount={newCount}
+        setNewCount={setNewCount}
         queue={queue}
         queueLoading={queueLoading}
         setPublishModalId={setPublishModalId}

@@ -34,15 +34,24 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "New password must be at least 8 characters" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
+    let userRecord;
+    let isAdmin = session.user.userType === "ADMIN";
 
-    if (!user || !user.password) {
+    if (isAdmin) {
+      userRecord = await prisma.admin.findUnique({
+        where: { id: session.user.id }
+      });
+    } else {
+      userRecord = await prisma.user.findUnique({
+        where: { id: session.user.id }
+      });
+    }
+
+    if (!userRecord || !userRecord.password) {
       return NextResponse.json({ error: "User not found or no password set" }, { status: 400 });
     }
 
-    const isValid = await bcrypt.compare(currentPassword, user.password);
+    const isValid = await bcrypt.compare(currentPassword, userRecord.password);
 
     if (!isValid) {
       return NextResponse.json({ error: "Incorrect current password" }, { status: 400 });
@@ -50,14 +59,20 @@ export async function PATCH(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { password: hashedPassword }
-    });
+    if (isAdmin) {
+      await prisma.admin.update({
+        where: { id: session.user.id },
+        data: { password: hashedPassword }
+      });
+    } else {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { password: hashedPassword }
+      });
+    }
 
     // Send security alert email (non-blocking)
-    const userRecord = await prisma.user.findUnique({ where: { id: session.user.id }, select: { email: true, name: true } });
-    if (userRecord?.email) {
+    if (userRecord.email) {
       sendPasswordChangedEmail(userRecord.email, userRecord.name ?? "User");
     }
 

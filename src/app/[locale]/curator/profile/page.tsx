@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Eye, EyeOff } from "lucide-react";
 
 export default function CuratorProfilePage() {
   const { data: session, update } = useSession();
@@ -25,6 +25,10 @@ export default function CuratorProfilePage() {
   });
   const [passLoading, setPassLoading] = useState(false);
   const [passMessage, setPassMessage] = useState<{type: "success" | "error", text: string} | null>(null);
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     // Fetch current user data from a generic endpoint, or just use session for now.
@@ -194,40 +198,67 @@ export default function CuratorProfilePage() {
         <form onSubmit={handlePasswordSubmit} className="space-y-6">
           <div>
             <label className="label" htmlFor="currentPassword">Current Password</label>
-            <input
-              id="currentPassword"
-              type="password"
-              className="input max-w-md"
-              required
-              value={passForm.currentPassword}
-              onChange={e => setPassForm({...passForm, currentPassword: e.target.value})}
-            />
+            <div className="relative max-w-md">
+              <input
+                id="currentPassword"
+                type={showCurrentPassword ? "text" : "password"}
+                className="input w-full pr-10"
+                required
+                value={passForm.currentPassword}
+                onChange={e => setPassForm({...passForm, currentPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-cm-text-muted hover:text-cm-text-primary transition-colors"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="label" htmlFor="newPassword">New Password</label>
-            <input
-              id="newPassword"
-              type="password"
-              className="input max-w-md"
-              required
-              minLength={6}
-              value={passForm.newPassword}
-              onChange={e => setPassForm({...passForm, newPassword: e.target.value})}
-            />
+            <div className="relative max-w-md">
+              <input
+                id="newPassword"
+                type={showNewPassword ? "text" : "password"}
+                className="input w-full pr-10"
+                required
+                minLength={8}
+                value={passForm.newPassword}
+                onChange={e => setPassForm({...passForm, newPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-cm-text-muted hover:text-cm-text-primary transition-colors"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="label" htmlFor="confirmPassword">Confirm New Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              className="input max-w-md"
-              required
-              minLength={6}
-              value={passForm.confirmPassword}
-              onChange={e => setPassForm({...passForm, confirmPassword: e.target.value})}
-            />
+            <div className="relative max-w-md">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                className="input w-full pr-10"
+                required
+                minLength={8}
+                value={passForm.confirmPassword}
+                onChange={e => setPassForm({...passForm, confirmPassword: e.target.value})}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-cm-text-muted hover:text-cm-text-primary transition-colors"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {passMessage && (

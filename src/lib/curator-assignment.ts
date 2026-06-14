@@ -84,17 +84,12 @@ export async function findLeastLoadedCuratorId(
 
 export async function rebalanceActiveCuratorAssignments(prisma: PrismaExecutor) {
   const curators = await prisma.admin.findMany({
-    where: {
-      role: "CURATOR",
-    },
-    select: {
-      id: true,
-      assignedGenres: true,
-      createdAt: true,
-    },
+    where: { role: "CURATOR" },
+    select: { id: true, assignedGenres: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });
 
+  // ── No curators left: park all active submissions as PENDING ──────────────
   if (curators.length === 0) {
     const activeSubmissions = await prisma.submission.count({
       where: { status: { in: [...ACTIVE_QUEUE_STATUSES] } },
@@ -108,42 +103,54 @@ export async function rebalanceActiveCuratorAssignments(prisma: PrismaExecutor) 
     return { reassigned: 0, activeSubmissions, curatorCount: 0 };
   }
 
+  // ── Fetch all active submissions ordered by submission date ───────────────
   const submissions = await prisma.submission.findMany({
     where: { status: { in: [...ACTIVE_QUEUE_STATUSES] } },
-    select: {
-      id: true,
-      genres: true,
-      curatorId: true,
-      status: true,
-    },
+    select: { id: true, genres: true, curatorId: true, status: true },
     orderBy: { submittedAt: "asc" },
   });
 
+  // ── Compute assignments purely in memory (zero DB queries in this phase) ──
+  // workloadMap tracks how many we've *assigned* so far in this rebalance run
   const workloadMap = new Map<string, number>();
-  curators.forEach((curator: { id: string }) => workloadMap.set(curator.id, 0));
+  curators.forEach((c: { id: string }) => workloadMap.set(c.id, 0));
+
+  // Groups: curatorId → array of submission IDs that need to be moved to them
+  const groups = new Map<string, string[]>();
 
   let reassigned = 0;
 
   for (const submission of submissions as ActiveSubmission[]) {
     const eligible = eligibleCuratorsForGenres(curators, submission.genres);
-    const assignedCuratorId = sortCuratorsByLoadThenAge(eligible, workloadMap)[0]?.id ?? null;
+    const targetCuratorId = sortCuratorsByLoadThenAge(eligible, workloadMap)[0]?.id ?? null;
 
-    if (!assignedCuratorId) {
-      continue;
-    }
+    if (!targetCuratorId) continue;
 
-    workloadMap.set(assignedCuratorId, (workloadMap.get(assignedCuratorId) ?? 0) + 1);
+    // Increment the in-memory workload counter immediately so the next
+    // submission sees the updated load — this keeps distribution even.
+    workloadMap.set(targetCuratorId, (workloadMap.get(targetCuratorId) ?? 0) + 1);
 
-    if (submission.curatorId !== assignedCuratorId || submission.status !== "IN_REVIEW") {
-      await prisma.submission.update({
-        where: { id: submission.id },
-        data: {
-          curatorId: assignedCuratorId,
-          status: "IN_REVIEW",
-        },
-      });
+    // Only queue an update if something actually changes
+    if (submission.curatorId !== targetCuratorId || submission.status !== "IN_REVIEW") {
+      const ids = groups.get(targetCuratorId) ?? [];
+      ids.push(submission.id);
+      groups.set(targetCuratorId, ids);
       reassigned += 1;
     }
+  }
+
+  // ── Flush all changes in a single atomic transaction ─────────────────────
+  // One updateMany per curator group instead of one UPDATE per submission.
+  // e.g. 80 submissions across 4 curators → 4 queries instead of 80.
+  if (groups.size > 0) {
+    await prisma.$transaction(
+      [...groups.entries()].map(([curatorId, ids]) =>
+        prisma.submission.updateMany({
+          where: { id: { in: ids } },
+          data: { curatorId, status: "IN_REVIEW" },
+        })
+      )
+    );
   }
 
   return {
