@@ -169,7 +169,7 @@ export async function POST(req: Request) {
           where: {
             userId: submission.userId,
             type: "RETENTION_OFFER",
-            stripeSessionId: session.id,
+            stripeSessionId: `${session.id}_retention`,
           },
         });
 
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
               credits: submission.creditsUsed,
               amount: -discountAmount,
               currency: "usd",
-              stripeSessionId: session.id,
+              stripeSessionId: `${session.id}_retention`,
             },
           });
         }
