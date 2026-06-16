@@ -169,9 +169,10 @@ export async function sendSubmissionRejectedEmail(
     ${heading("Editorial<br/>Decision.")}
     ${subheading("Track Not Selected")}
     ${infoBox("TRACK", trackTitle)}
-    ${paragraph("After careful review, our editorial team has decided not to move forward with this track at this time. This doesn't mean it's not good — editorial fit is often about timing and positioning.")}
+    ${paragraph("Sorry! 🙁")}
+    ${paragraph("After careful review, our editorial team has decided not to move forward with this track at this time. This doesn't mean the song isn't good! Editorial fit often comes down to timing and positioning.")}
     ${notes ? `<div style="background:#111;border-left:4px solid rgba(255,255,255,0.15);padding:20px 24px;margin:0 0 24px 0;"><p style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:3px;margin:0 0 8px 0;">CURATOR NOTES</p><p style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;line-height:1.6;margin:0;font-style:italic;">"${notes}"</p></div>` : ""}
-    ${paragraph("You can submit a different track anytime. We appreciate you for being part of Cult Machine.")}
+    ${paragraph("We'd still love to hear future releases, so please don't hesitate to submit more music for consideration 🙂 We appreciate you for being part of Cult Machine.")}
     ${ctaButton("SUBMIT ANOTHER TRACK →", `${BASE_URL}/en/portal/submit`)}
   `);
 

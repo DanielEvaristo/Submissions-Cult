@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidateCuratorViews } from "@/lib/revalidate-dashboards";
+import { sendSubmissionRejectedEmail } from "@/lib/emails";
 
 export async function PATCH(
   req: NextRequest,
@@ -122,6 +123,11 @@ export async function PATCH(
           type: "INFO",
         }
       });
+
+      const subUser = await prisma.user.findUnique({ where: { id: updated.userId }, select: { email: true } });
+      if (subUser?.email) {
+        sendSubmissionRejectedEmail(subUser.email, updated.trackTitle, updated.curatorNotes);
+      }
 
       revalidateCuratorViews();
       return NextResponse.json(updated);
