@@ -326,10 +326,32 @@ export function InfoRow({ label, value }: { label: string; value?: string | null
   );
 }
 
+export function buildUrl(label: string, url: string): string | null {
+  const val = url?.trim() ?? "";
+  if (!val || val.toLowerCase() === "n/a") return null;
+  // Already a full URL
+  if (/^https?:\/\//i.test(val)) return val;
+  // Strip leading @ for platforms that use it
+  const username = val.startsWith("@") ? val.slice(1) : val;
+  const bases: Record<string, string> = {
+    Instagram:  "https://www.instagram.com/",
+    TikTok:     "https://www.tiktok.com/@",
+    YouTube:    "https://www.youtube.com/@",
+    Spotify:    "https://open.spotify.com/artist/",
+    SoundCloud: "https://soundcloud.com/",
+    Website:    "https://",
+  };
+  const base = bases[label];
+  if (base) return base + username;
+  return null;
+}
+
 export function LinkRow({ label, url }: { label: string; url: string }) {
+  const href = buildUrl(label, url);
+  if (!href) return null;
   return (
     <a 
-      href={url} 
+      href={href} 
       target="_blank" 
       rel="noopener noreferrer"
       className="flex justify-between items-center text-sm font-sans text-cm-text-secondary hover:text-cm-text-primary hover:bg-bg-elevated p-1 -mx-1 rounded transition-colors"
