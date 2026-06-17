@@ -103,15 +103,25 @@ export function useMasterDashboard() {
     if (activeTab === "queue") fetchQueue();
   }, [activeTab, fetchQueue]);
 
-  // Reset form when selection changes
+  // Track which submission id we've already pre-filled so that silent
+  // poll updates (which refresh `submissions`) don't overwrite edits.
+  const prefilledIdRef = useRef<string | null>(null);
+
+  // Reset form whenever the curator picks a DIFFERENT submission
   useEffect(() => {
+    if (prefilledIdRef.current === selectedId) return; // same sub, don't reset
+    prefilledIdRef.current = selectedId;
+
     const sub = submissions.find((s) => s.id === selectedId);
     setRating(sub?.curatorRating || 0);
     setNotes(sub?.curatorNotes || "");
     setSelectedPlacements([]);
     setSelectedPremium([]);
     setError(null);
-  }, [selectedId, submissions]);
+  // NOTE: intentionally omitting `submissions` so that background polls
+  // don't trigger a reset while the curator is typing.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const handlePublish = async () => {
     if (!publishModalId || !publicationUrl) return;
