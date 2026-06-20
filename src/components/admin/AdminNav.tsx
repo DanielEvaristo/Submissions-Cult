@@ -15,7 +15,8 @@ import {
   Bug,
   Menu,
   X,
-  AlertTriangle
+  AlertTriangle,
+  KeyRound,
 } from "lucide-react";
 
 interface Props {
@@ -30,6 +31,7 @@ const NAV = [
   { href: "/admin/staff", label: "Staff", icon: UserCheck, exact: false },
   { href: "/admin/creative-requests", label: "Creatives", icon: Palette, exact: false },
   { href: "/admin/bugs", label: "Bug Reports", icon: Bug, exact: false },
+  { href: "/admin/reset-password", label: "Reset Password", icon: KeyRound, exact: false },
 ];
 
 const LOCALES = [

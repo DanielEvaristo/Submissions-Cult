@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Loader2, ExternalLink, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle, XCircle, KeyRound, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -84,6 +84,121 @@ function RejectModal({
   );
 }
 
+// ─── Reset Password Modal ──────────────────────────────────────────────────────
+
+function ResetPasswordModal({
+  target,
+  onSuccess,
+  onCancel,
+}: {
+  target: { id: string; name: string; email: string };
+  onSuccess: () => void;
+  onCancel: () => void;
+}) {
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const handleSubmit = async () => {
+    setError("");
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    setLoading(true);
+    const res = await fetch(`/api/admin/users/${target.id}/password`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) {
+      setError(data.error ?? "Something went wrong.");
+    } else {
+      setDone(true);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div className="bg-bg-surface border border-border w-full max-w-md p-6 rounded-xl shadow-lg">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="font-sans text-lg font-bold text-cm-text-primary tracking-tight">
+              Reset Password
+            </h2>
+            <p className="font-sans text-sm text-cm-text-secondary mt-1">
+              {target.name} · {target.email}
+            </p>
+          </div>
+          <button
+            onClick={onCancel}
+            className="p-1.5 text-cm-text-muted hover:text-cm-text-primary transition-colors rounded-md hover:bg-bg-elevated"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {done ? (
+          <div className="space-y-4">
+            <div className="bg-ok/10 border border-ok/30 rounded-lg px-4 py-3">
+              <p className="font-sans text-sm font-semibold text-ok">
+                ✓ Password updated successfully. A security alert email has been
+                sent to the user.
+              </p>
+            </div>
+            <button onClick={onSuccess} className="btn-primary w-full">
+              Done
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block font-sans text-xs font-bold uppercase tracking-wider text-cm-text-secondary mb-1.5">
+                New Password
+              </label>
+              <input
+                id="admin-reset-password-input"
+                type="password"
+                className="input w-full"
+                placeholder="Min. 8 characters"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                autoFocus
+              />
+            </div>
+
+            {error && (
+              <p className="font-sans text-xs font-semibold text-danger">
+                {error}
+              </p>
+            )}
+
+            <div className="flex gap-3 justify-end pt-2">
+              <button onClick={onCancel} className="btn-ghost">
+                Cancel
+              </button>
+              <button
+                id="admin-reset-password-confirm"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-accent-red text-white hover:bg-accent-red/90 rounded-md transition-all disabled:opacity-50 font-sans text-sm font-semibold shadow-sm"
+              >
+                {loading && <Loader2 size={14} className="animate-spin" />}
+                Set New Password
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function IndustryPage() {
@@ -97,6 +212,7 @@ export default function IndustryPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [resetTarget, setResetTarget] = useState<{ id: string; name: string; email: string } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -293,6 +409,20 @@ export default function IndustryPage() {
                     <XCircle size={18} />
                   </button>
                 )}
+                <button
+                  id={`reset-password-${u.id}`}
+                  title="Reset password"
+                  onClick={() =>
+                    setResetTarget({
+                      id: u.id,
+                      name: u.legalName ?? u.name ?? "User",
+                      email: u.email,
+                    })
+                  }
+                  className="p-2 text-cm-text-muted hover:text-cm-text-primary hover:bg-bg-elevated rounded-md transition-all"
+                >
+                  <KeyRound size={16} />
+                </button>
               </div>
             </div>
           ))}
@@ -305,6 +435,15 @@ export default function IndustryPage() {
           loading={actionLoading}
           onConfirm={(reason) => reject(rejectTarget, reason)}
           onCancel={() => setRejectTarget(null)}
+        />
+      )}
+
+      {/* Reset password modal */}
+      {resetTarget && (
+        <ResetPasswordModal
+          target={resetTarget}
+          onSuccess={() => setResetTarget(null)}
+          onCancel={() => setResetTarget(null)}
         />
       )}
     </div>
