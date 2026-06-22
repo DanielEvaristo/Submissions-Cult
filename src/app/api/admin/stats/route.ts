@@ -150,28 +150,29 @@ export async function GET(req: Request) {
     });
 
     // Finance calculations
-    let normalSubmissionsCount = 0;
-    let premiumSubmissionsCount = 0;
+    let normalRevenueCents = 0;
     let premiumRevenueCents = 0;
     let pendingPremiumRevenueCents = 0;
-    
-    // Normal submission estimate = $5 (500 cents)
-    const NORMAL_SUBMISSION_CENTS = 500;
+    let normalSubmissionsCount = 0;
+    let premiumSubmissionsCount = 0;
 
     for (const sub of allSubmissionsFinance) {
-      if (!sub.premiumServices || sub.premiumServices.length === 0) {
-        normalSubmissionsCount++;
-      } else {
+      // Premium Submissions
+      if (sub.premiumServices && sub.premiumServices.length > 0) {
         premiumSubmissionsCount++;
         if (sub.premiumPrStatus === "PAID") {
           premiumRevenueCents += sub.totalCostUsd || 0;
         } else if (sub.premiumPrStatus === "REQUESTED" || sub.premiumPrStatus === "APPROVED") {
           pendingPremiumRevenueCents += sub.totalCostUsd || 0;
         }
+      } 
+      // Normal Submissions (paid with Stripe, not credits)
+      else if (sub.totalCostUsd && sub.totalCostUsd > 0) {
+        normalSubmissionsCount++;
+        normalRevenueCents += sub.totalCostUsd;
       }
     }
 
-    const normalRevenueCents = normalSubmissionsCount * NORMAL_SUBMISSION_CENTS;
     const totalRevenueCents = normalRevenueCents + premiumRevenueCents;
 
     return NextResponse.json({
