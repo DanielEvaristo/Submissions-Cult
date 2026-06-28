@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { Space_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -71,6 +72,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // Sentry Trace Data agregado aquí abajo
+  other: {
+    ...Sentry.getTraceData()
+  }
 };
 
 export default function RootLayout({

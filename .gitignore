@@ -50,3 +50,11 @@ stripe_cli/
 /scratch/
 /prisma/set-password.cjs
 /prisma/seed-admin.cjs
+
+#audit scratch files
+
+audit_to_csv.js
+
+
+# Sentry Config File
+.env.sentry-build-plugin
